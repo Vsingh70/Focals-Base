@@ -295,8 +295,20 @@
 @layer components;
 
 @layer utilities {
+  .fixed {
+    position: fixed;
+  }
+
+  .relative {
+    position: relative;
+  }
+
   .block {
     display: block;
+  }
+
+  .flex {
+    display: flex;
   }
 
   .border {

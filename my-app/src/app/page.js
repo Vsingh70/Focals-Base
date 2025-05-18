@@ -1,61 +1,128 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Home() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const handleLogin = () => setLoggedIn(true);
-  const handleLogout = () => setLoggedIn(false);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    // Check auth state on mount
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data?.user || null);
+    });
+    // Listen for auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogin = () => {
+    router.push("/login");
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Photography Managing App</h1>
-      {loggedIn ? (
-        <>
-          <p>Welcome! You are logged in.</p>
-          <button
-            style={{
-              padding: "12px 32px",
-              borderRadius: "25px",
-              border: "none",
-              background: "#0070f3",
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: "1rem",
-              cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#005bb5")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#0070f3")}
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </>
-      ) : (
-        <>
-          <p>Please log in to continue.</p>
-          <button
-            style={{
-              padding: "12px 32px",
-              borderRadius: "25px",
-              border: "none",
-              background: "#0070f3",
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: "1rem",
-              cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#005bb5")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#0070f3")}
-            onClick={handleLogin}
-          >
-            Login
-          </button>
-        </>
-      )}
+    <div style={{ minHeight: "100vh", background: "#f8fafc", position: "relative" }}>
+      {/* Top bar with title and username */}
+      <header
+        style={{
+          width: "100%",
+          padding: "24px 40px 16px 40px",
+          background: "#fff",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 10,
+        }}
+      >
+        <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#0070f3", letterSpacing: "1px" }}>
+          Focals Base
+        </h1>
+        {user && (
+          <div style={{ fontWeight: 500, color: "#333", fontSize: "1.1rem" }}>
+            {user.email}
+          </div>
+        )}
+      </header>
+
+      {/* Main content */}
+      <main
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          paddingTop: "120px",
+        }}
+      >
+        {!user ? (
+          <>
+            <p style={{ fontSize: "1.2rem", marginBottom: "32px", color: "#444" }}>
+              Please log in to continue.
+            </p>
+            <button
+              style={{
+                padding: "16px 48px",
+                borderRadius: "30px",
+                border: "none",
+                background: "#0070f3",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                transition: "background 0.2s",
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = "#005bb5")}
+              onMouseOut={e => (e.currentTarget.style.background = "#0070f3")}
+              onClick={handleLogin}
+            >
+              Login
+            </button>
+          </>
+        ) : (
+          <>
+            <p style={{ fontSize: "1.2rem", marginBottom: "32px", color: "#444" }}>
+              Welcome back!
+            </p>
+            <button
+              style={{
+                padding: "16px 48px",
+                borderRadius: "30px",
+                border: "none",
+                background: "#0070f3",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                transition: "background 0.2s",
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = "#005bb5")}
+              onMouseOut={e => (e.currentTarget.style.background = "#0070f3")}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </main>
     </div>
   );
 }
