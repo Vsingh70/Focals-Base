@@ -31,6 +31,9 @@ export default function Home() {
     await supabase.auth.signOut();
     setUser(null);
   };
+  const handleAccountAccess = async () =>{
+    router.push("/account");
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", position: "relative" }}>
@@ -113,6 +116,29 @@ export default function Home() {
                 cursor: "pointer",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
                 transition: "background 0.2s",
+                marginTop: "10px",
+                marginBottom: "10px",
+              }}
+              onMouseOver={e => (e.currentTarget.style.background = "#005bb5")}
+              onMouseOut={e => (e.currentTarget.style.background = "#0070f3")}
+              onClick={handleAccountAccess}
+            >
+              Account
+            </button>
+            <button
+              style={{
+                padding: "16px 48px",
+                borderRadius: "30px",
+                border: "none",
+                background: "#0070f3",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                transition: "background 0.2s",
+                marginTop: "10px",
+                marginBottom: "10px",
               }}
               onMouseOver={e => (e.currentTarget.style.background = "#005bb5")}
               onMouseOut={e => (e.currentTarget.style.background = "#0070f3")}
