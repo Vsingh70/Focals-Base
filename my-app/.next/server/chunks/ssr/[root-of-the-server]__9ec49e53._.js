@@ -200,64 +200,169 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$login$2f$actio
 ;
 ;
 function LoginPage() {
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                htmlFor: "email",
-                children: "Email:"
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 6,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                id: "email",
-                name: "email",
-                type: "email",
-                required: true
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 7,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                htmlFor: "password",
-                children: "Password:"
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 8,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                id: "password",
-                name: "password",
-                type: "password",
-                required: true
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 9,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                formAction: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$login$2f$actions$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["login"],
-                children: "Log in"
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 10,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                formAction: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$login$2f$actions$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["signup"],
-                children: "Sign up"
-            }, void 0, false, {
-                fileName: "[project]/src/app/login/page.jsx",
-                lineNumber: 11,
-                columnNumber: 7
-            }, this)
-        ]
-    }, void 0, true, {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        style: {
+            minHeight: "100vh",
+            background: "linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+        },
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+            style: {
+                background: "#fff",
+                padding: "40px 32px",
+                borderRadius: "32px",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+                display: "flex",
+                flexDirection: "column",
+                minWidth: "340px",
+                gap: "24px"
+            },
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                    style: {
+                        textAlign: "center",
+                        marginBottom: "8px",
+                        color: "#0070f3",
+                        fontWeight: 700,
+                        fontSize: "2rem",
+                        letterSpacing: "1px"
+                    },
+                    children: "Focals Base Login"
+                }, void 0, false, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 25,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                    htmlFor: "email",
+                    style: {
+                        fontWeight: 500,
+                        color: "#333"
+                    },
+                    children: "Email:"
+                }, void 0, false, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 35,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                    id: "email",
+                    name: "email",
+                    type: "email",
+                    required: true,
+                    style: {
+                        border: "1.5px solid #cbd5e1",
+                        borderRadius: "50px",
+                        padding: "14px 22px",
+                        fontSize: "1.1rem",
+                        outline: "none",
+                        marginBottom: "8px",
+                        transition: "border 0.2s"
+                    }
+                }, void 0, false, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 36,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                    htmlFor: "password",
+                    style: {
+                        fontWeight: 500,
+                        color: "#333"
+                    },
+                    children: "Password:"
+                }, void 0, false, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 51,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                    id: "password",
+                    name: "password",
+                    type: "password",
+                    required: true,
+                    style: {
+                        border: "1.5px solid #cbd5e1",
+                        borderRadius: "50px",
+                        padding: "14px 22px",
+                        fontSize: "1.1rem",
+                        outline: "none",
+                        marginBottom: "8px",
+                        transition: "border 0.2s"
+                    }
+                }, void 0, false, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 52,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    style: {
+                        display: "flex",
+                        gap: "16px",
+                        marginTop: "12px"
+                    },
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            type: "submit",
+                            formAction: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$login$2f$actions$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["login"],
+                            style: {
+                                flex: 1,
+                                padding: "14px 0",
+                                borderRadius: "50px",
+                                border: "none",
+                                background: "#0070f3",
+                                color: "#fff",
+                                fontWeight: "bold",
+                                fontSize: "1.1rem",
+                                cursor: "pointer",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                transition: "background 0.2s"
+                            },
+                            children: "Log in"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/login/page.jsx",
+                            lineNumber: 68,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            type: "submit",
+                            formAction: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$login$2f$actions$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["signup"],
+                            style: {
+                                flex: 1,
+                                padding: "14px 0",
+                                borderRadius: "50px",
+                                border: "1.5px solid #0070f3",
+                                background: "#fff",
+                                color: "#0070f3",
+                                fontWeight: "bold",
+                                fontSize: "1.1rem",
+                                cursor: "pointer",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                transition: "background 0.2s, color 0.2s"
+                            },
+                            children: "Sign up"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/login/page.jsx",
+                            lineNumber: 87,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/app/login/page.jsx",
+                    lineNumber: 67,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/src/app/login/page.jsx",
+            lineNumber: 13,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
         fileName: "[project]/src/app/login/page.jsx",
-        lineNumber: 5,
+        lineNumber: 6,
         columnNumber: 5
     }, this);
 }
