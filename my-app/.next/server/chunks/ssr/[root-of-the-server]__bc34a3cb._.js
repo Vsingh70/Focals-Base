@@ -115,7 +115,10 @@ async function signup(formData) {
     const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$utils$2f$supabase$2f$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
     const data = {
         email: formData.get('email'),
-        password: formData.get('password')
+        password: formData.get('password'),
+        options: {
+            emailRedirectTo: 'http://localhost:3000/account'
+        }
     };
     const { error } = await supabase.auth.signUp(data);
     if (error) {

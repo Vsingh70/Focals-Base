@@ -31,6 +31,9 @@ export async function signup(formData) {
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
+    options: {
+      emailRedirectTo: 'http://localhost:3000/account'
+    }
   }
 
   const { error } = await supabase.auth.signUp(data)
