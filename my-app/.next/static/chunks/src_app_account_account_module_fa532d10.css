@@ -1,0 +1,61 @@
+/* [project]/src/app/account/account.module.css [app-client] (css) */
+.account-module__zd0OHa__accountHeader {
+  width: "100%";
+  padding: "24px 40px";
+  background: "#fff";
+  box-shadow: "0 2px 8px rgba(0;0;0;0.04)";
+  justify-content: "right";
+  position: "fixed";
+  z-index: 10;
+  align-items: center;
+  display: flex;
+  top: 0;
+  left: 0;
+}
+
+.account-module__zd0OHa__accountHeader h1 {
+  color: "#0070f3";
+  letter-spacing: "1px";
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.account-module__zd0OHa__accountElement {
+  border-bottom: 1px solid gray;
+  border-radius: 10px;
+  grid-template-columns: 1fr 5fr;
+  max-width: 1000px;
+  margin: 5px;
+  display: grid;
+}
+
+.account-module__zd0OHa__accountElement label {
+  padding: 10px;
+}
+
+.account-module__zd0OHa__updatebutton {
+  background-color: #add8e6;
+  border-radius: 4px;
+  width: 100px;
+  margin: 10px;
+  padding: 5px;
+}
+
+.account-module__zd0OHa__signoutbutton {
+  color: #fff;
+  background-color: gray;
+  margin: 5px;
+  padding: 10px 5px;
+  display: inline-block;
+}
+
+.account-module__zd0OHa__signoutform {
+  float: right;
+  align-self: flex-end;
+  width: 4rem;
+}
+
+
+/*# sourceMappingURL=src_app_account_account_module_fa532d10.css.map*/

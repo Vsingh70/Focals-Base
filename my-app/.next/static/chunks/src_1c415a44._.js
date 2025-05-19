@@ -72,6 +72,9 @@ function Home() {
         await supabase.auth.signOut();
         setUser(null);
     };
+    const handleAccountAccess = async ()=>{
+        router.push("/account");
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         style: {
             minHeight: "100vh",
@@ -102,10 +105,10 @@ function Home() {
                             color: "#0070f3",
                             letterSpacing: "1px"
                         },
-                        children: "Focals Base"
+                        children: "Shooters!!!"
                     }, void 0, false, {
                         fileName: "[project]/src/app/page.js",
-                        lineNumber: 53,
+                        lineNumber: 56,
                         columnNumber: 9
                     }, this),
                     user && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -117,13 +120,13 @@ function Home() {
                         children: user.email
                     }, void 0, false, {
                         fileName: "[project]/src/app/page.js",
-                        lineNumber: 57,
+                        lineNumber: 60,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/page.js",
-                lineNumber: 38,
+                lineNumber: 41,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -146,7 +149,7 @@ function Home() {
                             children: "Please log in to continue."
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.js",
-                            lineNumber: 76,
+                            lineNumber: 79,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -168,7 +171,7 @@ function Home() {
                             children: "Login"
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.js",
-                            lineNumber: 79,
+                            lineNumber: 82,
                             columnNumber: 13
                         }, this)
                     ]
@@ -183,7 +186,7 @@ function Home() {
                             children: "Welcome back!"
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.js",
-                            lineNumber: 101,
+                            lineNumber: 104,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -197,7 +200,33 @@ function Home() {
                                 fontSize: "1.2rem",
                                 cursor: "pointer",
                                 boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                                transition: "background 0.2s"
+                                transition: "background 0.2s",
+                                marginTop: "10px",
+                                marginBottom: "10px"
+                            },
+                            onMouseOver: (e)=>e.currentTarget.style.background = "#005bb5",
+                            onMouseOut: (e)=>e.currentTarget.style.background = "#0070f3",
+                            onClick: handleAccountAccess,
+                            children: "Account"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/page.js",
+                            lineNumber: 107,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            style: {
+                                padding: "16px 48px",
+                                borderRadius: "30px",
+                                border: "none",
+                                background: "#0070f3",
+                                color: "#fff",
+                                fontWeight: "bold",
+                                fontSize: "1.2rem",
+                                cursor: "pointer",
+                                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                                transition: "background 0.2s",
+                                marginTop: "10px",
+                                marginBottom: "10px"
                             },
                             onMouseOver: (e)=>e.currentTarget.style.background = "#005bb5",
                             onMouseOut: (e)=>e.currentTarget.style.background = "#0070f3",
@@ -205,20 +234,20 @@ function Home() {
                             children: "Logout"
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.js",
-                            lineNumber: 104,
+                            lineNumber: 128,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true)
             }, void 0, false, {
                 fileName: "[project]/src/app/page.js",
-                lineNumber: 64,
+                lineNumber: 67,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/page.js",
-        lineNumber: 36,
+        lineNumber: 39,
         columnNumber: 5
     }, this);
 }
