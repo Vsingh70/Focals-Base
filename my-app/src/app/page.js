@@ -54,7 +54,7 @@ export default function Home() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#0070f3", letterSpacing: "1px" }}>
-          Focals Base
+          Shooters!!!
         </h1>
         {user && (
           <div style={{ fontWeight: 500, color: "#333", fontSize: "1.1rem" }}>
