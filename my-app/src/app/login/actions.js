@@ -38,7 +38,18 @@ export async function signup(formData) {
 
   const { error } = await supabase.auth.signUp(data)
 
+  if (error && error.code === 'invalid_email')  {
+    console.log('Invalid email');
+    redirect('/signup?error=invalid-email');
+  }
+
+  if (error && error.code === 'weak_password') {
+    console.log('Weak password');
+    redirect('/signup?error=weak-password')
+  }
+
   if (error) {
+    console.log(error);
     redirect('/error')
   }
 

@@ -115,10 +115,22 @@ async function signup(formData) {
     const supabase = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$utils$2f$supabase$2f$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["createClient"])();
     const data = {
         email: formData.get('email'),
-        password: formData.get('password')
+        password: formData.get('password'),
+        options: {
+            emailRedirectTo: 'http://localhost:3000/account'
+        }
     };
     const { error } = await supabase.auth.signUp(data);
+    if (error && error.code === 'invalid_email') {
+        console.log('Invalid email');
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["redirect"])('/signup?error=invalid-email');
+    }
+    if (error && error.code === 'weak_password') {
+        console.log('Weak password');
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["redirect"])('/signup?error=weak-password');
+    }
     if (error) {
+        console.log(error);
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["redirect"])('/error');
     }
     //revalidatePath('/', 'layout')

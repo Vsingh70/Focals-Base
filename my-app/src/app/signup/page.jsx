@@ -3,11 +3,20 @@ import { signup } from '../login/actions';
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// ...existing code...
 export default function SignupPage() {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const showPopup = searchParams.get("success") === "1";
+  const error = searchParams.get("error");
+
+  let errorMessage = null;
+  if (error === "weak-password") {
+    errorMessage = "Password is too weak. Please use a stronger password.";
+  } else if (error === "invalid-email") {
+    errorMessage = "Email is invalid. Please enter a valid email address.";
+  }
 
   return (
     <div style={{
@@ -92,6 +101,20 @@ export default function SignupPage() {
               Please check your email to confirm email
             </div>
           )}
+          {errorMessage && (
+            <div style={{
+              color: "#b91c1c",
+              background: "#fee2e2",
+              borderRadius: "12px",
+              padding: "12px",
+              marginBottom: "8px",
+              textAlign: "center",
+              fontWeight: 500,
+              fontSize: "1rem"
+            }}>
+              {errorMessage}
+            </div>
+          )}
           <button
             type="submit"
             style={{
@@ -134,3 +157,4 @@ export default function SignupPage() {
     </div>
   );
 }
+// ...existing code...
