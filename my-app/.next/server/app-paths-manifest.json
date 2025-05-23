@@ -1,9 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/account/page": "app/account/page.js",
-  "/account/shoots/page": "app/account/shoots/page.js",
-  "/api/get-shoots/route": "app/api/get-shoots/route.js",
   "/api/shoots/get-shoots/route": "app/api/shoots/get-shoots/route.js",
+  "/api/shoots/insert-shoots/route": "app/api/shoots/insert-shoots/route.js",
   "/api/shoots/update-shoots/route": "app/api/shoots/update-shoots/route.js",
   "/auth/callback/route": "app/auth/callback/route.js",
   "/auth/signout/route": "app/auth/signout/route.js",
@@ -11,6 +9,6 @@
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/shoots/[id]/page": "app/shoots/[id]/page.js",
-  "/shoots/page": "app/shoots/page.js",
-  "/signup/page": "app/signup/page.js"
+  "/shoots/add/page": "app/shoots/add/page.js",
+  "/shoots/page": "app/shoots/page.js"
 }

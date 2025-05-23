@@ -116,7 +116,30 @@ export default function ShootsPage() {
       >
         ← Back to Home
       </button>
-
+      <button
+        type="button"
+        onClick={() => router.push("/shoots/add")}
+        style={{
+          position: "absolute",
+          top: 32,
+          right: 180,
+          background: "#fff",
+          color: "#0070f3",
+          border: "2px solid #0070f3",
+          borderRadius: 8,
+          padding: "10px 24px",
+          fontWeight: "bold",
+          fontSize: "1rem",
+          cursor: "pointer",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          transition: "background 0.2s, color 0.2s",
+        }}
+        onMouseOver={() => setHovered("add")}
+        onMouseOut={() => setHovered(null)}
+      >
+        + Add Shoot
+      </button>
+      
       {/* Filter Dropdown Button */}
       <div style={{
         position: "absolute",
