@@ -38,11 +38,6 @@ export async function signup(formData) {
 
   const { error } = await supabase.auth.signUp(data)
 
-  if (error && error.code === 'invalid_email')  {
-    console.log('Invalid email');
-    redirect('/signup?error=invalid-email');
-  }
-
   if (error && error.code === 'weak_password') {
     console.log('Weak password');
     redirect('/signup?error=weak-password')
@@ -55,4 +50,25 @@ export async function signup(formData) {
 
   //revalidatePath('/', 'layout')
   redirect('/signup?success=1')
+}
+
+export async function loginWithGoogle() {
+  const supabase = await createClient();
+  console.log('Logging in with Google...');
+  const {data, error} = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'http://localhost:3000/auth/callback', // Change to your redirect URL
+    },
+  });
+
+  if (data.url) {
+    redirect(data.url);
+  }
+
+  if (error) {
+    console.log(error);
+    redirect('/error');
+  }
+
 }

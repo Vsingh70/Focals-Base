@@ -1,10 +1,10 @@
 "use client";
-import { login, signup } from './actions'
+import { login, loginWithGoogle } from './actions'
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [hovered, setHovered] = useState({ login: false, signup: false });
+  const [hovered, setHovered] = useState({ login: false, signup: false, google: false });
   const router = useRouter();
 
   return (
@@ -48,7 +48,7 @@ export default function LoginPage() {
             id="email"
             name="email"
             type="email"
-            required
+            // required removed
             style={{
               border: "1.5px solid #cbd5e1",
               borderRadius: "50px",
@@ -64,7 +64,7 @@ export default function LoginPage() {
             id="password"
             name="password"
             type="password"
-            required
+            // required removed
             style={{
               border: "1.5px solid #cbd5e1",
               borderRadius: "50px",
@@ -114,11 +114,34 @@ export default function LoginPage() {
               }}
               onMouseEnter={() => setHovered(h => ({ ...h, signup: true }))}
               onMouseLeave={() => setHovered(h => ({ ...h, signup: false }))}
-               onClick={() => router.push("/signup")}
+              onClick={() => router.push("/signup")}
             >
               Sign up
             </button>
           </div>
+          {/* Google login button inside the form */}
+          <button
+            type="submit"
+            formAction={loginWithGoogle}
+            style={{
+              marginTop: "16px",
+              width: "100%",
+              padding: "14px 0",
+              borderRadius: "50px",
+              border: "none",
+              background: hovered.google ? "#c23321" : "#db4437",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "1.1rem",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={() => setHovered(h => ({ ...h, google: true }))}
+            onMouseLeave={() => setHovered(h => ({ ...h, google: false }))}
+          >
+            Sign in with Google
+          </button>
         </form>
       </div>
     </div>
