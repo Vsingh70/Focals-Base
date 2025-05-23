@@ -2,7 +2,9 @@
 import styles from './account.module.css'
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { useRouter } from "next/navigation";
 export default function AccountForm({ user }) {
+  const router = useRouter();
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [fullname, setFullname] = useState(null)
@@ -16,15 +18,25 @@ export default function AccountForm({ user }) {
 
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`full_name, username, website, avatar_url`)
+        .select(`id, full_name, username, website, avatar_url`)
         .eq('id', user?.id)
         .single()
 
+      const {data1, error2} = await supabase
+        .from('shoots')
+        .select('*')
+        .eq('user', user?.id)
+        .order('date', {ascending: false})
+        .order('time', {ascending: false})
+        .limit(5);
+      console.log(user?.id)
+      console.log(data1)
       if (error && status !== 406) {
         throw error
       }
 
       if (data) {
+        console.log(data.id)
         setFullname(data.full_name)
         setUsername(data.username)
         setWebsite(data.website)
@@ -35,6 +47,7 @@ export default function AccountForm({ user }) {
     } finally {
       setLoading(false)
     }
+
   }, [user, supabase])
 
   useEffect(() => {
@@ -117,12 +130,9 @@ export default function AccountForm({ user }) {
               {loading ? 'Loading ...' : 'Update'}
             </button>
           </div>
-
-          <div>
-
-          </div>
         </div>
       </div>
+      <button onClick={() => router.push("/account/shoots")}>Shoots</button>
     </div>
   )
 }

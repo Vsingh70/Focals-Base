@@ -105,7 +105,7 @@ function Home() {
                             color: "#0070f3",
                             letterSpacing: "1px"
                         },
-                        children: "Shooters!!!"
+                        children: "Foscal Base"
                     }, void 0, false, {
                         fileName: "[project]/src/app/page.js",
                         lineNumber: 56,

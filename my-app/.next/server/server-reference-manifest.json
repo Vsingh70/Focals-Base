@@ -11,15 +11,15 @@
         "app/login/page": "action-browser"
       }
     },
-    "40467b3393a5314dc7e334aad005adb86a8a53ede7": {
+    "7016bdff552d29f49adc125398a1b5df189d37ab22": {
       "workers": {
-        "app/signup/page": {
-          "moduleId": "[project]/.next-internal/server/app/signup/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/login/actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+        "app/account/shoots/page": {
+          "moduleId": "[project]/.next-internal/server/app/account/shoots/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/account/shoots/insertShoots.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false
         }
       },
       "layer": {
-        "app/signup/page": "action-browser"
+        "app/account/shoots/page": "action-browser"
       }
     }
   },
