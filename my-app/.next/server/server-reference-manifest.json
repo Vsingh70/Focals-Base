@@ -11,6 +11,7 @@
         "app/login/page": "action-browser"
       }
     },
+<<<<<<< HEAD
     "001e2db6d99f51a3381eb3b9c9217866efee9ca8b1": {
       "workers": {
         "app/login/page": {
@@ -23,14 +24,17 @@
       }
     },
     "40467b3393a5314dc7e334aad005adb86a8a53ede7": {
+=======
+    "7016bdff552d29f49adc125398a1b5df189d37ab22": {
+>>>>>>> eb149bd7e95d574a70c1f96dacc734f7baa2c9e3
       "workers": {
-        "app/signup/page": {
-          "moduleId": "[project]/.next-internal/server/app/signup/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/login/actions.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+        "app/account/shoots/page": {
+          "moduleId": "[project]/.next-internal/server/app/account/shoots/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/account/shoots/insertShoots.js [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false
         }
       },
       "layer": {
-        "app/signup/page": "action-browser"
+        "app/account/shoots/page": "action-browser"
       }
     }
   },
