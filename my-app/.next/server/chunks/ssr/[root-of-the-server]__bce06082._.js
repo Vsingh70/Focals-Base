@@ -93,7 +93,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2
 ;
 function createClient() {
     // Create a supabase client on the browser with project's credentials
-    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$ssr$2f$dist$2f$module$2f$createBrowserClient$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createBrowserClient"])(("TURBOPACK compile-time value", "https://ytzzsjhqmtijrjzngfhv.supabase.co"), ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0enpzamhxbXRpanJqem5nZmh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwOTcwNDYsImV4cCI6MjA2MjY3MzA0Nn0.PZChVIMrV5ZuDLu1uyAOBk6WrhnpP3PancsMCEbaDYM"));
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$ssr$2f$dist$2f$module$2f$createBrowserClient$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createBrowserClient"])(("TURBOPACK compile-time value", "https://ytzzsjhqmtijrjzngfhv.supabase.co/"), ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0enpzamhxbXRpanJqem5nZmh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwOTcwNDYsImV4cCI6MjA2MjY3MzA0Nn0.PZChVIMrV5ZuDLu1uyAOBk6WrhnpP3PancsMCEbaDYM"));
 }
 }}),
 "[project]/src/app/page.js [app-ssr] (ecmascript)": ((__turbopack_context__) => {

@@ -115,7 +115,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$head
 const dynamic = 'force-dynamic';
 ;
 ;
-const supabaseUrl = ("TURBOPACK compile-time value", "https://ytzzsjhqmtijrjzngfhv.supabase.co");
+const supabaseUrl = ("TURBOPACK compile-time value", "https://ytzzsjhqmtijrjzngfhv.supabase.co/");
 const supabaseAnonKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0enpzamhxbXRpanJqem5nZmh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwOTcwNDYsImV4cCI6MjA2MjY3MzA0Nn0.PZChVIMrV5ZuDLu1uyAOBk6WrhnpP3PancsMCEbaDYM");
 async function GET() {
     try {

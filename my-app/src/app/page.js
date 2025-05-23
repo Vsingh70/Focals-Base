@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import Sidebar from "./components/Sidebar"; // Add this import if you want to use the Sidebar
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -31,9 +32,10 @@ export default function Home() {
     await supabase.auth.signOut();
     setUser(null);
   };
-  const handleAccountAccess = async () =>{
+
+  const handleAccountAccess = async () => {
     router.push("/account");
-  }
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", position: "relative" }}>
@@ -63,6 +65,11 @@ export default function Home() {
         )}
       </header>
 
+      {/* Sidebar only for logged-in users */}
+      {user && (
+        <Sidebar />
+      )}
+
       {/* Main content */}
       <main
         style={{
@@ -72,6 +79,8 @@ export default function Home() {
           justifyContent: "center",
           minHeight: "100vh",
           paddingTop: "120px",
+          marginLeft: user ? "200px" : "0", // shift content if sidebar is present
+          transition: "margin-left 0.2s",
         }}
       >
         {!user ? (
