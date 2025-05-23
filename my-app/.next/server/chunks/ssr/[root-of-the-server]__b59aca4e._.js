@@ -113,12 +113,12 @@ const linkStyle = {
     color: "#0070f3",
     background: "#fff",
     fontWeight: "bold",
-    fontSize: "1.2rem",
+    fontSize: "1.1rem",
     padding: "12px 24px",
     borderRadius: "30px",
     textDecoration: "none",
     margin: "0 16px",
-    transition: "background 0.2s, color 0.2s",
+    transition: "background 0.08s, color 0.08s",
     textAlign: "center"
 };
 const hoverStyle = {
@@ -136,11 +136,11 @@ const Sidebar = ()=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "sidebar",
         style: {
-            width: "180px",
+            width: "150px",
             height: "100vh",
             background: "#fff",
             boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
-            padding: "32px 0",
+            padding: "26px 0",
             position: "fixed",
             top: 80,
             left: 0,
@@ -155,7 +155,7 @@ const Sidebar = ()=>{
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                         style: {
-                            margin: "24px 0"
+                            margin: "10px 0"
                         },
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                             href: "/",
@@ -175,7 +175,7 @@ const Sidebar = ()=>{
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                         style: {
-                            margin: "24px 0"
+                            margin: "10px 0"
                         },
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                             href: "/account",
@@ -195,14 +195,14 @@ const Sidebar = ()=>{
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                         style: {
-                            margin: "24px 0"
+                            margin: "10px 0"
                         },
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/login",
+                            href: "/shoots",
                             style: linkStyle,
                             onMouseOver: handleMouseOver,
                             onMouseOut: handleMouseOut,
-                            children: "Login"
+                            children: "Shoots"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/Sidebar.jsx",
                             lineNumber: 52,
@@ -211,26 +211,6 @@ const Sidebar = ()=>{
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/Sidebar.jsx",
                         lineNumber: 51,
-                        columnNumber: 21
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                        style: {
-                            margin: "24px 0"
-                        },
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/signup",
-                            style: linkStyle,
-                            onMouseOver: handleMouseOver,
-                            onMouseOut: handleMouseOut,
-                            children: "Sign Up"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/components/Sidebar.jsx",
-                            lineNumber: 55,
-                            columnNumber: 25
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/components/Sidebar.jsx",
-                        lineNumber: 54,
                         columnNumber: 21
                     }, this)
                 ]

@@ -124,6 +124,7 @@ async function GET() {
         // Retrieve the Supabase authentication token from cookies
         // This cookie name should match your Supabase project configuration
         const authCookie = cookieStore.get('sb-ytzzsjhqmtijrjzngfhv-auth-token')?.value;
+        console.log(cookieStore.getAll());
         // Check if the authentication cookie exists
         if (!authCookie) {
             return new Response(JSON.stringify({
