@@ -89,6 +89,18 @@ export default function ShootsPage() {
     }));
   };
 
+  // Delete shoot handler
+  const handleDelete = async (shootId) => {
+    if (!window.confirm("Are you sure you want to delete this shoot?")) return;
+    const res = await fetch(`/api/shoots/delete-shoots?id=${shootId}`, { method: "DELETE" });
+    const { error } = await res.json();
+    if (!error) {
+      setShoots(shoots => shoots.filter(s => s.id !== shootId));
+    } else {
+      alert("Failed to delete shoot: " + error);
+    }
+  };
+
   return (
     <div style={{ padding: "40px 0", minHeight: "100vh", background: "#f8fafc", position: "relative" }}>
       {/* Back to Home button */}
@@ -116,37 +128,39 @@ export default function ShootsPage() {
       >
         ← Back to Home
       </button>
-      <button
-        type="button"
-        onClick={() => router.push("/shoots/add")}
+
+      {/* Add Shoot and Filter Buttons */}
+      <div
         style={{
           position: "absolute",
           top: 32,
-          right: 180,
-          background: "#fff",
-          color: "#0070f3",
-          border: "2px solid #0070f3",
-          borderRadius: 8,
-          padding: "10px 24px",
-          fontWeight: "bold",
-          fontSize: "1rem",
-          cursor: "pointer",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          transition: "background 0.2s, color 0.2s",
+          right: 32,
+          display: "flex",
+          gap: 16,
+          zIndex: 20,
         }}
-        onMouseOver={() => setHovered("add")}
-        onMouseOut={() => setHovered(null)}
+        ref={filterRef}
       >
-        + Add Shoot
-      </button>
-      
-      {/* Filter Dropdown Button */}
-      <div style={{
-        position: "absolute",
-        top: 32,
-        right: 32,
-        zIndex: 20,
-      }} ref={filterRef}>
+        <button
+          type="button"
+          onClick={() => router.push("/shoots/add")}
+          style={{
+            background: "#fff",
+            color: "#0070f3",
+            border: "2px solid #0070f3",
+            borderRadius: 8,
+            padding: "10px 24px",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            cursor: "pointer",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+            transition: "background 0.2s, color 0.2s",
+          }}
+          onMouseOver={() => setHovered("add")}
+          onMouseOut={() => setHovered(null)}
+        >
+          + Add Shoot
+        </button>
         <button
           type="button"
           onClick={() => setShowFilters(v => !v)}
@@ -324,9 +338,8 @@ export default function ShootsPage() {
       }}>
         {filteredShoots && filteredShoots.length > 0 ? (
           filteredShoots.map((shoot, idx) => (
-            <Link
+            <div
               key={shoot.id || idx}
-              href={`/shoots/${shoot.id}`}
               style={{
                 width: "100%",
                 minHeight: "64px",
@@ -337,42 +350,78 @@ export default function ShootsPage() {
                   : "0 2px 12px rgba(0,0,0,0.08)",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
+                gap: 40,
                 padding: "0 32px",
-                textDecoration: "none",
                 border: hovered === idx ? "2px solid #005bb5" : "2px solid #0070f3",
                 transition: "box-shadow 0.2s, border 0.2s, background 0.2s",
                 color: "#222",
                 cursor: "pointer",
                 boxSizing: "border-box",
+                position: "relative",
               }}
               onMouseOver={() => setHovered(idx)}
               onMouseOut={() => setHovered(null)}
             >
-              <span style={{ fontWeight: "bold", color: "#0070f3", fontSize: "1.1rem" }}>
-                {shoot.client || "No Client"}
-              </span>
-              <span style={{ color: "#333", fontSize: "1rem" }}>
-                {shoot.date
-                  ? new Date(shoot.date).toLocaleDateString() +
-                    " " +
-                    new Date(shoot.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                  : "No Date"}
-              </span>
-              <span style={{ color: "#555", fontSize: "1rem" }}>
-                {shoot.genre || "No Genre"}
-              </span>
-              <span style={{
-                color: shoot.edited_and_returned ? "#4eb300" : "#b91c1c",
-                fontWeight: "bold",
-                fontSize: "1rem",
-                marginLeft: 16,
-                minWidth: 90,
-                textAlign: "center"
-              }}>
-                {shoot.edited_and_returned ? "Edited" : "Not Edited"}
-              </span>
-            </Link>
+              <Link
+                href={`/shoots/${shoot.id}`}
+                style={{
+                  display: "flex",
+                  flex: 1,
+                  alignItems: "center",
+                  gap: 40,
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                <span style={{ flex: 1, fontWeight: "bold", color: "#0070f3", fontSize: "1.1rem", textAlign: "left" }}>
+                  {shoot.client || "No Client"}
+                </span>
+                <span style={{ flex: 1, color: "#333", fontSize: "1rem", textAlign: "left" }}>
+                  {shoot.date
+                    ? new Date(shoot.date).toLocaleDateString() +
+                      " " +
+                      new Date(shoot.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    : "No Date"}
+                </span>
+                <span style={{ flex: 1, color: "#555", fontSize: "1rem", textAlign: "left" }}>
+                  {shoot.genre || "No Genre"}
+                </span>
+                <span style={{ flex: 1, color: "#555", fontSize: "1rem", textAlign: "left" }}>
+                  {shoot.paid ? "Paid" : "Not Paid"}
+                </span>
+                <span style={{
+                  flex: 1,
+                  color: shoot.edited_and_returned ? "#4eb300" : "#b91c1c",
+                  fontWeight: "bold",
+                  fontSize: "1rem",
+                  textAlign: "left"
+                }}>
+                  {shoot.edited_and_returned ? "Edited" : "Not Edited"}
+                </span>
+              </Link>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  await handleDelete(shoot.id);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#b91c1c",
+                  fontWeight: "bold",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                  marginLeft: 16,
+                  lineHeight: 1,
+                }}
+                title="Delete shoot"
+                aria-label="Delete shoot"
+              >
+                ×
+              </button>
+            </div>
           ))
         ) : (
           <p>No shoots found.</p>

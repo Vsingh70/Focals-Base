@@ -1,12 +1,9 @@
 {
-  "/account/page": "app/account/page.js",
+  "/api/shoots/delete-shoots/route": "app/api/shoots/delete-shoots/route.js",
   "/api/shoots/get-shoots/route": "app/api/shoots/get-shoots/route.js",
   "/api/shoots/insert-shoots/route": "app/api/shoots/insert-shoots/route.js",
   "/api/shoots/update-shoots/route": "app/api/shoots/update-shoots/route.js",
-  "/auth/callback/route": "app/auth/callback/route.js",
-  "/auth/signout/route": "app/auth/signout/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/shoots/[id]/page": "app/shoots/[id]/page.js",
   "/shoots/add/page": "app/shoots/add/page.js",
