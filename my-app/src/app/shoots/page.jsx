@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function ShootsPage() {
+  const [loading, setLoading] = useState(true)
   const [shoots, setShoots] = useState([]);
   const [error, setError] = useState(null);
   const [hovered, setHovered] = useState(null);
@@ -34,12 +35,16 @@ export default function ShootsPage() {
   );
 
   useEffect(() => {
+    setLoading(true)
+
     const fetchShoots = async () => {
       const res = await fetch('/api/shoots/get-shoots');
       const { data, error } = await res.json();
       if (error) setError(error);
       else setShoots(data || []);
     };
+    
+    setLoading(false)
     fetchShoots();
   }, []);
 
@@ -424,8 +429,11 @@ export default function ShootsPage() {
             </div>
           ))
         ) : (
-          <p>No shoots found.</p>
-        )}
+          !loading ? (
+            <p> Loading... </p>
+            ) : (
+            <p>No shoots found.</p>
+        ))}
       </div>
     </div>
   );

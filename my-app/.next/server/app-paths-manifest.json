@@ -1,0 +1,6 @@
+{
+  "/api/shoots/get-shoots/route": "app/api/shoots/get-shoots/route.js",
+  "/page": "app/page.js",
+  "/shoots/add/page": "app/shoots/add/page.js",
+  "/shoots/page": "app/shoots/page.js"
+}
