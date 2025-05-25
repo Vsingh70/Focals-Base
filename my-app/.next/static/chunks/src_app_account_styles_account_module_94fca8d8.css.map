@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///C:/CodeProjects/Photography-Managing-App/my-app/src/app/account/styles/account.module.css"],"sourcesContent":["\r\n.h1{\r\n  padding: 20px;\r\n  font-size: 100pt;\r\n  background-color: #ffffff;\r\n}"],"names":[],"mappings":"AACA","debugId":null}}]
-}

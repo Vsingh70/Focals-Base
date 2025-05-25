@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
-    {"offset": {"line": 52, "column": 0}, "map": {"version":3,"sources":["file:///C:/CodeProjects/Photography-Managing-App/my-app/src/app/api/get-shoots/route.js"],"sourcesContent":["\r\nimport  getShoots from '@/app/account/getShoots.js';\r\n\r\nexport async function GET(){\r\n  const result = await getShoots();\r\n  return Response.json(result);\r\n}"],"names":[],"mappings":";;;;;;;;;AAGO,eAAe;IACpB,MAAM,SAAS,MAAM;IACrB,OAAO,SAAS,IAAI,CAAC;AACvB","debugId":null}}]
-}
