@@ -20,6 +20,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 function ShootsPage() {
     _s();
+    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [shoots, setShoots] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [hovered, setHovered] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -41,6 +42,7 @@ function ShootsPage() {
     const filteredCategories = allCategories.filter((c)=>c && c.toLowerCase().includes(categoryInput.toLowerCase()) && !filters.categories.includes(c));
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ShootsPage.useEffect": ()=>{
+            setLoading(true);
             const fetchShoots = {
                 "ShootsPage.useEffect.fetchShoots": async ()=>{
                     const res = await fetch('/api/shoots/get-shoots');
@@ -49,6 +51,7 @@ function ShootsPage() {
                     else setShoots(data || []);
                 }
             }["ShootsPage.useEffect.fetchShoots"];
+            setLoading(false);
             fetchShoots();
         }
     }["ShootsPage.useEffect"], []);
@@ -143,7 +146,7 @@ function ShootsPage() {
                 children: "← Back to Home"
             }, void 0, false, {
                 fileName: "[project]/src/app/shoots/page.jsx",
-                lineNumber: 107,
+                lineNumber: 112,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -177,7 +180,7 @@ function ShootsPage() {
                         children: "+ Add Shoot"
                     }, void 0, false, {
                         fileName: "[project]/src/app/shoots/page.jsx",
-                        lineNumber: 144,
+                        lineNumber: 149,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -198,7 +201,7 @@ function ShootsPage() {
                         children: "Filters ▼"
                     }, void 0, false, {
                         fileName: "[project]/src/app/shoots/page.jsx",
-                        lineNumber: 164,
+                        lineNumber: 169,
                         columnNumber: 9
                     }, this),
                     showFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -234,14 +237,14 @@ function ShootsPage() {
                                                 }))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 199,
+                                        lineNumber: 204,
                                         columnNumber: 15
                                     }, this),
                                     "Edited"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 198,
+                                lineNumber: 203,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -260,14 +263,14 @@ function ShootsPage() {
                                                 }))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 207,
+                                        lineNumber: 212,
                                         columnNumber: 15
                                     }, this),
                                     "Not Edited"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 206,
+                                lineNumber: 211,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -286,14 +289,14 @@ function ShootsPage() {
                                                 }))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 215,
+                                        lineNumber: 220,
                                         columnNumber: 15
                                     }, this),
                                     "Paid"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 214,
+                                lineNumber: 219,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -312,14 +315,14 @@ function ShootsPage() {
                                                 }))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 223,
+                                        lineNumber: 228,
                                         columnNumber: 15
                                     }, this),
                                     "Not Paid"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 222,
+                                lineNumber: 227,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -335,7 +338,7 @@ function ShootsPage() {
                                         children: "Category"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 232,
+                                        lineNumber: 237,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -375,18 +378,18 @@ function ShootsPage() {
                                                         children: "×"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                                        lineNumber: 246,
+                                                        lineNumber: 251,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, cat, true, {
                                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                                lineNumber: 235,
+                                                lineNumber: 240,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 233,
+                                        lineNumber: 238,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -408,7 +411,7 @@ function ShootsPage() {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 264,
+                                        lineNumber: 269,
                                         columnNumber: 15
                                     }, this),
                                     categoryDropdown && filteredCategories.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -438,30 +441,30 @@ function ShootsPage() {
                                                 children: cat
                                             }, cat, false, {
                                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                                lineNumber: 296,
+                                                lineNumber: 301,
                                                 columnNumber: 21
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 283,
+                                        lineNumber: 288,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 231,
+                                lineNumber: 236,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/shoots/page.jsx",
-                        lineNumber: 183,
+                        lineNumber: 188,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/shoots/page.jsx",
-                lineNumber: 133,
+                lineNumber: 138,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("header", {
@@ -482,12 +485,12 @@ function ShootsPage() {
                     children: "Shoots"
                 }, void 0, false, {
                     fileName: "[project]/src/app/shoots/page.jsx",
-                    lineNumber: 327,
+                    lineNumber: 332,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/shoots/page.jsx",
-                lineNumber: 320,
+                lineNumber: 325,
                 columnNumber: 7
             }, this),
             error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -497,7 +500,7 @@ function ShootsPage() {
                 children: error
             }, void 0, false, {
                 fileName: "[project]/src/app/shoots/page.jsx",
-                lineNumber: 330,
+                lineNumber: 335,
                 columnNumber: 17
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -552,7 +555,7 @@ function ShootsPage() {
                                         children: shoot.client || "No Client"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 377,
+                                        lineNumber: 382,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -568,7 +571,7 @@ function ShootsPage() {
                                         }) : "No Date"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 380,
+                                        lineNumber: 385,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -581,7 +584,7 @@ function ShootsPage() {
                                         children: shoot.genre || "No Genre"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 387,
+                                        lineNumber: 392,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -594,7 +597,7 @@ function ShootsPage() {
                                         children: shoot.paid ? "Paid" : "Not Paid"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 390,
+                                        lineNumber: 395,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -608,13 +611,13 @@ function ShootsPage() {
                                         children: shoot.edited_and_returned ? "Edited" : "Not Edited"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/shoots/page.jsx",
-                                        lineNumber: 393,
+                                        lineNumber: 398,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 366,
+                                lineNumber: 371,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -638,34 +641,40 @@ function ShootsPage() {
                                 children: "×"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/shoots/page.jsx",
-                                lineNumber: 403,
+                                lineNumber: 408,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, shoot.id || idx, true, {
                         fileName: "[project]/src/app/shoots/page.jsx",
-                        lineNumber: 341,
+                        lineNumber: 346,
                         columnNumber: 13
-                    }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    }, this)) : !loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: " Loading... "
+                }, void 0, false, {
+                    fileName: "[project]/src/app/shoots/page.jsx",
+                    lineNumber: 433,
+                    columnNumber: 13
+                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                     children: "No shoots found."
                 }, void 0, false, {
                     fileName: "[project]/src/app/shoots/page.jsx",
-                    lineNumber: 427,
-                    columnNumber: 11
+                    lineNumber: 435,
+                    columnNumber: 13
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/shoots/page.jsx",
-                lineNumber: 332,
+                lineNumber: 337,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/shoots/page.jsx",
-        lineNumber: 105,
+        lineNumber: 110,
         columnNumber: 5
     }, this);
 }
-_s(ShootsPage, "ySpUUF/UNtjl+T+wNlDOE/v7rKU=", false, function() {
+_s(ShootsPage, "zw3WJ63Hy+HFeVgIul4t+utjEGk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
