@@ -51,6 +51,9 @@ const Sidebar = () => {
                     <li style={{ margin: "10px 0" }}>
                         <Link href="/shoots" style={linkStyle} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>Shoots</Link>
                     </li>
+                    <li style={{ margin: "10px 0" }}>
+                        <Link href="/gear" style={linkStyle} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>Gear</Link>
+                    </li>
                 </ul>
             </nav>
         </div>
