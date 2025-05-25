@@ -32,7 +32,7 @@ export async function signup(formData) {
     email: formData.get('email'),
     password: formData.get('password'),
     options: {
-      emailRedirectTo: 'http://localhost:3000/account'
+      emailRedirectTo: 'https://focalsbase-rh86jurbu-virajs-projects-e73ae1f2.vercel.app/account'
     }
   }
 
