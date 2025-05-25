@@ -10,7 +10,7 @@ export async function GET() {
       return Response.json({ data: null, error: 'User not found' }, { status: 401 });
     }
 
-    // Query shoots for this user (RLS should enforce security)
+    // Query gear for this user (RLS should enforce security)
     const { data, error } = await supabase
       .from('gear')
       .select('*')
