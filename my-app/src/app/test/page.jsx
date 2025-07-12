@@ -2,12 +2,13 @@
 import { useState, useEffect, useCallback } from "react";
 import DesktopBar from "../components/DesktopBar";
 import List from "../components/Element/List";
+import { useGetForm } from "@/utils/api";
 
 export default function TestPage() {
   const [shoots, setShoots] = useState([]);
   const [filteredShoots, setFilteredShoots] = useState([]);
 
-  const { data: forms, loading, error } = useGetForms();
+  const { data: forms, loading, error } = useGetForm();
 
   // Sync API data to state
   useEffect(() => {

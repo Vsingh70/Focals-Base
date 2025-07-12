@@ -94,7 +94,7 @@ export async function getLink(id) {
 
 // Main API Call Functions
 export function MakeGetRequest(apiFunction) {
-  return function() {
+  return function useCustomGetHook() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -114,7 +114,7 @@ export function MakeGetRequest(apiFunction) {
 }
 
 export function MakeGetRequestWithParams(apiFunction) {
-  return function(param) {
+  return function useCustomGetWithParamsHook(param) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -136,7 +136,7 @@ export function MakeGetRequestWithParams(apiFunction) {
 }
 
 export function MakeUpdateRequest(apiFunction) {
-  return function() {
+  return function useCustomUpdateHook() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -161,7 +161,7 @@ export function MakeUpdateRequest(apiFunction) {
 }
 
 export function MakeUpdateRequests(apiFunction) {
-  return function() {
+  return function useCustomUpdateRequestsHook() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
