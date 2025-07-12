@@ -1,0 +1,109 @@
+'use client';
+import AddButton from "./AddButton";
+import FilterButton from "./Filter/FilterButton";
+import SearchBar from "./SearchBar";
+
+const Navbar = ({ Title = "", 
+                    Add = false,
+                    AddText = "",
+                    AddLink = "",
+                    Filter = false,
+                    Search = false,
+                    Input = [],
+                    update = null,
+                    SubmitButton = null,
+                    Submit = false,
+                    DeleteButton = null,
+                    Delete = false,
+                    MiddleText = null,
+                    Middle = false }) => {
+    return (
+        <div id="navbar" style={{ position: 'sticky', top: 0, zIndex: 1000, background: 'var(--bg)', borderBottom: '1px solid var(--primary)', padding: '1rem'}}>
+            <h1 
+                style={{ 
+                    color: 'var(--primary)', 
+                    fontSize: '1.75rem',
+                    display: 'inline-block',
+                    marginRight: '1rem'
+                }}
+            >
+                {Title}
+            </h1>
+            { Search && (
+                <span style={{ 
+                    position: 'absolute',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'inline-block',
+                    width: '35%' 
+                }}>
+                    <SearchBar data={Input} onSearchResults={update} />
+                </span>
+            )}
+
+            { Filter && (
+                <span style={{
+                    position: 'absolute',
+                    left: '10rem', // Adjust this value to position the FilterButton to the left of AddButton
+                    marginRight: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'inline-block'
+                }}>
+                    <FilterButton data={Input} buttonText={Title} onFilteredDataChange={update}/>
+                </span>
+            )}
+
+            { Add && (
+                <span style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'inline-block'
+                }}>
+                    <AddButton text={AddText} link={AddLink}/>
+                </span>
+            )}
+
+            { Middle && (
+                <span style={{ 
+                    position: 'absolute',
+                    left: '50%',
+                    top: '35%',
+                    transform: 'translateX(-50%)',
+                    display: 'inline-block',
+                }}>
+                    {MiddleText()}
+                </span>
+            )}
+
+            {Submit && (
+                <span style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'inline-block'
+                }}>
+                    {SubmitButton()}
+                </span>
+            )}
+
+            {Delete && (
+                <span style={{
+                    position: 'absolute',
+                    right: '9rem', // Adjust this value to position the FilterButton to the left of AddButton
+                    marginRight: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'inline-block'
+                }}>
+                    {DeleteButton()}
+                </span>
+            )}
+        </div>
+    );
+};
+
+export default Navbar;

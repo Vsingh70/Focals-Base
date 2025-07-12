@@ -1,0 +1,55 @@
+'use client';
+
+import Sidebar from "./Sidebar/Side";
+import Navbar from "./Navbar/Navbar";
+
+const NAVBAR_HEIGHT = 64; // px, adjust as needed
+const SIDEBAR_WIDTH = 220; // px, adjust as needed
+
+const DesktopBar = ({ Title = "",
+                    Add = false,
+                    AddText = "", 
+                    AddLink = "",
+                    Filter = false,
+                    Search = false,
+                    Input = [],
+                    update = null,
+                    SubmitButton = null,
+                    Submit = false,
+                    DeleteButton = null,
+                    Delete = false,
+                MiddleText = null,
+                    Middle = false }) => {
+    return (
+        <span>
+            <Navbar 
+                Title={Title} 
+                Add={Add} 
+                AddText={AddText} 
+                AddLink={AddLink} 
+                Filter={Filter} 
+                Search={Search} 
+                Input={Input} 
+                update={update}
+                SubmitButton={SubmitButton}
+                Submit={Submit}
+                DeleteButton={DeleteButton}
+                Delete={Delete}
+                MiddleText={MiddleText}
+                Middle={Middle}
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    zIndex: 1000,
+                    height: NAVBAR_HEIGHT,
+                }}
+            />
+
+            <Sidebar  />
+        </span>
+    );
+};
+
+export default DesktopBar;

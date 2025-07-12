@@ -1,0 +1,38 @@
+'use client';
+import { useState, useEffect } from "react";
+import Icon from "./SidebarIconButton";
+
+const Sidebar = () => {
+    const [navbarHeight, setNavbarHeight] = useState(0);
+
+    useEffect(() => {
+        const navbar = document.getElementById("navbar");
+        if (navbar) {
+            // Get the height of the Navbar element
+            const { height } = navbar.getBoundingClientRect();
+            setNavbarHeight(height);
+        }
+    }, []);
+
+    return (
+        <span style={{
+            position: 'Fixed',
+            top: `${navbarHeight}px`,
+            left: '0',
+            height: `calc(100vh - ${navbarHeight}px)`,
+            background: 'var(--bg)',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: '1px solid var(--border)',
+            padding: '0.5rem'
+        }}>
+            <Icon icon="/dashboard.svg" link="/"/>
+            <Icon icon="/tasks.svg" link="/projects"/>
+            <Icon icon="/cart.svg" link="/gear"/>
+            <Icon icon="/link.svg" link="/links"/>
+            <Icon icon="/account.svg" link="/account"/>
+        </span>
+    );
+};
+
+export default Sidebar;

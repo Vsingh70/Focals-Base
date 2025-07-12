@@ -1,0 +1,15 @@
+const { mutate: updateFormMutate, data, loadings, errors } = useUpdateForm();
+
+  const handleTestUpdate = async () => {
+    const res = await updateFormMutate({
+      id: '41e79760-6248-4705-8777-91fd547a8a34',
+      fields: {
+        Pay: {
+          type: "currency",
+          value: 100000,
+          visible: true
+        }
+      }
+    });
+    console.log('Update result:', res);
+  };  

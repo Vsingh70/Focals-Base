@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, use } from "next/navigation";
 
 function toDatetimeLocal(dateString) {
   if (!dateString) return "";
