@@ -4,6 +4,7 @@
   --bg: #FFFFF2;
   --card-bg: #fff;
   --text: #222;
+  --text-hover: #333;
   --border: #7b5e5e;
   --primary: #7b5e5e;
   --secondary: #6b5454;
@@ -17,6 +18,7 @@
   --bg: #18181b;
   --card-bg: #232326;
   --text: #f3f4f6;
+  --text-hover: #fafafa;
   --border: #7b5e5e;
   --primary: #7b5e5e;
   --secondary: #6b5454;

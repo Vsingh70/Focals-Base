@@ -42,6 +42,16 @@ const defaultFields = {
         "type": "boolean",
         "visible": true,
         "value": false
+    },
+    "Payment Received Date": {
+        "type": "date",
+        "visible": false,
+        "value": null
+    },
+    "Expenses Paid Date": {
+        "type": "date",
+        "visible": false,
+        "value": null
     }
 };
 
@@ -116,10 +126,37 @@ export default function AddPage() {
     }));
 
     const handleChange = (field, value) => {
-        setFields(prev => ({
-            ...prev,
-            [field]: { ...prev[field], value }
-        }));
+        setFields(prev => {
+            const newFields = {
+                ...prev,
+                [field]: { ...prev[field], value }
+            };
+
+            // Handle automatic timestamp updates for boolean fields
+            if (field === "Expenses Paid" && value === true) {
+                newFields["Expenses Paid Date"] = {
+                    ...prev["Expenses Paid Date"],
+                    value: new Date().toISOString()
+                };
+            } else if (field === "Expenses Paid" && value === false) {
+                newFields["Expenses Paid Date"] = {
+                    ...prev["Expenses Paid Date"],
+                    value: null
+                };
+            } else if (field === "Payment Received" && value === true) {
+                newFields["Payment Received Date"] = {
+                    ...prev["Payment Received Date"],
+                    value: new Date().toISOString()
+                };
+            } else if (field === "Payment Received" && value === false) {
+                newFields["Payment Received Date"] = {
+                    ...prev["Payment Received Date"],
+                    value: null
+                };
+            }
+
+            return newFields;
+        });
     };
 
     const handleLinksChange = (selectedOptions) => {

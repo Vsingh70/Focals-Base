@@ -27,6 +27,8 @@ export default function EditPage() {
     // Define immutable fields and fixed fields
     const immutableFields = ['Name', 'Date', 'Category'];
     const fixedFields = ['Pay', 'Expenses', 'Expenses Paid', 'Payment Received'];
+    // Define hidden system fields that should not appear in the form editor
+    const hiddenSystemFields = ['Payment Received Date', 'Expenses Paid Date'];
     
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const DeletePopUpCard = ({ trigger, setTrigger, onConfirm }) => {
@@ -115,7 +117,7 @@ export default function EditPage() {
 
     // Get dynamic fields (fields that are not required or fixed)
     const getDynamicFields = () => {
-        const allKnownFields = [...immutableFields, ...fixedFields];
+        const allKnownFields = [...immutableFields, ...fixedFields, ...hiddenSystemFields];
         return Object.entries(fields).filter(([fieldName]) => 
             !allKnownFields.includes(fieldName)
         );

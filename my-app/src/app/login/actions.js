@@ -28,36 +28,51 @@ export async function login(formData) {
 export async function signup(formData) {
   const supabase = await createClient()
 
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  // Proceed with signup - Supabase will handle duplicate email checking
+  
+  // First, check if email already exists in profiles table
+  const { data: emailExists, error: checkError } = await supabase
+    .rpc('email_exists', { check_email: email })
+
+  if (checkError) {
+    console.log('Email check error:', checkError)
+    redirect('/signup?error=database-error')
+  }
+
+  if (emailExists) {
+    redirect('/signup?error=email-taken')
+  }
+  
   const data = {
-    email: formData.get('email'),
-    password: formData.get('password'),
+    email: email,
+    password: password,
     options: {
       emailRedirectTo: '/account'
     }
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const { data: authData, error } = await supabase.auth.signUp(data)
 
-  if (error && error.code === 'weak_password') {
-    console.log('Weak password');
-    redirect('/signup?error=weak-password')
-  }
 
   if (error) {
-    console.log(error);
-    redirect('/error')
+    console.log('Signup error:', error);
+    redirect('/signup?error=' + encodeURIComponent(error.message));
   }
 
-  redirect('/signup?success=1')
+  redirect('/signup?success=1');
 }
 
 export async function loginWithGoogle() {
   const supabase = await createClient();
   console.log('Logging in with Google...');
-  const {data, error} = await supabase.auth.signInWithOAuth({
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'http://localhost:3000/auth/callback', // Change to your redirect URL
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 
@@ -66,8 +81,7 @@ export async function loginWithGoogle() {
   }
 
   if (error) {
-    console.log(error);
+    console.log('OAuth error:', error);
     redirect('/error');
   }
-
 }
