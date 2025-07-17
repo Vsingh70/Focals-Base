@@ -92,6 +92,43 @@ export async function getLink(id) {
   return res.json();
 }
 
+// --- FINANCES ---
+export async function getFinances() {
+  const res = await fetch(`/api/finances/get-finance`);
+  return res.json();
+}
+
+export async function getFinance(id) {
+  const res = await fetch(`/api/finances/update-finance?id=${id}`);
+  return res.json();
+}
+
+export async function insertFinance(finance) {
+  const res = await fetch('/api/finances/insert-finance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: finance.fields, type: finance.type })
+  });
+  return res.json();
+}
+
+export async function updateFinance(finance) {
+  const res = await fetch(`/api/finances/update-finance?id=${finance.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: finance.fields, type: finance.type })
+  });
+  return res.json();
+}
+
+export async function deleteFinance(id) {
+  const res = await fetch(`/api/finances/delete-finance?id=${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return res.json();
+}
+
 // Main API Call Functions
 export function MakeGetRequest(apiFunction) {
   return function useCustomGetHook() {
@@ -206,3 +243,10 @@ export const useGetLinks = MakeGetRequest(getLinks);
 export const useGetLink = MakeGetRequestWithParams(getLink);
 export const useInsertLink = MakeUpdateRequest(insertLink);
 export const useUpdateLink = MakeUpdateRequest(updateLink);
+
+// Finance Hooks
+export const useGetFinances = MakeGetRequest(getFinances);
+export const useGetFinance = MakeGetRequestWithParams(getFinance);
+export const useInsertFinance = MakeUpdateRequest(insertFinance);
+export const useUpdateFinance = MakeUpdateRequest(updateFinance);
+export const useDeleteFinance = MakeUpdateRequest(deleteFinance);

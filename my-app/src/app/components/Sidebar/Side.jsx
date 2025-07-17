@@ -62,7 +62,7 @@ const Sidebar = () => {
         }}>
             <Icon icon="/dashboard.svg" link="/"/>
             <Icon icon="/tasks.svg" link="/projects"/>
-            <Icon icon="/cart.svg" link="/gear"/>
+            <Icon icon="/cart.svg" link="/finances"/>
             <Icon icon="/link.svg" link="/links"/>
             <Icon icon="/account.svg" link="/account"/>
         </span>
