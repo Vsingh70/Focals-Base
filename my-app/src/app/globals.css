@@ -61,6 +61,28 @@ body {
   margin-bottom: 1rem;
 }
 
+/* Custom scrollbar styles for project window */
+.project-window-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.project-window-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.project-window-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.project-window-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.project-window-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
 
 
 /* not used */
@@ -147,6 +169,7 @@ body {
   border-radius: 8px;
   background: var(--error-bg);
 }
+
 
 .submit-button {
   margin-top: 24px;

@@ -129,6 +129,21 @@ export async function deleteFinance(id) {
   return res.json();
 }
 
+// --- PROFILES ---
+export async function getProfile() {
+  const res = await fetch(`/api/profiles/get-profile`);
+  return res.json();
+}
+
+export async function updateProfile(profile) {
+  const res = await fetch('/api/profiles/update-profile', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile)
+  });
+  return res.json();
+}
+
 // Main API Call Functions
 export function MakeGetRequest(apiFunction) {
   return function useCustomGetHook() {
@@ -250,3 +265,7 @@ export const useGetFinance = MakeGetRequestWithParams(getFinance);
 export const useInsertFinance = MakeUpdateRequest(insertFinance);
 export const useUpdateFinance = MakeUpdateRequest(updateFinance);
 export const useDeleteFinance = MakeUpdateRequest(deleteFinance);
+
+// Profile Hooks
+export const useGetProfile = MakeGetRequest(getProfile);
+export const useUpdateProfile = MakeUpdateRequest(updateProfile);
