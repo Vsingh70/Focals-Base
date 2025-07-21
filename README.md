@@ -1,2 +1,2 @@
 # Photography-Managing-App
-WebApp that is designed to be a curated and streamline experience for photographers to manage their shoots, clients, and business. 
+WebApp that curated for small creative businesses and freelancers to manage their finances, projects, and all business aspects to minimize the time that not spent on their craft
