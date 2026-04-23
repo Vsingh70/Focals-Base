@@ -1,50 +1,91 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* =============================================================
+   Design tokens — dark-first editorial palette
+   ============================================================= */
 
 :root {
-  --bg: #FFFFF2;
-  --card-bg: #fff;
-  --text: #222;
-  --text-hover: #333;
-  --border: #7b5e5e;
-  --primary: #7b5e5e;
-  --secondary: #6b5454;
-  --button-bg: #FFFFF2;
-  --button-bg-hover: #f7f7eb;
-  --unselected: #ccc;
-  --unselected-hover: #c6c6c6;
+  --color-bg: #0a0a0a;
+  --color-bg-secondary: #111111;
+  --color-bg-tertiary: #1a1a1a;
+  --color-border: #222222;
+  --color-border-secondary: #2a2a2a;
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #888888;
+  --color-text-tertiary: #555555;
+  --color-accent: #e8e0d0;
+  --color-accent-muted: #3a3530;
+  --color-success: #4caf7d;
+  --color-warning: #e8a020;
+  --color-danger: #e85040;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Canela', Georgia, serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Legacy aliases — remapped to the new palette so pre-redesign
+     modules (Tasks 04-08) keep rendering. Remove as each module is
+     redesigned. */
+  --bg: var(--color-bg);
+  --card-bg: var(--color-bg-secondary);
+  --text: var(--color-text-primary);
+  --text-hover: var(--color-text-primary);
+  --text-light: var(--color-text-secondary);
+  --text-secondary: var(--color-text-secondary);
+  --border: var(--color-border);
+  --primary: var(--color-accent);
+  --primary-dark: var(--color-accent-muted);
+  --primary-light: var(--color-bg-tertiary);
+  --secondary: var(--color-text-secondary);
+  --button-bg: var(--color-bg-secondary);
+  --button-bg-hover: var(--color-bg-tertiary);
+  --unselected: var(--color-border-secondary);
+  --unselected-hover: var(--color-border);
+  --unselected-text: var(--color-text-secondary);
+  --input-bg: var(--color-bg-tertiary);
+  --background: var(--color-bg);
+  --error: var(--color-danger);
+  --error-light: var(--color-accent-muted);
+  --error-bg: var(--color-accent-muted);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
-.dark {
-  --bg: #18181b;
-  --card-bg: #232326;
-  --text: #f3f4f6;
-  --text-hover: #fafafa;
-  --border: #7b5e5e;
-  --primary: #7b5e5e;
-  --secondary: #6b5454;
-  --button-bg: #18181b;
-  --button-bg-hover: #232326;
-  --unselected: #a1a1a1;
-  --unselected-hover: #c6c6c6;
+.light {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f7f7f5;
+  --color-bg-tertiary: #efefec;
+  --color-border: #e5e5e1;
+  --color-border-secondary: #d4d4d0;
+  --color-text-primary: #111111;
+  --color-text-secondary: #555555;
+  --color-text-tertiary: #888888;
+  --color-accent: #3a3530;
+  --color-accent-muted: #e8e0d0;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
 }
+
+/* =============================================================
+   Layout — legacy utility classes used by pre-redesign modules.
+   Tasks 04-08 will replace these with module-scoped styles.
+   ============================================================= */
 
 .main-content {
-  margin-left: 3.8rem; /* pushes the content to the right of your sidebar */
+  margin-left: 3.8rem;
   padding: 1rem;
-  margin-top: 0; /* Remove any top margin since navbar is sticky */
-  min-height: calc(100vh - 64px); /* Ensure content fills remaining height */
+  min-height: calc(100vh - 64px);
 }
 
-/* Responsive main content */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 3rem; /* Smaller sidebar on mobile */
+    margin-left: 3rem;
     padding: 0.75rem;
   }
 }
@@ -52,19 +93,18 @@ body {
 .required-field {
   display: flex;
   align-items: center;
-  color: var(--text);
+  color: var(--color-text-primary);
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   margin-bottom: 1rem;
 }
 
-/* Custom scrollbar styles for project window */
 .project-window-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 .project-window-scroll::-webkit-scrollbar {
@@ -76,20 +116,18 @@ body {
 }
 
 .project-window-scroll::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--color-border);
   border-radius: 3px;
 }
 
 .project-window-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--color-accent);
 }
 
-
-/* not used */
 .add-row-container {
   width: 100vw;
   min-height: 100vh;
-  background: var(--background);
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -100,17 +138,17 @@ body {
 .add-row-content {
   width: 90vw;
   max-width: 800px;
-  background: var(--card-bg);
+  background: var(--color-bg-secondary);
   padding: 48px;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
 }
 
 .back-button {
   margin-bottom: 32px;
-  color: var(--card-bg);
+  color: var(--color-text-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 10px 24px;
   font-weight: bold;
   font-size: 1rem;
@@ -140,16 +178,16 @@ body {
 
 .field-container label {
   font-weight: 600;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
-.field-container input:not([type="checkbox"]) {
+.field-container input:not([type='checkbox']) {
   padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   font-size: 1.1rem;
-  background: var(--input-bg);
-  color: var(--text);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
 .checkbox-wrapper {
@@ -159,24 +197,23 @@ body {
 }
 
 .required {
-  color: var(--error);
+  color: var(--color-danger);
   margin-left: 4px;
 }
 
 .error-message {
-  color: var(--error);
+  color: var(--color-danger);
   padding: 12px;
-  border-radius: 8px;
-  background: var(--error-bg);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-muted);
 }
-
 
 .submit-button {
   margin-top: 24px;
   padding: 16px 0;
-  border-radius: 10px;
-  background: var(--primary);
-  color: var(--card-bg);
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-bg);
   font-weight: bold;
   font-size: 1.2rem;
   border: none;
@@ -187,7 +224,7 @@ body {
 }
 
 .submit-button:hover {
-  background: var(--primary-dark);
+  background: var(--color-accent-muted);
 }
 
 .submit-button:disabled {
@@ -195,7 +232,6 @@ body {
   cursor: not-allowed;
 }
 
-/* Mobile Styles */
 .mobile-header {
   position: sticky;
   top: 0;
@@ -204,8 +240,8 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: var(--background);
-  border-bottom: 1px solid var(--border);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .mobile-header h1 {
@@ -220,7 +256,7 @@ body {
   font-size: 1.5rem;
   padding: 8px;
   cursor: pointer;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .mobile-menu {
@@ -230,7 +266,7 @@ body {
   width: 80%;
   max-width: 300px;
   height: calc(100vh - 64px);
-  background: var(--card-bg);
+  background: var(--color-bg-secondary);
   box-shadow: var(--shadow-lg);
   padding: 20px;
   z-index: 35;
@@ -243,16 +279,16 @@ body {
 .mobile-search input {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--input-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
 }
 
 .mobile-add-button {
-  background: var(--primary);
-  color: var(--card-bg);
+  background: var(--color-accent);
+  color: var(--color-bg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 12px;
   font-weight: bold;
   width: 100%;
@@ -266,7 +302,7 @@ body {
 
 .mobile-filters h3 {
   margin: 0;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .data-grid.mobile {
@@ -274,7 +310,7 @@ body {
 }
 
 .data-grid.mobile .data-row {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 12px;
 }
 
@@ -294,7 +330,7 @@ body {
 
 .mobile-label {
   font-weight: 600;
-  color: var(--text-light);
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {
@@ -316,33 +352,11 @@ body {
   }
 }
 
-/* List Component Styles */
 .list-container {
   padding: 40px 0;
   min-height: 100vh;
-  background: var(--background);
+  background: var(--color-bg);
   position: relative;
-}
-
-.back-button {
-  position: absolute;
-  top: 32px;
-  left: 32px;
-  background: var(--primary);
-  color: var(--card-bg);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.2s;
-  z-index: 10;
-}
-
-.back-button.hovered {
-  background: var(--primary-dark);
 }
 
 .action-buttons-container {
@@ -355,156 +369,10 @@ body {
 }
 
 .action-button {
-  background: var(--card-bg);
-  color: var(--primary);
-  border: 2px solid var(--primary);
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s;
-}
-
-.action-button:hover {
-  background: var(--primary-light);
-}
-
-.filter-dropdown {
-  position: absolute;
-  top: 110%;
-  right: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  padding: 20px 24px;
-  min-width: 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 30;
-}
-
-.page-header {
-  margin-bottom: 32px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--primary);
-  margin: 0;
-}
-
-.data-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  align-items: center;
-  padding: 0 40px;
-}
-
-.data-row {
-  width: 100%;
-  min-height: 64px;
-  border-radius: 24px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 40px;
-  padding: 0 32px;
-  border: 2px solid var(--primary);
-  transition: all 0.2s;
-  color: var(--text);
-  cursor: pointer;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.data-row.hovered {
-  background: var(--primary-light);
-  border-color: var(--primary-dark);
-  box-shadow: var(--shadow-md);
-}
-
-.row-content {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 40px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.delete-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--error);
-  font-weight: bold;
-  font-size: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.delete-button.hovered {
-  background: var(--error-light);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Mobile Styles */
-@media (max-width: 768px) {
-  .list-container {
-    padding: 20px 0;
-  }
-
-  .action-buttons-container {
-    position: static;
-    padding: 0 16px;
-    margin-bottom: 20px;
-  }
-
-  .data-grid {
-    padding: 0 16px;
-  }
-
-  .data-row {
-    padding: 16px;
-    border-radius: 16px;
-  }
-
-  .row-content {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-/* List Component Styles */
-.list-container {
-  padding: 40px 0;
-  min-height: 100vh;
-  background: var(--background);
-  position: relative;
-}
-
-.action-button {
-  background: var(--background);
-  color: var(--primary);
-  border: 2px solid var(--primary);
-  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
   padding: 10px 24px;
   font-weight: bold;
   font-size: 1rem;
@@ -517,38 +385,29 @@ body {
   position: absolute;
   top: 32px;
   left: 32px;
-  background: var(--primary);
-  color: var(--background);
+  background: var(--color-accent);
+  color: var(--color-bg);
   border: none;
   z-index: 10;
 }
 
 .action-button:hover,
 .action-button.hovered {
-  background: var(--primary-light);
+  background: var(--color-accent-muted);
 }
 
 .action-button.back-button:hover,
 .action-button.back-button.hovered {
-  background: var(--primary-dark);
-}
-
-.action-buttons-container {
-  position: absolute;
-  top: 32px;
-  right: 32px;
-  display: flex;
-  gap: 16px;
-  z-index: 20;
+  background: var(--color-accent-muted);
 }
 
 .filter-dropdown {
   position: absolute;
   top: 110%;
   right: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 20px 24px;
   min-width: 240px;
@@ -565,10 +424,10 @@ body {
 .search-bar input {
   width: 100%;
   padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--input-bg);
-  color: var(--text);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
 .page-header {
@@ -582,7 +441,7 @@ body {
 .page-header h1 {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--primary);
+  color: var(--color-accent);
   margin: 0;
 }
 
@@ -598,18 +457,18 @@ body {
 .data-row {
   width: 100%;
   min-height: 64px;
-  border-radius: 16px;
-  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-secondary);
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
-  border: 2px solid var(--primary);
+  border: 2px solid var(--color-accent);
   transition: all 0.2s;
 }
 
 .data-row.hovered {
-  background: var(--primary-light);
-  border-color: var(--primary-dark);
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-accent-muted);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
@@ -634,7 +493,7 @@ body {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--error);
+  color: var(--color-danger);
   font-weight: bold;
   font-size: 1.5rem;
   cursor: pointer;
@@ -646,7 +505,7 @@ body {
 }
 
 .delete-button.hovered {
-  background: var(--error-light);
+  background: var(--color-accent-muted);
   box-shadow: var(--shadow-sm);
 }
 
@@ -655,14 +514,13 @@ body {
 .no-data {
   text-align: center;
   padding: 24px;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .error {
-  color: var(--error);
+  color: var(--color-danger);
 }
 
-/* Mobile Styles */
 @media (max-width: 768px) {
   .action-buttons-container {
     position: static;
@@ -696,15 +554,14 @@ body {
   }
 }
 
-/* Bottom Navigation Styles */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 65px;
-  background: var(--card-bg);
-  border-top: 1.5px solid var(--border);
+  background: var(--color-bg-secondary);
+  border-top: 1.5px solid var(--color-border);
   z-index: 1000;
 }
 
@@ -722,7 +579,7 @@ body {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: var(--text-light);
+  color: var(--color-text-secondary);
   gap: 4px;
   height: 100%;
   padding: 8px 16px;
@@ -730,8 +587,8 @@ body {
 }
 
 .bottom-nav-link.active {
-  color: var(--primary);
-  background: var(--primary-light);
+  color: var(--color-accent);
+  background: var(--color-bg-tertiary);
 }
 
 .bottom-nav-icon {
@@ -743,17 +600,15 @@ body {
   font-weight: 500;
 }
 
-/* Ensure main content doesn't get hidden behind bottom bar */
 main {
   padding-bottom: calc(65px + 16px);
 }
 
-/* Hide BottomBar on desktop */
 @media (min-width: 768px) {
   .bottom-nav {
     display: none;
   }
-  
+
   main {
     padding-bottom: 16px;
   }

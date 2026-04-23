@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function PATCH(request) {
   const id = request.nextUrl.searchParams.get('id');

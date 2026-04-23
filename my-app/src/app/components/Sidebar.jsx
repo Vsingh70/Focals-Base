@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
@@ -144,7 +144,7 @@ const Sidebar = () => {
             cursor: "pointer"
           }}
         >
-          Focals Base
+          {process.env.NEXT_PUBLIC_APP_NAME}
         </Link>
         
         <div style={{ height: 60 }} />
