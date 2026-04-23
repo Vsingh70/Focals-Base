@@ -36,6 +36,6 @@ export const listProjectsSchema = z.object({
   client_id: z.string().uuid().optional(),
 });
 
-export type CreateProjectInput = z.infer<typeof createProjectSchema>;
-export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
-export type ListProjectsInput = z.infer<typeof listProjectsSchema>;
+export type CreateProjectInput = z.input<typeof createProjectSchema>;
+export type UpdateProjectInput = z.input<typeof updateProjectSchema>;
+export type ListProjectsInput = z.input<typeof listProjectsSchema>;

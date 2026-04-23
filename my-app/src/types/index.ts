@@ -1,1 +1,1 @@
-export {};
+declare module 'server-only';

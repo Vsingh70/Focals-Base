@@ -26,6 +26,6 @@ export const listClientsSchema = z.object({
   search: z.string().max(200).optional(),
 });
 
-export type CreateClientInput = z.infer<typeof createClientSchema>;
-export type UpdateClientInput = z.infer<typeof updateClientSchema>;
-export type ListClientsInput = z.infer<typeof listClientsSchema>;
+export type CreateClientInput = z.input<typeof createClientSchema>;
+export type UpdateClientInput = z.input<typeof updateClientSchema>;
+export type ListClientsInput = z.input<typeof listClientsSchema>;
