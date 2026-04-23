@@ -1,0 +1,383 @@
+'use client';
+
+import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { createContract, previewContract } from '@/lib/actions/contracts';
+import type { Database } from '@/lib/supabase/types';
+
+type Template = Pick<Database['public']['Tables']['contract_templates']['Row'], 'id' | 'name'>;
+type Project = Pick<Database['public']['Tables']['projects']['Row'], 'id' | 'title'>;
+type Client = Pick<Database['public']['Tables']['clients']['Row'], 'id' | 'full_name'>;
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '0.625rem 0.75rem',
+  background: 'var(--color-bg)',
+  color: 'var(--color-text-primary)',
+  border: '1px solid var(--color-border-secondary)',
+  borderRadius: 'var(--radius-md)',
+  fontSize: '0.9375rem',
+  fontFamily: 'var(--font-sans)',
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '0.8125rem',
+  color: 'var(--color-text-secondary)',
+  marginBottom: '0.375rem',
+};
+
+const primaryButton: React.CSSProperties = {
+  padding: '0.625rem 1rem',
+  background: 'var(--color-accent)',
+  color: 'var(--color-bg)',
+  border: 'none',
+  borderRadius: 'var(--radius-md)',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
+};
+
+const secondaryButton: React.CSSProperties = {
+  padding: '0.5rem 0.75rem',
+  background: 'var(--color-bg-tertiary)',
+  color: 'var(--color-text-secondary)',
+  border: '1px solid var(--color-border-secondary)',
+  borderRadius: 'var(--radius-md)',
+  fontSize: '0.75rem',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
+};
+
+type CustomField = { key: string; value: string };
+
+export function NewContractForm({
+  templates,
+  projects,
+  clients,
+}: {
+  templates: Template[];
+  projects: Project[];
+  clients: Client[];
+}) {
+  const router = useRouter();
+  const [title, setTitle] = useState('');
+  const [templateId, setTemplateId] = useState(templates[0]?.id ?? '');
+  const [projectId, setProjectId] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [preview, setPreview] = useState<string>('');
+  const [unreplacedTags, setUnreplacedTags] = useState<string[]>([]);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, startSubmitting] = useTransition();
+
+  // Debounced preview fetch whenever inputs change
+  useEffect(() => {
+    if (!templateId || !projectId || !clientId) {
+      setPreview('');
+      setUnreplacedTags([]);
+      setPreviewError(null);
+      return;
+    }
+    const customFieldsMap = Object.fromEntries(
+      customFields.filter((f) => f.key.trim()).map((f) => [f.key.trim(), f.value])
+    );
+    const handle = setTimeout(() => {
+      startTransition(async () => {
+        const res = await previewContract({
+          template_id: templateId,
+          project_id: projectId,
+          client_id: clientId,
+          custom_fields: customFieldsMap,
+        });
+        if (res.error !== null) {
+          setPreviewError(res.error);
+          setPreview('');
+          setUnreplacedTags([]);
+          return;
+        }
+        setPreviewError(null);
+        setPreview(res.data.body);
+        setUnreplacedTags(res.data.unreplacedTags);
+      });
+    }, 200);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId, projectId, clientId, JSON.stringify(customFields)]);
+
+  const addCustomField = () =>
+    setCustomFields((cf) => [...cf, { key: '', value: '' }]);
+  const removeCustomField = (i: number) =>
+    setCustomFields((cf) => cf.filter((_, idx) => idx !== i));
+  const updateField = (i: number, patch: Partial<CustomField>) =>
+    setCustomFields((cf) => cf.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
+
+  const handleSubmit = () => {
+    setSubmitError(null);
+    if (!title.trim()) {
+      setSubmitError('Please provide a contract title.');
+      return;
+    }
+    if (!templateId || !projectId || !clientId) {
+      setSubmitError('Template, project, and client are required.');
+      return;
+    }
+    if (unreplacedTags.length > 0) {
+      setSubmitError(
+        `Unreplaced merge tags prevent saving: ${unreplacedTags.join(', ')}`
+      );
+      return;
+    }
+    const customFieldsMap = Object.fromEntries(
+      customFields.filter((f) => f.key.trim()).map((f) => [f.key.trim(), f.value])
+    );
+    startSubmitting(async () => {
+      const res = await createContract({
+        title: title.trim(),
+        template_id: templateId,
+        project_id: projectId,
+        client_id: clientId,
+        custom_fields: customFieldsMap,
+      });
+      if (res.error !== null) {
+        setSubmitError(res.error);
+        return;
+      }
+      router.push(`/contracts/${res.data.id}`);
+      router.refresh();
+    });
+  };
+
+  const canSubmit =
+    !!title.trim() &&
+    !!templateId &&
+    !!projectId &&
+    !!clientId &&
+    unreplacedTags.length === 0 &&
+    !isSubmitting;
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+        gap: '1.5rem',
+      }}
+    >
+      {/* Left: inputs */}
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        <div>
+          <label style={labelStyle} htmlFor="contract-title">
+            Contract title
+          </label>
+          <input
+            id="contract-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Johnson wedding photography agreement"
+            maxLength={200}
+            style={inputStyle}
+          />
+        </div>
+
+        <div>
+          <label style={labelStyle} htmlFor="contract-template">
+            Template
+          </label>
+          <select
+            id="contract-template"
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            style={{ ...inputStyle, appearance: 'auto' }}
+          >
+            <option value="">Select…</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label style={labelStyle} htmlFor="contract-project">
+            Project
+          </label>
+          <select
+            id="contract-project"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            style={{ ...inputStyle, appearance: 'auto' }}
+          >
+            <option value="">Select…</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label style={labelStyle} htmlFor="contract-client">
+            Client
+          </label>
+          <select
+            id="contract-client"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+            style={{ ...inputStyle, appearance: 'auto' }}
+          >
+            <option value="">Select…</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.full_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Custom fields</label>
+          {customFields.length === 0 ? (
+            <p
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--color-text-tertiary)',
+                margin: '0 0 0.5rem',
+              }}
+            >
+              Add key-value pairs that become merge tags. E.g. key{' '}
+              <code>delivery_date</code> becomes <code>{'{{delivery_date}}'}</code>.
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              {customFields.map((f, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    value={f.key}
+                    onChange={(e) => updateField(i, { key: e.target.value })}
+                    placeholder="key"
+                    maxLength={64}
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                  <input
+                    value={f.value}
+                    onChange={(e) => updateField(i, { value: e.target.value })}
+                    placeholder="value"
+                    maxLength={2000}
+                    style={{ ...inputStyle, flex: 2 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCustomField(i)}
+                    style={{
+                      ...secondaryButton,
+                      padding: '0.5rem 0.75rem',
+                      color: 'var(--color-danger)',
+                      borderColor: 'rgba(232, 80, 64, 0.3)',
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button type="button" onClick={addCustomField} style={secondaryButton}>
+            + Add field
+          </button>
+        </div>
+
+        {submitError ? (
+          <p style={{ color: 'var(--color-danger)', fontSize: '0.8125rem', margin: 0 }}>
+            {submitError}
+          </p>
+        ) : null}
+
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            style={{
+              ...primaryButton,
+              opacity: canSubmit ? 1 : 0.6,
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {isSubmitting ? 'Saving…' : 'Create contract'}
+          </button>
+        </div>
+      </div>
+
+      {/* Right: preview */}
+      <div>
+        <label style={labelStyle}>Preview</label>
+        <div
+          style={{
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '1.5rem',
+            minHeight: '28rem',
+            whiteSpace: 'pre-wrap',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            fontSize: '0.8125rem',
+            lineHeight: 1.55,
+            color: 'var(--color-text-primary)',
+            overflow: 'auto',
+          }}
+        >
+          {previewError ? (
+            <span style={{ color: 'var(--color-danger)' }}>{previewError}</span>
+          ) : preview ? (
+            preview
+          ) : (
+            <span style={{ color: 'var(--color-text-tertiary)' }}>
+              {isPending
+                ? 'Rendering…'
+                : 'Select a template, project, and client to preview the contract.'}
+            </span>
+          )}
+        </div>
+
+        {unreplacedTags.length > 0 ? (
+          <p
+            style={{
+              margin: '0.5rem 0 0',
+              fontSize: '0.75rem',
+              color: 'var(--color-warning)',
+              display: 'flex',
+              gap: '0.375rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <strong>Unfilled tags:</strong>
+            {unreplacedTags.map((t) => (
+              <code
+                key={t}
+                style={{
+                  padding: '0.125rem 0.375rem',
+                  background: 'var(--color-bg-tertiary)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-warning)',
+                  fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                }}
+              >
+                {`{{${t}}}`}
+              </code>
+            ))}
+            <span style={{ color: 'var(--color-text-tertiary)' }}>
+              — add matching custom fields or edit the template to remove these.
+            </span>
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
