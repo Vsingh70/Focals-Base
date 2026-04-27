@@ -822,3 +822,55 @@ npx vercel@latest --prod         # production deploy
 npx vercel@latest logs           # tail recent function logs
 ```
 Or just `git push` to whichever branch Vercel is watching — push deploys are auto-wired.
+
+---
+
+## iOS app — planning DONE (2026-04-27)
+
+A 16-file task plan for the native iOS companion app now lives at `tasks/ios/`. The plan mirrors the existing web tasks structure: numbered .md files, a master prompt, a Claude Code instructions file. Total ~5,900 lines of detailed implementation specs.
+
+### Decisions that are locked in (so you don't have to re-decide)
+
+- **Repo layout**: same repo, `ios/` folder alongside `my-app/`
+- **Auth scope**: Google OAuth + Apple Sign In (App Store Guideline 4.8 compliance)
+- **Offline scope**: read-cache only via SwiftData. Mutations require connectivity. Full offline-first deferred to v1.1
+- **Native features in v1**: ALL of EventKit, Shortcuts/App Intents, PencilKit, WidgetKit, Live Activities, Push
+- **Tech stack**: SwiftUI-first, iOS 17+, supabase-swift SDK, Apple Charts, no third-party UI kits
+
+### Open items still pending YOUR decisions before iOS implementation can start
+
+- [ ] **Real app name** — `[APP_NAME]` placeholder is in both web and iOS tasks. Bundle ID `com.[APP_NAME].ios` and the App Store listing can't be finalized without it. (Pick one and do a single repo-wide find-replace once.)
+- [ ] **Brand fonts on iOS** — Inter is fine. If you have a paid display face on web (e.g. Canela), the license must explicitly permit app embedding. Confirm before Task 01.
+- [ ] **Apple Developer Program membership** — $99/yr. Required for device testing, push, App Groups, App Store submission. Free Apple ID works for simulator only.
+- [ ] **Schema-drift workflow** — when web adds a Postgres column, iOS Codable models must follow. Hand-written for v1 is fine. Add a `bin/gen-swift-types` script in v1.1 if it gets painful.
+
+### Implementation order (when you're ready)
+
+```
+01_PROJECT_SETUP                ← foundation (no deps)
+02_DATA_MODELS_AND_SUPABASE_CLIENT
+03_AUTH_AND_SESSION
+04_NAVIGATION_AND_SHELL
+05_READ_CACHE_LAYER             ← required by every module screen
+06_DASHBOARD       ┐
+07_INBOX           │
+08_CALENDAR        ├ can run in parallel after 05
+09_PROJECTS_CLIENTS_SHOOTS │
+10_FINANCES        │
+11_CONTRACTS       │
+12_GEAR_LINKS_FORMS_HELP_SETTINGS ┘
+13_NATIVE_FEATURES              ← widgets, push, Live Activities, etc.
+14_TESTING_RELEASE_TELEMETRY    ← App Store submission
+```
+
+Solo dev: realistic 3–4 months end to end with all native features in v1. If push becomes blocking, defer Section E of Task 13 to v1.1.
+
+### Web changes the iOS plan will require (small)
+
+These get done DURING the relevant iOS task, not before:
+
+- [ ] **Apple App Site Association** — `my-app/src/app/.well-known/apple-app-site-association/route.ts` serving JSON for Universal Links (Task 13 Section F)
+- [ ] **Push notification trigger** — Supabase Edge Function + Postgres trigger for new-inquiry pushes; pg_cron for shoot reminders (Task 13 Section E)
+- [ ] **`profiles.push_token` column** — schema migration to store APNs device tokens (Task 13 Section E)
+- [ ] **Markdown source endpoint for help docs** — OPTIONAL; either add `/help/[slug]/markdown/route.ts` to web, or bundle markdown into iOS app resources (Task 12 Module 4)
+- [ ] **Privacy policy page** — `/privacy` on web. Required for App Store listing (Task 14)
