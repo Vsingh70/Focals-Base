@@ -16,6 +16,8 @@ const padMap = {
 export function Card({ children, style, as: Tag = 'section', padding = 'md' }: CardProps) {
   return (
     <Tag
+      className="app-card"
+      data-pad={padding}
       style={{
         background: 'var(--color-bg-secondary)',
         border: '1px solid var(--color-border)',

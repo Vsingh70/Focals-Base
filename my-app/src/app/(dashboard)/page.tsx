@@ -11,6 +11,8 @@ import { ProjectStatusChart } from '@/components/dashboard/ProjectStatusChart';
 import { UpcomingShootsStrip } from '@/components/dashboard/UpcomingShootsStrip';
 import { RecentProjectsList } from '@/components/dashboard/RecentProjectsList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { TourGate } from '@/components/tour/TourGate';
+import { dashboardTour } from '@/components/tour/tours';
 
 export const metadata = {
   title: `Dashboard · ${process.env.NEXT_PUBLIC_APP_NAME ?? ''}`,
@@ -31,11 +33,12 @@ export default async function DashboardPage() {
     await getDashboardData(user.id);
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader title="Dashboard" subtitle="Your business at a glance." />
 
       {/* KPI row */}
       <div
+        data-tour="kpi-row"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -63,6 +66,7 @@ export default async function DashboardPage() {
 
       {/* Charts row */}
       <div
+        data-tour="charts-row"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
@@ -98,6 +102,7 @@ export default async function DashboardPage() {
 
       {/* Recent projects + quick actions */}
       <div
+        className="app-stack-mobile"
         style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 2fr) minmax(260px, 1fr)',
@@ -110,13 +115,17 @@ export default async function DashboardPage() {
           </CardHeader>
           <RecentProjectsList projects={recentProjects} />
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
-          </CardHeader>
-          <QuickActions />
+        <Card style={{ height: 'fit-content' }} as="section">
+          <div data-tour="quick-actions">
+            <CardHeader>
+              <CardTitle>Quick actions</CardTitle>
+            </CardHeader>
+            <QuickActions />
+          </div>
         </Card>
       </div>
+
+      <TourGate tourId="dashboard" steps={dashboardTour.steps} helpHref="/help/dashboard" />
     </div>
   );
 }

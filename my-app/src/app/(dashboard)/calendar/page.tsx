@@ -4,6 +4,8 @@ import { getCalendarFeed } from '@/lib/actions/calendar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { CalendarView, NewShootButton } from '@/components/calendar/CalendarView';
 import { CalendarSync } from '@/components/calendar/CalendarSync';
+import { TourGate } from '@/components/tour/TourGate';
+import { calendarTour } from '@/components/tour/tours';
 
 export const metadata = {
   title: `Calendar · ${process.env.NEXT_PUBLIC_APP_NAME ?? ''}`,
@@ -40,7 +42,7 @@ export default async function CalendarPage() {
   const projects = projectsRes.data ?? [];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Calendar"
         subtitle="All scheduled shoots. Click a date to add one, or an event to edit."
@@ -48,9 +50,11 @@ export default async function CalendarPage() {
       />
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>
-        <CalendarView shoots={shoots} clients={clients} projects={projects} />
+        <div data-tour="calendar-grid">
+          <CalendarView shoots={shoots} clients={clients} projects={projects} />
+        </div>
         {feedRes.data ? (
-          <section>
+          <section data-tour="calendar-sync">
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -67,6 +71,8 @@ export default async function CalendarPage() {
           </section>
         ) : null}
       </div>
+
+      <TourGate tourId="calendar" steps={calendarTour.steps} helpHref="/help/calendar" />
     </div>
   );
 }

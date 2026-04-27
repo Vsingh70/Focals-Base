@@ -477,6 +477,7 @@ export type Database = {
           full_name: string | null
           id: string
           instagram_handle: string | null
+          tutorial_progress: Json
           updated_at: string
           website: string | null
         }
@@ -489,6 +490,7 @@ export type Database = {
           full_name?: string | null
           id: string
           instagram_handle?: string | null
+          tutorial_progress?: Json
           updated_at?: string
           website?: string | null
         }
@@ -501,6 +503,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           instagram_handle?: string | null
+          tutorial_progress?: Json
           updated_at?: string
           website?: string | null
         }

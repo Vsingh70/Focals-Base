@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { publicInquirySchema } from '@/lib/validations/inquiries';
+import { parseInquiry } from '@/lib/inquiries/parsers';
 import type { Json } from '@/lib/supabase/types';
 
-// Allow any origin to POST from embedded website widgets.
+// Allow any origin to POST from embedded website widgets, Resend webhooks,
+// Zapier flows, etc. Tokens (per-source) are the actual auth gate.
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -14,11 +15,19 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
+function extractToken(request: NextRequest): string | null {
+  const headerToken = request.headers.get('x-inquiry-token');
+  if (headerToken) return headerToken;
+  const queryToken = request.nextUrl.searchParams.get('token');
+  if (queryToken) return queryToken;
+  return null;
+}
+
 export async function POST(request: NextRequest) {
-  const token = request.headers.get('x-inquiry-token');
+  const token = extractToken(request);
   if (!token) {
     return NextResponse.json(
-      { error: 'Missing X-Inquiry-Token header' },
+      { error: 'Missing token (use X-Inquiry-Token header or ?token= query)' },
       { status: 401, headers: CORS_HEADERS }
     );
   }
@@ -33,10 +42,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const parsed = publicInquirySchema.safeParse(body);
-  if (!parsed.success) {
+  const parsed = parseInquiry(body);
+  if (!parsed) {
     return NextResponse.json(
-      { error: 'Invalid payload', details: parsed.error.flatten() },
+      {
+        error:
+          'Could not extract inquiry from payload. Expected widget shape, Resend inbound-email payload, or generic JSON with at least a name field.',
+      },
       { status: 400, headers: CORS_HEADERS }
     );
   }
@@ -65,18 +77,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { source_label, ...payload } = parsed.data;
+  // source_handle precedence:
+  //  1. explicit value extracted by the parser (e.g. "Sarah Johnson <sarah@example.com>")
+  //  2. label configured on the inquiry source row (anti-spoof: caller can't change this)
+  const sourceHandle = parsed.source_handle ?? source.label;
 
   const { error: insertError } = await admin.from('inquiries').insert({
     user_id: source.user_id,
-    source: 'website_form',
-    source_handle: source_label ?? source.label,
-    name: payload.name,
-    email: payload.email ?? null,
-    phone: payload.phone ?? null,
-    shoot_type: payload.shoot_type ?? null,
-    preferred_date: payload.preferred_date ?? null,
-    message: payload.message ?? null,
+    source: parsed.source,
+    source_handle: sourceHandle,
+    name: parsed.name,
+    email: parsed.email,
+    phone: parsed.phone,
+    shoot_type: parsed.shoot_type,
+    preferred_date: parsed.preferred_date,
+    message: parsed.message,
     status: 'new',
     raw_payload: body as Json,
   });

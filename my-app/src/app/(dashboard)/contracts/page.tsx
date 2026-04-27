@@ -5,6 +5,8 @@ import { ensureDefaultTemplate } from '@/lib/actions/contract_templates';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { LinkButton } from '@/components/ui/Button';
 import { ContractStatusBadge } from '@/components/contracts/ContractStatusBadge';
+import { TourGate } from '@/components/tour/TourGate';
+import { contractsTour } from '@/components/tour/tours';
 
 export const metadata = {
   title: `Contracts · ${process.env.NEXT_PUBLIC_APP_NAME ?? ''}`,
@@ -57,19 +59,19 @@ export default async function ContractsPage() {
   const rows = (contracts ?? []) as ContractRow[];
 
   return (
-    <div style={{ maxWidth: 1120, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 1120, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Contracts"
         subtitle="Send, track, and export signed agreements."
         actions={
-          <>
+          <span data-tour="contracts-actions" style={{ display: 'inline-flex', gap: '0.5rem' }}>
             <LinkButton variant="secondary" size="sm" href="/contracts/templates">
               Templates
             </LinkButton>
             <LinkButton size="sm" href="/contracts/new">
               + New contract
             </LinkButton>
-          </>
+          </span>
         }
       />
 
@@ -95,7 +97,9 @@ export default async function ContractsPage() {
           <LinkButton href="/contracts/new">Create your first contract</LinkButton>
         </div>
       ) : (
+        <>
         <div
+          className="app-desktop-only"
           style={{
             background: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-border)',
@@ -154,7 +158,70 @@ export default async function ContractsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile card list */}
+        <ul
+          className="app-mobile-only"
+          style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            display: 'grid',
+            gap: '0.5rem',
+          }}
+        >
+          {rows.map((c) => {
+            const client = firstOrSelf(c.clients);
+            const project = firstOrSelf(c.projects);
+            return (
+              <li key={c.id}>
+                <Link
+                  href={`/contracts/${c.id}`}
+                  style={{
+                    display: 'block',
+                    padding: '0.875rem 1rem',
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '0.5rem',
+                      marginBottom: '0.375rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 500,
+                        fontSize: '0.9375rem',
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      {c.title}
+                    </span>
+                    <ContractStatusBadge status={c.status} />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                    {client?.full_name ?? '—'}
+                    {project?.title ? ` · ${project.title}` : ''}
+                    {' · '}
+                    {formatDate(c.created_at)}
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        </>
       )}
+
+      <TourGate tourId="contracts" steps={contractsTour.steps} helpHref="/help/contracts" />
     </div>
   );
 }

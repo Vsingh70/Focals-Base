@@ -162,6 +162,7 @@ export function NewContractForm({
 
   return (
     <div
+      className="app-stack-mobile"
       style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',

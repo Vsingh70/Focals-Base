@@ -41,7 +41,7 @@ export default async function NewContractPage() {
   const clients = clientsRes.data ?? [];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="New contract"
         subtitle="Choose a template and link it to a project + client. The body auto-fills from merge tags."

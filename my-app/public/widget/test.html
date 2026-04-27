@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[APP_NAME] inquiry widget — local test</title>
+  <style>
+    /* Host-page styles that should NOT bleed into the widget. */
+    body {
+      font-family: Georgia, serif;
+      background: #f5f3ee;
+      max-width: 720px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+      color: #2a2a2a;
+    }
+    input, textarea, button {
+      font-family: Comic Sans MS, cursive !important;
+      background: red !important;
+      border: 4px dashed lime !important;
+    }
+    h1 { color: navy; font-size: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>Host page (intentionally garish styles)</h1>
+  <p>
+    The widget below should look clean and editorial regardless of the host's
+    aggressive CSS. This proves Shadow DOM isolation works.
+  </p>
+
+  <h2>Widget renders here ↓</h2>
+  <div id="app-name-inquiry"></div>
+
+  <script>
+    window.APP_NAME_CONFIG = {
+      // Replace with a real token from the inquiry_sources table to actually submit.
+      token: 'TEST_TOKEN_REPLACE_ME',
+      apiBase: 'http://localhost:3000',
+      sourceLabel: 'widget test page',
+    };
+  </script>
+  <script src="/widget/inquiry.js" async></script>
+</body>
+</html>

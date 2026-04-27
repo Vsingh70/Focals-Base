@@ -25,7 +25,7 @@ export default async function ContractTemplatesPage() {
     .order('created_at', { ascending: false });
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Contract templates"
         subtitle="Reusable base text with merge tags that auto-fill from project and client data."

@@ -71,7 +71,7 @@ export default async function ContractDetailPage({ params }: Props) {
 
   if (error) {
     return (
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
+      <div className="app-page" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
         <PageHeader title="Contract" />
         <p style={{ color: 'var(--color-danger)' }}>Error: {error.message}</p>
       </div>
@@ -86,7 +86,7 @@ export default async function ContractDetailPage({ params }: Props) {
   const customFields = parseCustomFields(row.custom_fields);
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="app-page" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title={row.title}
         subtitle="Read-only rendered contract. Merge tags were resolved at creation time."
@@ -167,6 +167,7 @@ export default async function ContractDetailPage({ params }: Props) {
 function DtDd({ label, value }: { label: string; value: string }) {
   return (
     <div
+      className="app-stack-mobile"
       style={{
         display: 'grid',
         gridTemplateColumns: '180px 1fr',

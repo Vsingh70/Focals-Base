@@ -3,11 +3,12 @@
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views, type View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { ShootForm } from './ShootForm';
+import { MobileCalendarView } from './MobileCalendarView';
 import type { Database } from '@/lib/supabase/types';
 
 type Shoot = Database['public']['Tables']['shoots']['Row'];
@@ -46,15 +47,40 @@ function shootToEvent(s: Shoot): RBCEvent {
 
 type OpenForm = { kind: 'create'; presetStart?: Date } | { kind: 'edit'; shoot: Shoot } | null;
 
-export function CalendarView({
-  shoots,
-  clients,
-  projects,
-}: {
+type CalendarProps = {
   shoots: Shoot[];
   clients: ClientLite[];
   projects: ProjectLite[];
-}) {
+};
+
+/**
+ * Top-level dispatcher: picks between the desktop react-big-calendar layout
+ * and the mobile list-by-day layout based on viewport width. Each branch is
+ * a separate child component so React's rule-of-hooks isn't violated when
+ * we conditionally render one vs. the other.
+ */
+export function CalendarView(props: CalendarProps) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const update = () => setIsMobile(window.innerWidth <= 1024);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Until mounted we render the desktop variant — server-rendered HTML is
+  // desktop-shape so this avoids a hydration mismatch. After mount, on
+  // mobile, swap to the dedicated mobile component.
+  if (mounted && isMobile) {
+    return <MobileCalendarView {...props} />;
+  }
+  return <DesktopCalendarView {...props} />;
+}
+
+function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState<Date>(new Date());
   const [formMode, setFormMode] = useState<OpenForm>(null);
@@ -85,9 +111,14 @@ export function CalendarView({
           border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-lg)',
           padding: '1rem',
+          overflow: 'hidden',
+          maxWidth: '100%',
         }}
       >
-        <div style={{ height: 640 }}>
+        <div
+          className="app-calendar-inner"
+          style={{ height: 640, width: '100%', overflow: 'hidden' }}
+        >
           <Calendar
             localizer={localizer}
             events={events}

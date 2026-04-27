@@ -180,7 +180,7 @@ export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+        <div data-tour="inbox-filters" style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
           {filters.map((f) => {
             const active = filter === f.key;
             return (
@@ -222,7 +222,12 @@ export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
             );
           })}
         </div>
-        <button type="button" onClick={() => setManualOpen(true)} style={primaryButtonStyle}>
+        <button
+          type="button"
+          onClick={() => setManualOpen(true)}
+          data-tour="inbox-manual"
+          style={primaryButtonStyle}
+        >
           + Manual Entry
         </button>
       </div>

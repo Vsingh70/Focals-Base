@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   '/api/auth',
   '/api/inquiry',
   '/api/calendar',
+  '/widget',
 ];
 
 export async function middleware(request: NextRequest) {

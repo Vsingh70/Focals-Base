@@ -87,6 +87,131 @@ body {
   to { transform: translateX(0); }
 }
 
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* =============================================================
+   Responsive primitives. Three tiers:
+     mobile  ≤ 640px   (phones)
+     tablet  641–1024  (iPad portrait + landscape)
+     desktop ≥ 1025px
+
+   Most layout shifts (single-column grids, hamburger nav, mobile
+   calendar, mobile sync card) apply to BOTH mobile and tablet — i.e.
+   the breakpoint where touch + cramped width matters is 1024px, not
+   768px. The few rules that ONLY make sense on tiny phones (extra
+   padding shrink, smaller titles) live in their own ≤ 640px block.
+   ============================================================= */
+
+.app-mobile-only { display: none; }
+.app-desktop-only { display: block; }
+
+/* Variants for inline display (e.g. wrapping a span). */
+.app-mobile-only-inline { display: none; }
+.app-desktop-only-inline { display: inline-flex; }
+
+/* Main shell: desktop offset for the fixed 220px sidebar; mobile is full-width. */
+.app-shell { margin-left: 220px; }
+
+/* ---------- Tablet + mobile (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  /* Visibility class names still say "mobile" but the rules apply to
+     tablets too — the convention is "anything below desktop breakpoint." */
+  .app-mobile-only { display: block; }
+  .app-desktop-only { display: none; }
+  .app-mobile-only-inline { display: inline-flex; }
+  .app-desktop-only-inline { display: none; }
+
+  /* Drop the 220px sidebar offset — sidebar becomes a hamburger drawer. */
+  .app-shell { margin-left: 0 !important; }
+
+  /* Single-column grid. Apply to multi-column grid containers that
+     should collapse below desktop. */
+  .app-stack-mobile { grid-template-columns: 1fr !important; }
+
+  /* Page-level shrinkage. Tablets get 1.5rem, phones get 1rem (below). */
+  .app-page {
+    padding: 1.5rem !important;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body,
+  .app-shell {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Tap target floor: any element marked with this class bumps to 44x44. */
+  .app-tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Global tap target floor for primary interactive elements (touch).
+     Anything with .app-tap-skip opts out. */
+  button:not(.app-tap-skip),
+  a[role='button']:not(.app-tap-skip),
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'] {
+    min-height: 44px;
+  }
+
+  /* Form controls — comfortable target sizes on touch + prevent iOS zoom. */
+  input[type='text'],
+  input[type='email'],
+  input[type='url'],
+  input[type='tel'],
+  input[type='number'],
+  input[type='search'],
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='password'],
+  textarea,
+  select {
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  /* Cards must never push wider than their parent below desktop. */
+  .app-card {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+}
+
+/* ---------- Phones only (≤ 640px) ---------- */
+@media (max-width: 640px) {
+  /* Tighter page padding for phones. */
+  .app-page {
+    padding: 1rem !important;
+  }
+
+  /* Shrink page titles — long titles dominate small screens. */
+  .app-page-title {
+    font-size: 1.5rem !important;
+  }
+
+  /* Cards: shrink padding on phones so inner content has more room.
+     Tablets keep desktop card padding. */
+  .app-card[data-pad='md'],
+  .app-card[data-pad='lg'] {
+    padding: 1rem !important;
+  }
+  .app-card[data-pad='sm'] {
+    padding: 0.75rem !important;
+  }
+}
+
 /* =============================================================
    Layout — legacy utility classes used by pre-redesign modules.
    Tasks 04-08 will replace these with module-scoped styles.

@@ -165,7 +165,7 @@ export function ShootForm({
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
+        <div className="app-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
           <div>
             <label style={labelStyle} htmlFor="shoot-datetime">
               Date & time

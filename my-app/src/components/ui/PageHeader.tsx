@@ -11,18 +11,21 @@ export function PageHeader({
 }) {
   return (
     <header
+      className="app-page-header"
       style={{
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
-        gap: '1.5rem',
+        gap: '1rem',
         paddingBottom: '1.5rem',
         borderBottom: '1px solid var(--color-border)',
         marginBottom: '2rem',
+        flexWrap: 'wrap',
       }}
     >
-      <div>
+      <div style={{ minWidth: 0 }}>
         <h1
+          className="app-page-title"
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: '2rem',
@@ -47,7 +50,9 @@ export function PageHeader({
           </p>
         ) : null}
       </div>
-      {actions ? <div style={{ display: 'flex', gap: '0.5rem' }}>{actions}</div> : null}
+      {actions ? (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>{actions}</div>
+      ) : null}
     </header>
   );
 }
