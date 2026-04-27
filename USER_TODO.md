@@ -766,3 +766,59 @@ Also update line 266 of this file (the Sidebar nav check item) — the parenthet
 - ~~**`RESEND_API_KEY` / `RESEND_WEBHOOK_SECRET` in `.env.local`**~~ — Decided 2026-04-24: not needed. Architecture pivoted away from a central Resend account; users connect their own intake services (Resend, Zapier, Typeform, etc.) directly to `/api/inquiry`. Safe to leave the env keys empty or remove them from `.env.local.example`.
 - [ ] **`NEXT_PUBLIC_SITE_URL`** — currently `http://localhost:3000`. Update to your Vercel deployment URL before deploying. Referenced in [src/lib/actions/auth.ts:siteUrl()](my-app/src/lib/actions/auth.ts).
 - [ ] **`next.config.mjs`** is now derived from `NEXT_PUBLIC_SUPABASE_URL` — no hardcoded hostname. Safe as long as the env var is set at build time.
+
+---
+
+## Deployment — DONE (2026-04-27)
+
+First production deploy is live on Vercel.
+
+- **Production URL:** https://focals-base.vercel.app
+- **Vercel project:** `virajs-projects-e73ae1f2/focals-base` (linked via `my-app/.vercel/project.json`)
+- **Branch deployed:** `v2` (HEAD at deploy time: 094b880)
+- **Smoke checks passing:**
+  - `/api/health` → 200, `{"status":"ok"}` (Supabase reachable from Vercel)
+  - `/projects` (incognito) → 307 to `/login` (middleware gating works)
+  - `/login` → 200 (public route works)
+  - `/api/inquiry` → 405 on GET, *not* 307 (public allowlist works)
+
+### Deploy-time fix worth noting
+
+Vercel rejected the first deploy because Next 15.3.2 had a stack of open advisories (Image Optimizer cache confusion, SSRF via middleware redirects, DoS via Server Components, etc.). Bumped to **15.5.15** (the patched backport on the 15.5 line) — same major, no breaking changes — and the build went through clean. Locked into `package.json` so future installs stay on the patched range.
+
+### URGENT — secrets to rotate
+
+The Vercel personal access token used for CLI deploy was pasted into chat earlier. Treat it as compromised:
+
+1. Go to https://vercel.com/account/settings/tokens
+2. Revoke the token named `claude-cli-local` (or whatever you named it)
+3. If you want to keep the local deploy workflow, generate a new one and update [`~/.vercel-cli-env`](~/.vercel-cli-env)
+
+### Post-deploy manual config (Supabase + Google OAuth)
+
+These are dashboard-only — can't be done from code. Do them now or sign-in will redirect to localhost:
+
+- [ ] **Supabase → Authentication → URL Configuration** — set **Site URL** to `https://focals-base.vercel.app`
+- [ ] **Supabase → Authentication → URL Configuration** — add **Redirect URL**: `https://focals-base.vercel.app/auth/callback`
+- [ ] **Google Cloud Console → OAuth 2.0 Client IDs** → your Supabase OAuth client → add to **Authorized redirect URIs**: `https://oqaqopkcpgmjgswaismm.supabase.co/auth/v1/callback` (already set if Google login worked locally — double-check)
+- [ ] **Google Cloud Console → OAuth consent screen → Authorized domains** — add `vercel.app` if not already there
+- [ ] **Vercel → Project → Settings → Environment Variables** — add or update `NEXT_PUBLIC_SITE_URL=https://focals-base.vercel.app` so server actions that build redirect URLs use prod, not localhost. After adding, trigger a redeploy (`npx vercel --prod`) so the new env value is baked in.
+
+### Custom domain (optional, when ready)
+
+- [ ] Buy/point a domain (e.g. via Cloudflare or Namecheap)
+- [ ] **Vercel → Project → Settings → Domains** — add the domain; Vercel gives you DNS records (A or CNAME)
+- [ ] Add the records at your registrar; wait for TLS provisioning
+- [ ] Repeat the Supabase + Google steps above with the new domain
+- [ ] Update `NEXT_PUBLIC_SITE_URL` env var in Vercel to the custom domain
+
+### Day-to-day deploy commands
+
+From `my-app/`:
+```bash
+source ~/.vercel-cli-env
+npx vercel@latest                # preview deploy
+npx vercel@latest --prod         # production deploy
+npx vercel@latest logs           # tail recent function logs
+```
+Or just `git push` to whichever branch Vercel is watching — push deploys are auto-wired.

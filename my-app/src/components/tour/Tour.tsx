@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState, useTransition } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { markTourSeen } from '@/lib/actions/tutorial';
 import type { TourId } from '@/lib/tour/ids';
@@ -11,6 +11,7 @@ type Rect = { top: number; left: number; width: number; height: number };
 const PADDING = 8;
 const DIALOG_WIDTH = 340;
 const DIALOG_GAP = 12;
+const DIALOG_FALLBACK_HEIGHT = 240;
 
 function rectOf(el: Element | null): Rect | null {
   if (!el) return null;
@@ -26,27 +27,47 @@ function rectOf(el: Element | null): Rect | null {
 function computeDialogPosition(
   target: Rect | null,
   placement: TourStep['placement'] = 'auto',
+  dialogHeight: number = DIALOG_FALLBACK_HEIGHT,
   vw = typeof window !== 'undefined' ? window.innerWidth : 1280,
   vh = typeof window !== 'undefined' ? window.innerHeight : 720,
   scrollY = typeof window !== 'undefined' ? window.scrollY : 0,
   scrollX = typeof window !== 'undefined' ? window.scrollX : 0
 ): { top: number; left: number } {
   if (!target || placement === 'center') {
-    return { top: scrollY + vh / 2 - 120, left: scrollX + vw / 2 - DIALOG_WIDTH / 2 };
+    return {
+      top: scrollY + Math.max(16, vh / 2 - dialogHeight / 2),
+      left: scrollX + vw / 2 - DIALOG_WIDTH / 2,
+    };
   }
 
-  // For 'auto' pick the side with the most room.
-  let actual = placement;
-  if (placement === 'auto') {
-    const spaceBelow = vh - (target.top - scrollY + target.height);
-    const spaceAbove = target.top - scrollY;
-    const spaceRight = vw - (target.left - scrollX + target.width);
-    const spaceLeft = target.left - scrollX;
+  // For 'auto' pick the side with the most room. We reuse this for any
+  // explicit placement that doesn't actually fit, so the dialog falls back
+  // to the largest open side rather than landing offscreen.
+  const spaceBelow = vh - (target.top - scrollY + target.height) - DIALOG_GAP;
+  const spaceAbove = target.top - scrollY - DIALOG_GAP;
+  const spaceRight = vw - (target.left - scrollX + target.width) - DIALOG_GAP;
+  const spaceLeft = target.left - scrollX - DIALOG_GAP;
+
+  function pickBestSide() {
     const maxSpace = Math.max(spaceBelow, spaceAbove, spaceRight, spaceLeft);
-    if (maxSpace === spaceBelow) actual = 'bottom';
-    else if (maxSpace === spaceAbove) actual = 'top';
-    else if (maxSpace === spaceRight) actual = 'right';
-    else actual = 'left';
+    if (maxSpace === spaceBelow) return 'bottom' as const;
+    if (maxSpace === spaceAbove) return 'top' as const;
+    if (maxSpace === spaceRight) return 'right' as const;
+    return 'left' as const;
+  }
+
+  let actual: 'top' | 'bottom' | 'left' | 'right' =
+    placement === 'auto' ? pickBestSide() : (placement as 'top' | 'bottom' | 'left' | 'right');
+
+  // If the explicit placement clearly doesn't fit, fall back to the best side.
+  // Threshold is dialogHeight for vertical sides, DIALOG_WIDTH for horizontal.
+  if (placement !== 'auto') {
+    const fits =
+      (actual === 'bottom' && spaceBelow >= dialogHeight) ||
+      (actual === 'top' && spaceAbove >= dialogHeight) ||
+      (actual === 'right' && spaceRight >= DIALOG_WIDTH) ||
+      (actual === 'left' && spaceLeft >= DIALOG_WIDTH);
+    if (!fits) actual = pickBestSide();
   }
 
   let top = 0;
@@ -57,15 +78,15 @@ function computeDialogPosition(
       left = target.left + target.width / 2 - DIALOG_WIDTH / 2;
       break;
     case 'top':
-      top = target.top - DIALOG_GAP - 240; // est dialog height
+      top = target.top - DIALOG_GAP - dialogHeight;
       left = target.left + target.width / 2 - DIALOG_WIDTH / 2;
       break;
     case 'right':
-      top = target.top + target.height / 2 - 100;
+      top = target.top + target.height / 2 - dialogHeight / 2;
       left = target.left + target.width + DIALOG_GAP;
       break;
     case 'left':
-      top = target.top + target.height / 2 - 100;
+      top = target.top + target.height / 2 - dialogHeight / 2;
       left = target.left - DIALOG_WIDTH - DIALOG_GAP;
       break;
   }
@@ -74,9 +95,12 @@ function computeDialogPosition(
   const minLeft = scrollX + 16;
   const maxLeft = scrollX + vw - DIALOG_WIDTH - 16;
   left = Math.max(minLeft, Math.min(maxLeft, left));
-  // Clamp vertically.
+  // Clamp into viewport vertically — this was the bug: top was floored but
+  // never ceilinged, so a `placement: 'bottom'` step on a target near the
+  // bottom of the viewport could push the dialog completely offscreen.
   const minTop = scrollY + 16;
-  top = Math.max(minTop, top);
+  const maxTop = scrollY + vh - dialogHeight - 16;
+  top = Math.max(minTop, Math.min(Math.max(minTop, maxTop), top));
 
   return { top, left };
 }
@@ -94,8 +118,10 @@ export function Tour({
   const [active, setActive] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
+  const [dialogHeight, setDialogHeight] = useState<number>(DIALOG_FALLBACK_HEIGHT);
   const [isMobile, setIsMobile] = useState(false);
   const [, startTransition] = useTransition();
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const step = steps[stepIndex];
 
@@ -114,6 +140,21 @@ export function Tour({
   useLayoutEffect(() => {
     if (!active || !step) return;
 
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function readRect() {
+      if (!step.target) {
+        setTargetRect(null);
+        return;
+      }
+      const el = document.querySelector(step.target);
+      if (!el) {
+        setTargetRect(null);
+        return;
+      }
+      setTargetRect(rectOf(el));
+    }
+
     function update() {
       if (!step.target) {
         setTargetRect(null);
@@ -124,22 +165,43 @@ export function Tour({
         setTargetRect(null);
         return;
       }
-      // Make sure it's in view.
+      // Bring the target into view, then read its rect after the smooth
+      // scroll settles. Reading immediately captures a stale position and
+      // the dialog ends up anchored to the wrong place.
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       setTargetRect(rectOf(el));
+      if (scrollTimer) clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(readRect, 400);
     }
 
     update();
-    // After scrollIntoView animation, recalculate.
-    const t = setTimeout(update, 350);
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', readRect);
+    window.addEventListener('scroll', readRect, { passive: true });
     return () => {
-      clearTimeout(t);
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update);
+      if (scrollTimer) clearTimeout(scrollTimer);
+      window.removeEventListener('resize', readRect);
+      window.removeEventListener('scroll', readRect);
     };
   }, [active, step]);
+
+  // Measure the dialog so we can clamp its computed position with the
+  // real height instead of a 240px guess. Without this, tall dialogs
+  // (longer body copy, multi-line title, or `helpHref` link) overflow
+  // the viewport when placed near the bottom edge.
+  useLayoutEffect(() => {
+    if (!mounted || !active || isMobile) return;
+    const el = dialogRef.current;
+    if (!el) return;
+    const measure = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h > 0) setDialogHeight(h);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mounted, active, isMobile, stepIndex]);
 
   // Esc to skip.
   useEffect(() => {
@@ -178,7 +240,7 @@ export function Tour({
 
   if (!mounted || !active || !step) return null;
 
-  const dialogPos = computeDialogPosition(targetRect, step.placement);
+  const dialogPos = computeDialogPosition(targetRect, step.placement, dialogHeight);
   const isLast = stepIndex === steps.length - 1;
 
   // Spotlight uses a box-shadow trick: the highlight rect itself has
@@ -237,6 +299,7 @@ export function Tour({
 
       {/* Step dialog — bottom sheet on mobile, floating on desktop. */}
       <div
+        ref={dialogRef}
         style={
           isMobile
             ? {
