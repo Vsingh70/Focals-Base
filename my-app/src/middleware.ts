@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   '/api/auth',
   '/api/inquiry',
   '/api/calendar',
+  '/api/health',
   '/widget',
 ];
 
