@@ -3,6 +3,8 @@
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   createTemplate,
   updateTemplate,
@@ -111,6 +113,8 @@ export function TemplateEditor({
   );
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   if (!mode) return null;
@@ -146,23 +150,30 @@ export function TemplateEditor({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Template updated' : 'Template created', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!isEdit) return;
-    if (!confirm('Delete this template? Existing contracts created from it are unaffected.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete template?',
+      message: 'Existing contracts created from this template are unaffected.',
+      confirmLabel: 'Delete template',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteTemplate(mode.template.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Template deleted', 'success');
       onClose();
       router.refresh();
     });

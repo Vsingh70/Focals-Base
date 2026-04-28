@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { regenerateCalendarToken, type CalendarFeed } from '@/lib/actions/calendar';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 const buttonSecondary: React.CSSProperties = {
   padding: '0.5rem 0.75rem',
@@ -33,6 +35,8 @@ export function CalendarSync({ feed }: { feed: CalendarFeed }) {
   const [isPending, startTransition] = useTransition();
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     setMounted(true);
@@ -52,22 +56,25 @@ export function CalendarSync({ feed }: { feed: CalendarFeed }) {
     }
   };
 
-  const handleRegenerate = () => {
-    if (
-      !confirm(
-        'Regenerating the token invalidates your current calendar subscriptions. Continue?'
-      )
-    ) {
-      return;
-    }
+  const handleRegenerate = async () => {
+    const confirmed = await confirm({
+      title: 'Regenerate calendar token?',
+      message:
+        'Your existing calendar subscriptions will stop syncing. You’ll need to re-subscribe with the new URL.',
+      confirmLabel: 'Regenerate',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await regenerateCalendarToken();
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
       setCurrent(res.data);
+      showToast('Calendar token regenerated', 'success');
     });
   };
 

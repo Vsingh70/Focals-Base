@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createGearItem, updateGearItem, deleteGearItem } from '@/lib/actions/gear';
 import type { Database } from '@/lib/supabase/types';
 
@@ -71,6 +73,8 @@ export function GearForm({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
@@ -131,21 +135,30 @@ export function GearForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Gear updated' : 'Gear added', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!g) return;
-    if (!confirm('Delete this gear item?')) return;
+    const confirmed = await confirm({
+      title: 'Delete gear item?',
+      message: 'This cannot be undone.',
+      confirmLabel: 'Delete item',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteGearItem(g.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Gear deleted', 'success');
       onClose();
       router.refresh();
     });

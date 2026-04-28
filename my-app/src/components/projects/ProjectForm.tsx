@@ -3,6 +3,9 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { ClientPicker } from '@/components/clients/ClientPicker';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createProject, updateProject, deleteProject } from '@/lib/actions/projects';
 import type { Database } from '@/lib/supabase/types';
 
@@ -10,6 +13,16 @@ type Project = Database['public']['Tables']['projects']['Row'];
 type ClientLite = { id: string; full_name: string };
 
 export type ProjectFormMode = { kind: 'create' } | { kind: 'edit'; project: Project };
+
+function toDatetimeLocalValue(raw: string | null | undefined): string {
+  // Accept either a YYYY-MM-DD date (legacy) or a full ISO timestamp and
+  // format it for an <input type="datetime-local"> in local time.
+  if (!raw) return '';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 const PROJECT_STATUSES = [
   'inquiry',
@@ -79,12 +92,18 @@ export function ProjectForm({
   mode,
   onClose,
   clients,
+  categorySuggestions = [],
+  locationSuggestions = [],
 }: {
   mode: ProjectFormMode | null;
   onClose: () => void;
   clients: ClientLite[];
+  categorySuggestions?: string[];
+  locationSuggestions?: string[];
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
@@ -102,12 +121,16 @@ export function ProjectForm({
     setError(null);
     const priceRaw = formData.get('package_price');
     const paidRaw = formData.get('amount_paid');
+    const dateLocal = String(formData.get('shoot_date') ?? '');
+    // datetime-local produces "YYYY-MM-DDTHH:mm" without timezone — convert to
+    // a full ISO string so the server stores the user's intended local moment.
+    const shootDate = dateLocal ? new Date(dateLocal).toISOString() : null;
     const payload = {
       title: String(formData.get('title') ?? ''),
       client_id: (formData.get('client_id') as string) || null,
       category: (formData.get('category') as string) || null,
       status: formData.get('status') as typeof PROJECT_STATUSES[number],
-      shoot_date: (formData.get('shoot_date') as string) || null,
+      shoot_date: shootDate,
       location: (formData.get('location') as string) || null,
       package_price: priceRaw && priceRaw !== '' ? Number(priceRaw) : null,
       amount_paid: paidRaw && paidRaw !== '' ? Number(paidRaw) : 0,
@@ -123,21 +146,31 @@ export function ProjectForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Project updated' : 'Project created', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!p) return;
-    if (!confirm('Delete this project? Linked shoots and finances will set their project_id to null.')) return;
+    const confirmed = await confirm({
+      title: 'Delete project?',
+      message:
+        'Linked shoots and finances will keep their data, but their reference to this project will be cleared.',
+      confirmLabel: 'Delete project',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteProject(p.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Project deleted', 'success');
       onClose();
       router.refresh();
     });
@@ -170,19 +203,11 @@ export function ProjectForm({
             <label style={labelStyle} htmlFor="proj-client">
               Client
             </label>
-            <select
-              id="proj-client"
+            <ClientPicker
               name="client_id"
               defaultValue={p?.client_id ?? ''}
-              style={{ ...inputStyle, appearance: 'auto' }}
-            >
-              <option value="">—</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.full_name}
-                </option>
-              ))}
-            </select>
+              clients={clients}
+            />
           </div>
           <div>
             <label style={labelStyle} htmlFor="proj-category">
@@ -194,8 +219,17 @@ export function ProjectForm({
               defaultValue={p?.category ?? ''}
               maxLength={60}
               placeholder="portrait, wedding, editorial…"
+              list="proj-category-options"
+              autoComplete="off"
               style={inputStyle}
             />
+            {categorySuggestions.length > 0 ? (
+              <datalist id="proj-category-options">
+                {categorySuggestions.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            ) : null}
           </div>
         </div>
 
@@ -219,13 +253,13 @@ export function ProjectForm({
           </div>
           <div>
             <label style={labelStyle} htmlFor="proj-date">
-              Shoot date
+              Shoot date & time
             </label>
             <input
               id="proj-date"
               name="shoot_date"
-              type="date"
-              defaultValue={p?.shoot_date ?? ''}
+              type="datetime-local"
+              defaultValue={toDatetimeLocalValue(p?.shoot_date)}
               style={inputStyle}
             />
           </div>
@@ -241,8 +275,17 @@ export function ProjectForm({
             defaultValue={p?.location ?? ''}
             maxLength={200}
             placeholder="Studio, venue, address…"
+            list="proj-location-options"
+            autoComplete="off"
             style={inputStyle}
           />
+          {locationSuggestions.length > 0 ? (
+            <datalist id="proj-location-options">
+              {locationSuggestions.map((l) => (
+                <option key={l} value={l} />
+              ))}
+            </datalist>
+          ) : null}
         </div>
 
         <div className="app-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>

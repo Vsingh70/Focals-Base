@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views, type View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { ShootForm } from './ShootForm';
+import { ShootForm, deriveShootLocationSuggestions } from './ShootForm';
 import { MobileCalendarView } from './MobileCalendarView';
 import type { Database } from '@/lib/supabase/types';
 
@@ -86,6 +86,7 @@ function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
   const [formMode, setFormMode] = useState<OpenForm>(null);
 
   const events = useMemo(() => shoots.map(shootToEvent), [shoots]);
+  const locationSuggestions = useMemo(() => deriveShootLocationSuggestions(shoots), [shoots]);
 
   const eventPropGetter = (event: RBCEvent) => {
     const color = statusColor[event.resource.status ?? 'scheduled'] ?? 'var(--color-accent)';
@@ -146,6 +147,7 @@ function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
         onClose={() => setFormMode(null)}
         clients={clients}
         projects={projects}
+        locationSuggestions={locationSuggestions}
       />
     </>
   );
@@ -154,9 +156,11 @@ function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
 export function NewShootButton({
   clients,
   projects,
+  locationSuggestions = [],
 }: {
   clients: ClientLite[];
   projects: ProjectLite[];
+  locationSuggestions?: string[];
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -183,6 +187,7 @@ export function NewShootButton({
         onClose={() => setOpen(false)}
         clients={clients}
         projects={projects}
+        locationSuggestions={locationSuggestions}
       />
     </>
   );

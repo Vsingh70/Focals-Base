@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   DndContext,
   closestCenter,
@@ -112,6 +114,8 @@ export function FormBuilder({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [name, setName] = useState('');
   const [fields, setFields] = useState<CustomField[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -195,21 +199,30 @@ export function FormBuilder({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Form updated' : 'Form created', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!isEdit) return;
-    if (!confirm('Delete this form? Submissions linked to it are kept.')) return;
+    const confirmed = await confirm({
+      title: 'Delete form?',
+      message: 'Submissions linked to this form will be kept.',
+      confirmLabel: 'Delete form',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteForm(mode.form.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Form deleted', 'success');
       onClose();
       router.refresh();
     });

@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createClient as createClientAction, updateClient, deleteClient } from '@/lib/actions/clients';
 import type { Database } from '@/lib/supabase/types';
 
@@ -75,6 +77,8 @@ export function ClientForm({
   redirectAfterDelete?: string;
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
@@ -105,23 +109,31 @@ export function ClientForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Client updated' : 'Client created', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!c) return;
-    if (!confirm('Delete this client? Linked projects/shoots/inquiries will set their client_id to null.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete client?',
+      message:
+        'Linked projects, shoots, and inquiries will keep their data, but their reference to this client will be cleared.',
+      confirmLabel: 'Delete client',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteClient(c.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Client deleted', 'success');
       onClose();
       router.push(redirectAfterDelete);
       router.refresh();

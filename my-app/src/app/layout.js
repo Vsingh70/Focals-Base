@@ -1,5 +1,6 @@
 import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { AppProviders } from '@/components/ui/AppProviders';
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME,
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <AppProviders>{children}</AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

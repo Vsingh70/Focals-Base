@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createLink, updateLink, deleteLink } from '@/lib/actions/links';
 import { LINK_CATEGORIES } from '@/lib/validations/links';
 import type { Database } from '@/lib/supabase/types';
@@ -72,6 +74,8 @@ export function LinkForm({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
@@ -101,21 +105,29 @@ export function LinkForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Link updated' : 'Link added', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!link) return;
-    if (!confirm('Delete this link?')) return;
+    const confirmed = await confirm({
+      title: 'Delete link?',
+      confirmLabel: 'Delete link',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteLink(link.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Link deleted', 'success');
       onClose();
       router.refresh();
     });

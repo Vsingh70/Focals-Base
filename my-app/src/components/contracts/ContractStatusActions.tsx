@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateContractStatus, deleteContract } from '@/lib/actions/contracts';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 const secondaryButton: React.CSSProperties = {
   padding: '0.5rem 0.875rem',
@@ -31,6 +33,8 @@ export function ContractStatusActions({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
 
   const setStatus = (status: 'sent' | 'signed' | 'void' | 'draft') => {
     setError(null);
@@ -38,21 +42,31 @@ export function ContractStatusActions({
       const res = await updateContractStatus({ id, status });
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast(`Contract marked as ${status}`, 'success');
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
-    if (!confirm('Delete this contract? This cannot be undone.')) return;
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: 'Delete contract?',
+      message: 'This cannot be undone.',
+      confirmLabel: 'Delete contract',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteContract(id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Contract deleted', 'success');
       router.push('/contracts');
       router.refresh();
     });

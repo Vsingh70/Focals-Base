@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/Badge';
-import { ShootForm } from '@/components/calendar/ShootForm';
+import { ShootForm, deriveShootLocationSuggestions } from '@/components/calendar/ShootForm';
 import { updateShoot } from '@/lib/actions/shoots';
 import type { Database } from '@/lib/supabase/types';
 
@@ -92,6 +92,7 @@ export function ShootsList({
   );
 
   const now = useMemo(() => new Date(), []);
+  const locationSuggestions = useMemo(() => deriveShootLocationSuggestions(shoots), [shoots]);
 
   const visible = useMemo(() => {
     const filtered = shoots.filter((s) => {
@@ -303,12 +304,14 @@ export function ShootsList({
         onClose={() => setCreateOpen(false)}
         clients={clients}
         projects={projects}
+        locationSuggestions={locationSuggestions}
       />
       <ShootForm
         mode={editing ? { kind: 'edit', shoot: editing } : null}
         onClose={() => setEditing(null)}
         clients={clients}
         projects={projects}
+        locationSuggestions={locationSuggestions}
       />
     </>
   );

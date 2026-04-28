@@ -108,7 +108,7 @@ export function QuickActions() {
           <span>Add Client</span>
           <span style={{ color: 'var(--color-text-tertiary)' }}>→</span>
         </button>
-        <Link href="/finances/add" style={actionButtonStyle}>
+        <Link href="/finances" style={actionButtonStyle}>
           <span>Log Expense</span>
           <span style={{ color: 'var(--color-text-tertiary)' }}>→</span>
         </Link>

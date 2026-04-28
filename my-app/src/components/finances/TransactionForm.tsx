@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   createTransaction,
   updateTransaction,
@@ -85,6 +87,8 @@ export function TransactionForm({
   projects: ProjectLite[];
 }) {
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
@@ -127,21 +131,30 @@ export function TransactionForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Transaction updated' : 'Transaction logged', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!t) return;
-    if (!confirm('Delete this transaction?')) return;
+    const confirmed = await confirm({
+      title: 'Delete transaction?',
+      message: 'This cannot be undone.',
+      confirmLabel: 'Delete transaction',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteTransaction(t.id);
       if (res.error !== null) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Transaction deleted', 'success');
       onClose();
       router.refresh();
     });

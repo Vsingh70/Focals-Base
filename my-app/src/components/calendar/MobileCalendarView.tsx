@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import { ShootForm } from './ShootForm';
+import { ShootForm, deriveShootLocationSuggestions } from './ShootForm';
 import type { Database } from '@/lib/supabase/types';
 
 type Shoot = Database['public']['Tables']['shoots']['Row'];
@@ -113,6 +113,8 @@ export function MobileCalendarView({
     }
     return map;
   }, [shoots]);
+
+  const locationSuggestions = useMemo(() => deriveShootLocationSuggestions(shoots), [shoots]);
 
   // Months to render: 2 past + current + 9 forward.
   const months = useMemo(() => {
@@ -507,6 +509,7 @@ export function MobileCalendarView({
         onClose={() => setFormMode(null)}
         clients={clients}
         projects={projects}
+        locationSuggestions={locationSuggestions}
       />
     </>
   );

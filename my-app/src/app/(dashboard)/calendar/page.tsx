@@ -41,12 +41,23 @@ export default async function CalendarPage() {
   const clients = clientsRes.data ?? [];
   const projects = projectsRes.data ?? [];
 
+  // Distinct prior shoot locations — feed the <datalist> autosuggest in the
+  // ShootForm. Derived server-side so NewShootButton (which doesn't see the
+  // shoots prop) gets the same list as the in-calendar form.
+  const locationSuggestions = Array.from(
+    new Set(
+      shoots
+        .map((s) => (s.location ?? '').trim())
+        .filter((l) => l.length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
   return (
     <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Calendar"
         subtitle="All scheduled shoots. Click a date to add one, or an event to edit."
-        actions={<NewShootButton clients={clients} projects={projects} />}
+        actions={<NewShootButton clients={clients} projects={projects} locationSuggestions={locationSuggestions} />}
       />
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>

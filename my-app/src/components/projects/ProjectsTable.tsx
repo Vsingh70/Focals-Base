@@ -92,6 +92,22 @@ export function ProjectsTable({
     [clients]
   );
 
+  // Distinct, non-empty categories and locations from the user's existing
+  // projects, sorted alphabetically — feed the <datalist> autosuggest fields
+  // in the project form.
+  const { categorySuggestions, locationSuggestions } = useMemo(() => {
+    const cats = new Set<string>();
+    const locs = new Set<string>();
+    for (const p of projects) {
+      const c = (p.category ?? '').trim();
+      if (c) cats.add(c);
+      const l = (p.location ?? '').trim();
+      if (l) locs.add(l);
+    }
+    const sort = (s: Set<string>) => Array.from(s).sort((a, b) => a.localeCompare(b));
+    return { categorySuggestions: sort(cats), locationSuggestions: sort(locs) };
+  }, [projects]);
+
   const filtered = useMemo(() => {
     const out = filter === 'all' ? projects : projects.filter((p) => p.status === filter);
     const sorted = [...out].sort((a, b) => {
@@ -340,7 +356,13 @@ export function ProjectsTable({
         </div>
       )}
 
-      <ProjectForm mode={mode} onClose={() => setMode(null)} clients={clients} />
+      <ProjectForm
+        mode={mode}
+        onClose={() => setMode(null)}
+        clients={clients}
+        categorySuggestions={categorySuggestions}
+        locationSuggestions={locationSuggestions}
+      />
     </>
   );
 }

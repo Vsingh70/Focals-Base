@@ -17,7 +17,14 @@ export const createProjectSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
   category: z.string().max(60).nullable().optional(),
   status: projectStatusEnum.default('inquiry'),
-  shoot_date: z.string().date().nullable().optional(),
+  // Accepts either a YYYY-MM-DD date or a full ISO timestamp. Postgres handles
+  // the cast on its end (date column truncates time; timestamptz column stores
+  // both). Once `projects.shoot_date` is migrated to timestamptz, the form
+  // sends datetime-local values verbatim.
+  shoot_date: z
+    .union([z.string().date(), z.string().datetime({ offset: true })])
+    .nullable()
+    .optional(),
   location: z.string().max(200).nullable().optional(),
   package_price: z.number().nonnegative().nullable().optional(),
   amount_paid: z.number().nonnegative().optional(),

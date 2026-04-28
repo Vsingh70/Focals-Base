@@ -3,6 +3,9 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlideOver } from '@/components/ui/SlideOver';
+import { ClientPicker } from '@/components/clients/ClientPicker';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createShoot, updateShoot, deleteShoot } from '@/lib/actions/shoots';
 import type { Database } from '@/lib/supabase/types';
 
@@ -71,20 +74,39 @@ function toDatetimeLocalValue(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/**
+ * Distinct, non-empty, alphabetically-sorted shoot locations — feeds the
+ * <datalist> autosuggest in the shoot form. Exposed as a helper so every
+ * parent that renders ShootForm can derive the list from its own `shoots`
+ * prop without re-implementing the same loop.
+ */
+export function deriveShootLocationSuggestions(shoots: { location: string | null }[]): string[] {
+  const seen = new Set<string>();
+  for (const s of shoots) {
+    const l = (s.location ?? '').trim();
+    if (l) seen.add(l);
+  }
+  return Array.from(seen).sort((a, b) => a.localeCompare(b));
+}
+
 export function ShootForm({
   mode,
   onClose,
   clients,
   projects,
+  locationSuggestions = [],
 }: {
   mode: Mode | null;
   onClose: () => void;
   clients: ClientLite[];
   projects: ProjectLite[];
+  locationSuggestions?: string[];
 }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { show: showToast } = useToast();
+  const confirm = useConfirm();
   const [formKey, setFormKey] = useState(0);
 
   // Reset the form when mode changes
@@ -123,21 +145,30 @@ export function ShootForm({
         setError(res.error);
         return;
       }
+      showToast(isEdit ? 'Shoot updated' : 'Shoot created', 'success');
       onClose();
       router.refresh();
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!shoot) return;
-    if (!confirm('Delete this shoot?')) return;
+    const confirmed = await confirm({
+      title: 'Delete shoot?',
+      message: 'This cannot be undone.',
+      confirmLabel: 'Delete shoot',
+      destructive: true,
+    });
+    if (!confirmed) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteShoot(shoot.id);
       if (res.error) {
         setError(res.error);
+        showToast(res.error, 'danger');
         return;
       }
+      showToast('Shoot deleted', 'success');
       onClose();
       router.refresh();
     });
@@ -205,27 +236,28 @@ export function ShootForm({
             defaultValue={shoot?.location ?? ''}
             maxLength={200}
             placeholder="Studio, venue, address…"
+            list="shoot-location-options"
+            autoComplete="off"
             style={inputStyle}
           />
+          {locationSuggestions.length > 0 ? (
+            <datalist id="shoot-location-options">
+              {locationSuggestions.map((l) => (
+                <option key={l} value={l} />
+              ))}
+            </datalist>
+          ) : null}
         </div>
 
         <div>
           <label style={labelStyle} htmlFor="shoot-client">
             Client
           </label>
-          <select
-            id="shoot-client"
+          <ClientPicker
             name="client_id"
             defaultValue={shoot?.client_id ?? ''}
-            style={{ ...inputStyle, appearance: 'auto' }}
-          >
-            <option value="">—</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.full_name}
-              </option>
-            ))}
-          </select>
+            clients={clients}
+          />
         </div>
 
         <div>

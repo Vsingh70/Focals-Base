@@ -874,3 +874,32 @@ These get done DURING the relevant iOS task, not before:
 - [ ] **`profiles.push_token` column** — schema migration to store APNs device tokens (Task 13 Section E)
 - [ ] **Markdown source endpoint for help docs** — OPTIONAL; either add `/help/[slug]/markdown/route.ts` to web, or bundle markdown into iOS app resources (Task 12 Module 4)
 - [ ] **Privacy policy page** — `/privacy` on web. Required for App Store listing (Task 14)
+
+---
+
+## UX polish (2026-04-27) — done in this session
+
+Three small fixes shipped:
+
+1. **In-line "Add new client" inside the project + shoot client pickers.** The dropdown now has a `+ Add new client…` option that expands a tiny inline form (name + email + phone). On save it creates the client via the existing `createClient` server action, adds it to the local list, auto-selects it, and shows a success toast. The full client list refreshes on the parent form's `router.refresh()` after the parent saves.
+
+2. **Project shoot date now includes time.** `ProjectForm` switched from `<input type="date">` to `<input type="datetime-local">`. The Zod validator (`my-app/src/lib/validations/projects.ts`) now accepts either a `YYYY-MM-DD` date or a full ISO timestamp, so the form continues to work whether or not you've migrated the DB column.
+
+3. **Toast + custom confirm dialog** replace every `window.confirm()` and Chrome popup. New components: `my-app/src/components/ui/Toast.tsx`, `my-app/src/components/ui/ConfirmDialog.tsx`, mounted via `AppProviders` in the root layout. All 11 sites that used `confirm()` now use the in-app dialog (`useConfirm()`), and every successful create/update/delete fires a `useToast().show(...)` success toast in the brand styling. Failed mutations show a red toast with the server error message.
+
+### Optional schema migration to support time on `projects.shoot_date`
+
+The current Postgres column is `date` (no time). The form sends a full ISO timestamp; Postgres truncates the time portion server-side, so **no migration is required** for the front-end change to ship. But to actually persist the time, run this in the Supabase SQL editor:
+
+```sql
+ALTER TABLE projects
+  ALTER COLUMN shoot_date TYPE timestamptz
+  USING (shoot_date::timestamptz);
+```
+
+After running:
+- existing rows keep their date at midnight in UTC
+- new saves persist the local hour/minute the user picked
+- every `formatDate(...)` call site continues to work because they all wrap in `new Date(...)` which handles both formats
+
+Skip this migration if you don't care about the time being persisted yet — the UI will just always show 12:00 AM.
