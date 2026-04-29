@@ -6,13 +6,13 @@ export const dashboardTour: TourConfig = {
     {
       target: null,
       title: 'Welcome to your business cockpit',
-      body: 'Quick orientation — the dashboard is where you start every day. KPI cards up top, charts below, upcoming shoots and recent projects in the lower half. Most numbers are clickable and link to the full module.',
+      body: 'Quick orientation — the dashboard is where you start every day. KPI cards up top, charts below, upcoming projects and recent projects in the lower half. Most numbers are clickable and link to the full module.',
       placement: 'center',
     },
     {
       target: '[data-tour="kpi-row"]',
       title: 'Key numbers, all at once',
-      body: 'Revenue this month (with last-month delta), active projects, upcoming shoots in the next 7 days, and outstanding payments. Click any card to jump into its module.',
+      body: 'Revenue this month (with last-month delta), active projects, upcoming projects in the next 7 days, and outstanding payments. Click any card to jump into its module.',
       placement: 'bottom',
     },
     {
@@ -65,14 +65,14 @@ export const calendarTour: TourConfig = {
   steps: [
     {
       target: null,
-      title: 'Your shoot calendar',
-      body: 'Every scheduled shoot, viewable as month / week / day / agenda. Click an empty date to add a shoot pre-filled with that date — no separate "add" page.',
+      title: 'Your project calendar',
+      body: 'Every project with a scheduled shoot date, viewable as month / week / day / agenda. Click an empty slot to add a project pre-filled with that date — no separate "add" page.',
       placement: 'center',
     },
     {
       target: '[data-tour="calendar-grid"]',
       title: 'Fast scheduling',
-      body: 'Click any event to edit. Status colors: green = completed, brown = scheduled, orange = rescheduled, red = cancelled. The Calendar UI is the easiest place to manage shoots day-to-day.',
+      body: 'Click any event to edit. Status colors: green = delivered/completed, accent = booked, orange = in-progress/editing, red = cancelled. The Calendar UI is the easiest place to manage your schedule day-to-day.',
       placement: 'top',
     },
     {
@@ -114,7 +114,7 @@ export const clientsTour: TourConfig = {
     {
       target: null,
       title: 'Your CRM',
-      body: 'Every client you\'ve worked with or talked to. Each one has a detail page showing all linked projects, shoots, inquiries, and contracts.',
+      body: 'Every client you\'ve worked with or talked to. Each one has a detail page showing all linked projects, inquiries, and contracts.',
       placement: 'center',
     },
     {
@@ -126,31 +126,7 @@ export const clientsTour: TourConfig = {
     {
       target: null,
       title: 'Detail pages',
-      body: 'Click any client → full page with their contact info AND every project, shoot, inquiry, and contract you have with them. Best place to prep for a returning-client meeting.',
-      placement: 'center',
-    },
-  ],
-};
-
-export const shootsTour: TourConfig = {
-  id: 'shoots',
-  steps: [
-    {
-      target: null,
-      title: 'Shoots, ordered chronologically',
-      body: 'A list view of all sessions. Use this when the calendar feels too visual — same data, different lens.',
-      placement: 'center',
-    },
-    {
-      target: '[data-tour="shoots-toggle"]',
-      title: 'Upcoming vs. past',
-      body: 'Toggle between future shoots (chronological order, soonest first) and past shoots (reverse chronological). Past shoots support quick status updates without opening the form.',
-      placement: 'bottom',
-    },
-    {
-      target: null,
-      title: 'Quick status updates',
-      body: 'On any scheduled shoot you can click Done or Cancel right from the row, no slide-over needed. Great for fast end-of-day cleanup.',
+      body: 'Click any client → full page with their contact info AND every project, inquiry, and contract you have with them. Best place to prep for a returning-client meeting.',
       placement: 'center',
     },
   ],
@@ -276,7 +252,6 @@ export const TOURS: Record<string, TourConfig> = {
   calendar: calendarTour,
   projects: projectsTour,
   clients: clientsTour,
-  shoots: shootsTour,
   finances: financesTour,
   contracts: contractsTour,
   gear: gearTour,

@@ -7,20 +7,23 @@ import { useEffect, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views, type View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { ShootForm, deriveShootLocationSuggestions } from './ShootForm';
+import { ProjectForm, type ProjectFormMode } from '@/components/projects/ProjectForm';
 import { MobileCalendarView } from './MobileCalendarView';
 import type { Database } from '@/lib/supabase/types';
 
-type Shoot = Database['public']['Tables']['shoots']['Row'];
+type Project = Database['public']['Tables']['projects']['Row'];
 type ClientLite = { id: string; full_name: string };
-type ProjectLite = { id: string; title: string };
+
+// Each project on the calendar gets a default 60-minute slot (projects don't
+// carry duration; the user just picks a start time).
+const DEFAULT_DURATION_MS = 60 * 60_000;
 
 type RBCEvent = {
   id: string;
   title: string;
   start: Date;
   end: Date;
-  resource: Shoot;
+  resource: Project;
 };
 
 const locales = { 'en-US': enUS };
@@ -32,25 +35,49 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+// Project lifecycle → calendar swatch.
 const statusColor: Record<string, string> = {
-  scheduled: 'var(--color-accent)',
-  completed: 'var(--color-text-tertiary)',
-  rescheduled: 'var(--color-warning)',
+  inquiry: 'var(--color-text-tertiary)',
+  booked: 'var(--color-accent)',
+  in_progress: 'var(--color-warning)',
+  editing: 'var(--color-warning)',
+  delivered: 'var(--color-success)',
+  completed: 'var(--color-success)',
   cancelled: 'var(--color-danger)',
 };
 
-function shootToEvent(s: Shoot): RBCEvent {
-  const start = new Date(s.scheduled_at);
-  const end = new Date(start.getTime() + (s.duration_minutes ?? 60) * 60_000);
-  return { id: s.id, title: s.title, start, end, resource: s };
+function projectToEvent(p: Project): RBCEvent | null {
+  if (!p.shoot_date) return null;
+  const start = new Date(p.shoot_date);
+  if (Number.isNaN(start.getTime())) return null;
+  return {
+    id: p.id,
+    title: p.title,
+    start,
+    end: new Date(start.getTime() + DEFAULT_DURATION_MS),
+    resource: p,
+  };
 }
 
-type OpenForm = { kind: 'create'; presetStart?: Date } | { kind: 'edit'; shoot: Shoot } | null;
+/**
+ * Distinct, non-empty, alphabetically sorted project locations — feeds the
+ * <datalist> autosuggest in ProjectForm. Lives here so the calendar parents
+ * can pass a derived list down without duplicating the loop.
+ */
+export function deriveProjectLocationSuggestions(
+  projects: { location: string | null }[]
+): string[] {
+  const seen = new Set<string>();
+  for (const p of projects) {
+    const l = (p.location ?? '').trim();
+    if (l) seen.add(l);
+  }
+  return Array.from(seen).sort((a, b) => a.localeCompare(b));
+}
 
 type CalendarProps = {
-  shoots: Shoot[];
+  projects: Project[];
   clients: ClientLite[];
-  projects: ProjectLite[];
 };
 
 /**
@@ -80,16 +107,22 @@ export function CalendarView(props: CalendarProps) {
   return <DesktopCalendarView {...props} />;
 }
 
-function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
+function DesktopCalendarView({ projects, clients }: CalendarProps) {
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState<Date>(new Date());
-  const [formMode, setFormMode] = useState<OpenForm>(null);
+  const [formMode, setFormMode] = useState<ProjectFormMode | null>(null);
 
-  const events = useMemo(() => shoots.map(shootToEvent), [shoots]);
-  const locationSuggestions = useMemo(() => deriveShootLocationSuggestions(shoots), [shoots]);
+  const events = useMemo(
+    () => projects.map(projectToEvent).filter((e): e is RBCEvent => e !== null),
+    [projects]
+  );
+  const locationSuggestions = useMemo(
+    () => deriveProjectLocationSuggestions(projects),
+    [projects]
+  );
 
   const eventPropGetter = (event: RBCEvent) => {
-    const color = statusColor[event.resource.status ?? 'scheduled'] ?? 'var(--color-accent)';
+    const color = statusColor[event.resource.status ?? 'inquiry'] ?? 'var(--color-accent)';
     return {
       style: {
         backgroundColor: 'var(--color-bg-tertiary)',
@@ -132,9 +165,9 @@ function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
             views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
             selectable
             onSelectSlot={(slotInfo) =>
-              setFormMode({ kind: 'create', presetStart: slotInfo.start })
+              setFormMode({ kind: 'create', presetShootDate: slotInfo.start })
             }
-            onSelectEvent={(event) => setFormMode({ kind: 'edit', shoot: event.resource })}
+            onSelectEvent={(event) => setFormMode({ kind: 'edit', project: event.resource })}
             eventPropGetter={eventPropGetter}
             popup
             style={{ height: '100%' }}
@@ -142,24 +175,21 @@ function DesktopCalendarView({ shoots, clients, projects }: CalendarProps) {
         </div>
       </div>
 
-      <ShootForm
+      <ProjectForm
         mode={formMode}
         onClose={() => setFormMode(null)}
         clients={clients}
-        projects={projects}
         locationSuggestions={locationSuggestions}
       />
     </>
   );
 }
 
-export function NewShootButton({
+export function NewProjectButton({
   clients,
-  projects,
   locationSuggestions = [],
 }: {
   clients: ClientLite[];
-  projects: ProjectLite[];
   locationSuggestions?: string[];
 }) {
   const [open, setOpen] = useState(false);
@@ -180,13 +210,12 @@ export function NewShootButton({
           fontFamily: 'var(--font-sans)',
         }}
       >
-        + Shoot
+        + Project
       </button>
-      <ShootForm
+      <ProjectForm
         mode={open ? { kind: 'create' } : null}
         onClose={() => setOpen(false)}
         clients={clients}
-        projects={projects}
         locationSuggestions={locationSuggestions}
       />
     </>

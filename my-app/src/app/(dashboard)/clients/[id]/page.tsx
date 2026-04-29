@@ -49,7 +49,7 @@ export default async function ClientDetailPage({ params }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [clientRes, projectsRes, shootsRes, inquiriesRes, contractsRes] = await Promise.all([
+  const [clientRes, projectsRes, inquiriesRes, contractsRes] = await Promise.all([
     supabase
       .from('clients')
       .select('*')
@@ -62,12 +62,6 @@ export default async function ClientDetailPage({ params }: Props) {
       .eq('client_id', id)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
-    supabase
-      .from('shoots')
-      .select('id, title, scheduled_at, location, status')
-      .eq('client_id', id)
-      .eq('user_id', user.id)
-      .order('scheduled_at', { ascending: false }),
     supabase
       .from('inquiries')
       .select('id, source, status, created_at, message')
@@ -85,7 +79,6 @@ export default async function ClientDetailPage({ params }: Props) {
   if (!clientRes.data) notFound();
   const client = clientRes.data;
   const projects = projectsRes.data ?? [];
-  const shoots = shootsRes.data ?? [];
   const inquiries = inquiriesRes.data ?? [];
   const contracts = contractsRes.data ?? [];
 
@@ -175,50 +168,6 @@ export default async function ClientDetailPage({ params }: Props) {
                     </div>
                     <StatusBadge status={p.status} />
                   </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Shoots ({shoots.length})</CardTitle>
-          </CardHeader>
-          {shoots.length === 0 ? (
-            <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.875rem', margin: 0 }}>
-              No shoots with this client.
-            </p>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.5rem' }}>
-              {shoots.map((s) => (
-                <li
-                  key={s.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '0.75rem',
-                    padding: '0.625rem 0.875rem',
-                    background: 'var(--color-bg-tertiary)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{s.title}</div>
-                    <div
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--color-text-tertiary)',
-                        marginTop: '0.125rem',
-                      }}
-                    >
-                      {new Date(s.scheduled_at).toLocaleString()}
-                      {s.location ? ` · ${s.location}` : ''}
-                    </div>
-                  </div>
-                  {s.status ? <Badge tone="neutral">{s.status}</Badge> : null}
                 </li>
               ))}
             </ul>

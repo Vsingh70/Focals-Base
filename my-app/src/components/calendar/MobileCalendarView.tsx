@@ -2,27 +2,36 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import { ShootForm, deriveShootLocationSuggestions } from './ShootForm';
+import { ProjectForm, type ProjectFormMode } from '@/components/projects/ProjectForm';
+import { deriveProjectLocationSuggestions } from './CalendarView';
 import type { Database } from '@/lib/supabase/types';
 
-type Shoot = Database['public']['Tables']['shoots']['Row'];
+type Project = Database['public']['Tables']['projects']['Row'];
 type ClientLite = { id: string; full_name: string };
-type ProjectLite = { id: string; title: string };
 
-type OpenForm = { kind: 'create'; presetStart?: Date } | { kind: 'edit'; shoot: Shoot } | null;
+const DEFAULT_DURATION_MIN = 60;
 
+// Project status → Badge tone for the per-day list cards.
 const statusToneMap = {
-  scheduled: 'accent',
+  inquiry: 'neutral',
+  booked: 'accent',
+  in_progress: 'warning',
+  editing: 'warning',
+  delivered: 'success',
   completed: 'success',
   cancelled: 'danger',
-  rescheduled: 'warning',
 } as const;
 
+// Project status → coloured bar swatch in the day cell + left border on the
+// per-day list card.
 const STATUS_BAR_COLOR: Record<string, string> = {
-  scheduled: 'var(--color-accent)',
+  inquiry: 'var(--color-text-tertiary)',
+  booked: 'var(--color-accent)',
+  in_progress: 'var(--color-warning)',
+  editing: 'var(--color-warning)',
+  delivered: 'var(--color-success)',
   completed: 'var(--color-success)',
   cancelled: 'var(--color-danger)',
-  rescheduled: 'var(--color-warning)',
 };
 
 const WEEKDAY_HEADERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -78,15 +87,13 @@ function formatLongDay(d: Date) {
 }
 
 export function MobileCalendarView({
-  shoots,
-  clients,
   projects,
+  clients,
 }: {
-  shoots: Shoot[];
+  projects: Project[];
   clients: ClientLite[];
-  projects: ProjectLite[];
 }) {
-  const [formMode, setFormMode] = useState<OpenForm>(null);
+  const [formMode, setFormMode] = useState<ProjectFormMode | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const currentMonthRef = useRef<HTMLElement | null>(null);
@@ -95,26 +102,33 @@ export function MobileCalendarView({
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayKey = dayKey(today);
 
-  // Group shoots by local-day key for fast cell lookup.
-  const shootsByDay = useMemo(() => {
-    const map = new Map<string, Shoot[]>();
-    for (const s of shoots) {
-      const dt = new Date(s.scheduled_at);
+  // Group projects by local-day key for fast cell lookup. Projects without
+  // a shoot_date don't appear on the calendar.
+  const projectsByDay = useMemo(() => {
+    const map = new Map<string, Project[]>();
+    for (const p of projects) {
+      if (!p.shoot_date) continue;
+      const dt = new Date(p.shoot_date);
+      if (Number.isNaN(dt.getTime())) continue;
       const key = dayKey(startOfDay(dt));
       const list = map.get(key);
-      if (list) list.push(s);
-      else map.set(key, [s]);
+      if (list) list.push(p);
+      else map.set(key, [p]);
     }
-    // Sort each day's shoots by start time.
+    // Sort each day's projects by shoot time.
     for (const list of map.values()) {
       list.sort(
-        (a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
+        (a, b) =>
+          new Date(a.shoot_date ?? 0).getTime() - new Date(b.shoot_date ?? 0).getTime()
       );
     }
     return map;
-  }, [shoots]);
+  }, [projects]);
 
-  const locationSuggestions = useMemo(() => deriveShootLocationSuggestions(shoots), [shoots]);
+  const locationSuggestions = useMemo(
+    () => deriveProjectLocationSuggestions(projects),
+    [projects]
+  );
 
   // Months to render: 2 past + current + 9 forward.
   const months = useMemo(() => {
@@ -143,14 +157,10 @@ export function MobileCalendarView({
   };
 
   const selectedDayKey = selectedDay ? dayKey(selectedDay) : null;
-  const selectedDayShoots = selectedDayKey ? shootsByDay.get(selectedDayKey) ?? [] : [];
+  const selectedDayProjects = selectedDayKey ? projectsByDay.get(selectedDayKey) ?? [] : [];
   const clientMap = useMemo(
     () => new Map(clients.map((c) => [c.id, c.full_name])),
     [clients]
-  );
-  const projectMap = useMemo(
-    () => new Map(projects.map((p) => [p.id, p.title])),
-    [projects]
   );
 
   return (
@@ -198,7 +208,7 @@ export function MobileCalendarView({
             fontFamily: 'var(--font-sans)',
           }}
         >
-          + Shoot
+          + Project
         </button>
       </div>
 
@@ -275,8 +285,8 @@ export function MobileCalendarView({
                   const cellKey = dayKey(d);
                   const isToday = cellKey === todayKey;
                   const isSelected = selectedDayKey === cellKey;
-                  const dayShoots = shootsByDay.get(cellKey) ?? [];
-                  const visibleBars = dayShoots.slice(0, 3);
+                  const dayProjects = projectsByDay.get(cellKey) ?? [];
+                  const visibleBars = dayProjects.slice(0, 3);
 
                   return (
                     <button
@@ -325,7 +335,7 @@ export function MobileCalendarView({
                           marginTop: 'auto',
                         }}
                       >
-                        {visibleBars.map((s, idx) => (
+                        {visibleBars.map((p, idx) => (
                           <span
                             key={idx}
                             style={{
@@ -333,7 +343,7 @@ export function MobileCalendarView({
                               height: '4px',
                               borderRadius: '2px',
                               background:
-                                STATUS_BAR_COLOR[s.status ?? 'scheduled'] ??
+                                STATUS_BAR_COLOR[p.status ?? 'inquiry'] ??
                                 'var(--color-accent)',
                             }}
                           />
@@ -363,7 +373,7 @@ export function MobileCalendarView({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       gap: '0.5rem',
-                      marginBottom: selectedDayShoots.length > 0 ? '0.625rem' : 0,
+                      marginBottom: selectedDayProjects.length > 0 ? '0.625rem' : 0,
                     }}
                   >
                     <span
@@ -380,7 +390,7 @@ export function MobileCalendarView({
                       onClick={() => {
                         const start = new Date(selectedDay);
                         start.setHours(10, 0, 0, 0);
-                        setFormMode({ kind: 'create', presetStart: start });
+                        setFormMode({ kind: 'create', presetShootDate: start });
                       }}
                       style={{
                         background: 'transparent',
@@ -396,7 +406,7 @@ export function MobileCalendarView({
                       + Add
                     </button>
                   </div>
-                  {selectedDayShoots.length === 0 ? (
+                  {selectedDayProjects.length === 0 ? (
                     <p
                       style={{
                         margin: 0,
@@ -404,7 +414,7 @@ export function MobileCalendarView({
                         color: 'var(--color-text-tertiary)',
                       }}
                     >
-                      No shoots scheduled.
+                      No projects scheduled.
                     </p>
                   ) : (
                     <ul
@@ -416,15 +426,15 @@ export function MobileCalendarView({
                         gap: '0.5rem',
                       }}
                     >
-                      {selectedDayShoots.map((s) => {
-                        const start = new Date(s.scheduled_at);
+                      {selectedDayProjects.map((p) => {
+                        const start = new Date(p.shoot_date ?? 0);
                         const tone =
-                          statusToneMap[s.status as keyof typeof statusToneMap] ?? 'neutral';
+                          statusToneMap[p.status as keyof typeof statusToneMap] ?? 'neutral';
                         return (
-                          <li key={s.id}>
+                          <li key={p.id}>
                             <button
                               type="button"
-                              onClick={() => setFormMode({ kind: 'edit', shoot: s })}
+                              onClick={() => setFormMode({ kind: 'edit', project: p })}
                               style={{
                                 display: 'block',
                                 width: '100%',
@@ -433,14 +443,14 @@ export function MobileCalendarView({
                                 background: 'var(--color-bg-tertiary)',
                                 border: '1px solid var(--color-border)',
                                 borderLeft: `3px solid ${
-                                  STATUS_BAR_COLOR[s.status ?? 'scheduled'] ??
+                                  STATUS_BAR_COLOR[p.status ?? 'inquiry'] ??
                                   'var(--color-accent)'
                                 }`,
                                 borderRadius: 'var(--radius-sm)',
                                 cursor: 'pointer',
                                 fontFamily: 'var(--font-sans)',
                                 color: 'inherit',
-                                opacity: s.status === 'completed' ? 0.7 : 1,
+                                opacity: p.status === 'completed' ? 0.7 : 1,
                               }}
                             >
                               <div
@@ -464,9 +474,9 @@ export function MobileCalendarView({
                                     WebkitBoxOrient: 'vertical',
                                   }}
                                 >
-                                  {s.title}
+                                  {p.title}
                                 </span>
-                                {s.status ? <Badge tone={tone}>{s.status}</Badge> : null}
+                                {p.status ? <Badge tone={tone}>{p.status}</Badge> : null}
                               </div>
                               <div
                                 style={{
@@ -474,13 +484,13 @@ export function MobileCalendarView({
                                   color: 'var(--color-text-secondary)',
                                 }}
                               >
-                                {formatTimeRange(start, s.duration_minutes ?? 60)}
-                                {s.client_id
-                                  ? ` · ${clientMap.get(s.client_id) ?? '—'}`
+                                {formatTimeRange(start, DEFAULT_DURATION_MIN)}
+                                {p.client_id
+                                  ? ` · ${clientMap.get(p.client_id) ?? '—'}`
                                   : ''}
-                                {s.location ? ` · ${s.location}` : ''}
+                                {p.location ? ` · ${p.location}` : ''}
                               </div>
-                              {s.project_id ? (
+                              {p.category ? (
                                 <div
                                   style={{
                                     fontSize: '0.625rem',
@@ -488,7 +498,7 @@ export function MobileCalendarView({
                                     marginTop: '0.125rem',
                                   }}
                                 >
-                                  {projectMap.get(s.project_id) ?? ''}
+                                  {p.category}
                                 </div>
                               ) : null}
                             </button>
@@ -504,11 +514,10 @@ export function MobileCalendarView({
         })}
       </div>
 
-      <ShootForm
+      <ProjectForm
         mode={formMode}
         onClose={() => setFormMode(null)}
         clients={clients}
-        projects={projects}
         locationSuggestions={locationSuggestions}
       />
     </>

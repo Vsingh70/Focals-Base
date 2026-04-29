@@ -12,13 +12,18 @@ import type { Database } from '@/lib/supabase/types';
 type Project = Database['public']['Tables']['projects']['Row'];
 type ClientLite = { id: string; full_name: string };
 
-export type ProjectFormMode = { kind: 'create' } | { kind: 'edit'; project: Project };
+export type ProjectFormMode =
+  // `presetShootDate` is filled when a user clicks an empty slot on the
+  // calendar — the new project should default to that date/time.
+  | { kind: 'create'; presetShootDate?: Date }
+  | { kind: 'edit'; project: Project };
 
-function toDatetimeLocalValue(raw: string | null | undefined): string {
-  // Accept either a YYYY-MM-DD date (legacy) or a full ISO timestamp and
-  // format it for an <input type="datetime-local"> in local time.
+function toDatetimeLocalValue(raw: string | Date | null | undefined): string {
+  // Accept either a YYYY-MM-DD date (legacy), a full ISO timestamp, or a
+  // Date instance, and format for an <input type="datetime-local"> in
+  // local time.
   if (!raw) return '';
-  const d = new Date(raw);
+  const d = raw instanceof Date ? raw : new Date(raw);
   if (Number.isNaN(d.getTime())) return '';
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -116,6 +121,7 @@ export function ProjectForm({
   if (!mode) return null;
   const isEdit = mode.kind === 'edit';
   const p = isEdit ? mode.project : null;
+  const presetShootDate = !isEdit ? mode.presetShootDate ?? null : null;
 
   const handleSubmit = (formData: FormData) => {
     setError(null);
@@ -157,7 +163,7 @@ export function ProjectForm({
     const confirmed = await confirm({
       title: 'Delete project?',
       message:
-        'Linked shoots and finances will keep their data, but their reference to this project will be cleared.',
+        'Linked finances will keep their data, but their reference to this project will be cleared.',
       confirmLabel: 'Delete project',
       destructive: true,
     });
@@ -259,7 +265,7 @@ export function ProjectForm({
               id="proj-date"
               name="shoot_date"
               type="datetime-local"
-              defaultValue={toDatetimeLocalValue(p?.shoot_date)}
+              defaultValue={toDatetimeLocalValue(p?.shoot_date ?? presetShootDate)}
               style={inputStyle}
             />
           </div>

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getCalendarFeed } from '@/lib/actions/calendar';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { CalendarView, NewShootButton } from '@/components/calendar/CalendarView';
+import { CalendarView, NewProjectButton } from '@/components/calendar/CalendarView';
 import { CalendarSync } from '@/components/calendar/CalendarSync';
 import { TourGate } from '@/components/tour/TourGate';
 import { calendarTour } from '@/components/tour/tours';
@@ -18,36 +18,33 @@ export default async function CalendarPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [shootsRes, clientsRes, projectsRes, feedRes] = await Promise.all([
+  const [projectsRes, clientsRes, feedRes] = await Promise.all([
+    // Only projects with a shoot_date can show up on the calendar; the rest
+    // (e.g. unbooked inquiries) live on /projects until they're scheduled.
     supabase
-      .from('shoots')
+      .from('projects')
       .select('*')
       .eq('user_id', user.id)
-      .order('scheduled_at', { ascending: true }),
+      .not('shoot_date', 'is', null)
+      .order('shoot_date', { ascending: true }),
     supabase
       .from('clients')
       .select('id, full_name')
       .eq('user_id', user.id)
       .order('full_name', { ascending: true }),
-    supabase
-      .from('projects')
-      .select('id, title')
-      .eq('user_id', user.id)
-      .order('title', { ascending: true }),
     getCalendarFeed(),
   ]);
 
-  const shoots = shootsRes.data ?? [];
-  const clients = clientsRes.data ?? [];
   const projects = projectsRes.data ?? [];
+  const clients = clientsRes.data ?? [];
 
-  // Distinct prior shoot locations — feed the <datalist> autosuggest in the
-  // ShootForm. Derived server-side so NewShootButton (which doesn't see the
-  // shoots prop) gets the same list as the in-calendar form.
+  // Distinct prior project locations — feed the <datalist> autosuggest in
+  // the ProjectForm. Derived server-side so NewProjectButton (which doesn't
+  // see the projects prop) gets the same list as the in-calendar form.
   const locationSuggestions = Array.from(
     new Set(
-      shoots
-        .map((s) => (s.location ?? '').trim())
+      projects
+        .map((p) => (p.location ?? '').trim())
         .filter((l) => l.length > 0)
     )
   ).sort((a, b) => a.localeCompare(b));
@@ -56,13 +53,13 @@ export default async function CalendarPage() {
     <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Calendar"
-        subtitle="All scheduled shoots. Click a date to add one, or an event to edit."
-        actions={<NewShootButton clients={clients} projects={projects} locationSuggestions={locationSuggestions} />}
+        subtitle="Every project with a scheduled date. Click a slot to add one, or an event to edit."
+        actions={<NewProjectButton clients={clients} locationSuggestions={locationSuggestions} />}
       />
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>
         <div data-tour="calendar-grid">
-          <CalendarView shoots={shoots} clients={clients} projects={projects} />
+          <CalendarView projects={projects} clients={clients} />
         </div>
         {feedRes.data ? (
           <section data-tour="calendar-sync">

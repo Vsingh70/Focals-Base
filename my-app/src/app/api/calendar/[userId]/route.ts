@@ -1,16 +1,19 @@
 import ical from 'ical-generator';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-type ShootRow = {
+// Default duration when projects don't carry a duration field. Matches
+// CalendarView's default — keep them in sync.
+const DEFAULT_DURATION_MIN = 60;
+
+type ProjectRow = {
   id: string;
   title: string;
-  scheduled_at: string;
-  duration_minutes: number | null;
+  shoot_date: string | null;
   location: string | null;
   status: string | null;
+  category: string | null;
   notes: string | null;
   clients: { full_name: string | null } | { full_name: string | null }[] | null;
-  projects: { title: string | null } | { title: string | null }[] | null;
 };
 
 function firstOrSelf<T>(value: T | T[] | null): T | null {
@@ -45,16 +48,19 @@ export async function GET(
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const { data: shoots, error: shootsError } = await admin
-    .from('shoots')
+  // Projects with a shoot_date and not cancelled. The project IS the calendar
+  // event now — no separate shoots table.
+  const { data: projects, error: projectsError } = await admin
+    .from('projects')
     .select(
-      'id, title, scheduled_at, duration_minutes, location, status, notes, clients(full_name), projects(title)'
+      'id, title, shoot_date, location, status, category, notes, clients(full_name)'
     )
     .eq('user_id', userId)
+    .not('shoot_date', 'is', null)
     .neq('status', 'cancelled')
-    .order('scheduled_at', { ascending: true });
+    .order('shoot_date', { ascending: true });
 
-  if (shootsError) {
+  if (projectsError) {
     return new Response('Internal error', { status: 500 });
   }
 
@@ -62,24 +68,24 @@ export async function GET(
     profile.business_name ??
     profile.full_name ??
     process.env.NEXT_PUBLIC_APP_NAME ??
-    'Shoots';
+    'Projects';
 
   const calendar = ical({
-    name: `${calName} · Shoots`,
+    name: `${calName} · Projects`,
     prodId: { company: calName, product: 'app-name', language: 'EN' },
   });
 
-  for (const raw of (shoots ?? []) as ShootRow[]) {
-    const start = new Date(raw.scheduled_at);
-    const durationMin = raw.duration_minutes ?? 60;
-    const end = new Date(start.getTime() + durationMin * 60_000);
+  for (const raw of (projects ?? []) as ProjectRow[]) {
+    if (!raw.shoot_date) continue;
+    const start = new Date(raw.shoot_date);
+    if (Number.isNaN(start.getTime())) continue;
+    const end = new Date(start.getTime() + DEFAULT_DURATION_MIN * 60_000);
 
     const client = firstOrSelf(raw.clients);
-    const project = firstOrSelf(raw.projects);
 
     const descLines = [
       client?.full_name ? `Client: ${client.full_name}` : null,
-      project?.title ? `Project: ${project.title}` : null,
+      raw.category ? `Category: ${raw.category}` : null,
       raw.status ? `Status: ${raw.status}` : null,
       raw.notes ? `\n${raw.notes}` : null,
     ].filter(Boolean);
@@ -97,7 +103,7 @@ export async function GET(
   return new Response(calendar.toString(), {
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="shoots.ics"',
+      'Content-Disposition': 'attachment; filename="projects.ics"',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   });

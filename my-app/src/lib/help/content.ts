@@ -20,7 +20,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
     sections: [
       {
         heading: 'What it is',
-        body: 'The dashboard is the page you should open every morning. The four KPI cards along the top give you a one-second read of where the business is: revenue this month vs. last month, how many active projects you have, shoots in the next week, and outstanding payments. Each card links to the module that drives it.',
+        body: 'The dashboard is the page you should open every morning. The four KPI cards along the top give you a one-second read of where the business is: revenue this month vs. last month, how many active projects you have, projects scheduled in the next week, and outstanding payments. Each card links to the module that drives it.',
       },
       {
         heading: 'How to use it',
@@ -28,7 +28,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
       },
       {
         heading: 'Best practices',
-        body: 'Spend 30 seconds here at the start of each day. If pending payments is non-zero, follow up on those projects today. If active projects is climbing past your comfort capacity, pause taking new bookings. Use the upcoming-shoots strip to triage your week — click any card to open the shoot detail.',
+        body: 'Spend 30 seconds here at the start of each day. If pending payments is non-zero, follow up on those projects today. If active projects is climbing past your comfort capacity, pause taking new bookings. Use the upcoming-projects strip to triage your week — click any card to open the project detail.',
       },
     ],
   },
@@ -58,7 +58,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     slug: 'calendar',
     title: 'Calendar',
-    summary: 'Visual calendar for shoots, plus subscribable feed for Apple/Google Calendar.',
+    summary: 'Visual calendar of every scheduled project, plus subscribable feed for Apple/Google Calendar.',
     sections: [
       {
         heading: 'What it is',
@@ -70,7 +70,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
       },
       {
         heading: 'Best practices',
-        body: 'Add to your phone\'s calendar so you see shoots alongside personal events. If the feed URL leaks (you accidentally pasted it somewhere public), click Regenerate URL and any old subscriber stops working. Cancelled shoots are excluded from the feed automatically — you can keep cancelled events for record-keeping without cluttering your day-of view.',
+        body: 'Add to your phone\'s calendar so you see scheduled projects alongside personal events. If the feed URL leaks (you accidentally pasted it somewhere public), click Regenerate URL and any old subscriber stops working. Cancelled projects are excluded from the feed automatically — you can keep cancelled records without cluttering your day-of view.',
       },
     ],
   },
@@ -108,26 +108,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
       },
       {
         heading: 'Best practices',
-        body: 'Always set a Source — the breakdown reveals which channels actually book vs. just generate noise. Use the detail page before a returning-client meeting: 30 seconds reviewing past projects, shoots, and contracts beats trying to recall everything. Consolidate duplicates aggressively — if a client emails from one address and books a project from another, edit the existing record rather than creating a new one.',
-      },
-    ],
-  },
-  {
-    slug: 'shoots',
-    title: 'Shoots',
-    summary: 'Chronological list of sessions, with quick status updates.',
-    sections: [
-      {
-        heading: 'What it is',
-        body: 'Same data as Calendar, in a list format. Toggle between Upcoming (chronological order) and Past (reverse chronological). Each row shows date badge, time, client, project, location, duration, and status.',
-      },
-      {
-        heading: 'How to use it',
-        body: 'Click any row\'s date badge or title to open the edit slide-over. On scheduled upcoming shoots, click Done or Cancel right from the row for fast end-of-day cleanup — no need to open the form. Use the calendar view (/calendar) for visual scheduling; use this list for quick scanning of what\'s coming up.',
-      },
-      {
-        heading: 'Best practices',
-        body: 'Mark shoots Completed the day they happen. Cancelled shoots stay in Past view but are excluded from the iCal feed, so they won\'t clutter your synced phone calendar.',
+        body: 'Always set a Source — the breakdown reveals which channels actually book vs. just generate noise. Use the detail page before a returning-client meeting: 30 seconds reviewing past projects and contracts beats trying to recall everything. Consolidate duplicates aggressively — if a client emails from one address and books a project from another, edit the existing record rather than creating a new one.',
       },
     ],
   },

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/Badge';
-import type { UpcomingShoot } from '@/lib/queries/dashboard';
+import type { UpcomingProject } from '@/lib/queries/dashboard';
 
 function formatDateBadge(iso: string) {
   const d = new Date(iso);
@@ -11,8 +11,8 @@ function formatDateBadge(iso: string) {
   };
 }
 
-export function UpcomingShootsStrip({ shoots }: { shoots: UpcomingShoot[] }) {
-  if (shoots.length === 0) {
+export function UpcomingProjectsStrip({ projects }: { projects: UpcomingProject[] }) {
+  if (projects.length === 0) {
     return (
       <p
         style={{
@@ -22,7 +22,7 @@ export function UpcomingShootsStrip({ shoots }: { shoots: UpcomingShoot[] }) {
           padding: '1rem 0',
         }}
       >
-        No shoots scheduled in the next 7 days.
+        No projects scheduled in the next 7 days.
       </p>
     );
   }
@@ -37,12 +37,12 @@ export function UpcomingShootsStrip({ shoots }: { shoots: UpcomingShoot[] }) {
         margin: '0 -0.25rem',
       }}
     >
-      {shoots.map((s) => {
-        const date = formatDateBadge(s.scheduled_at);
+      {projects.map((p) => {
+        const date = formatDateBadge(p.shoot_date);
         return (
           <Link
-            key={s.id}
-            href={`/shoots/${s.id}`}
+            key={p.id}
+            href={`/projects?focus=${p.id}`}
             style={{
               flex: '0 0 260px',
               textDecoration: 'none',
@@ -100,7 +100,7 @@ export function UpcomingShootsStrip({ shoots }: { shoots: UpcomingShoot[] }) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {s.title}
+                {p.title}
               </div>
               <div
                 style={{
@@ -112,10 +112,10 @@ export function UpcomingShootsStrip({ shoots }: { shoots: UpcomingShoot[] }) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {s.client_name ?? '—'} · {date.time}
-                {s.location ? ` · ${s.location}` : ''}
+                {p.client_name ?? '—'} · {date.time}
+                {p.location ? ` · ${p.location}` : ''}
               </div>
-              {s.status ? <Badge tone="neutral">{s.status}</Badge> : null}
+              {p.status ? <Badge tone="neutral">{p.status}</Badge> : null}
             </div>
           </Link>
         );

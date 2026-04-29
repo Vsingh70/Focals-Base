@@ -8,7 +8,6 @@ export type TourId =
   | 'calendar'
   | 'projects'
   | 'clients'
-  | 'shoots'
   | 'finances'
   | 'contracts'
   | 'gear'
@@ -22,7 +21,6 @@ export const ALL_TOUR_IDS: TourId[] = [
   'calendar',
   'projects',
   'clients',
-  'shoots',
   'finances',
   'contracts',
   'gear',

@@ -11,7 +11,6 @@ const PRIMARY_NAV: NavItem[] = [
   { href: '/calendar', label: 'Calendar' },
   { href: '/projects', label: 'Projects' },
   { href: '/clients', label: 'Clients' },
-  { href: '/shoots', label: 'Shoots' },
   { href: '/finances', label: 'Finances' },
   { href: '/contracts', label: 'Contracts' },
 ];

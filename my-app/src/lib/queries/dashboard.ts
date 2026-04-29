@@ -5,7 +5,7 @@ export type Kpis = {
   revenueMtd: number;
   revenuePriorMonth: number;
   activeProjects: number;
-  upcomingShoots: number;
+  upcomingProjects: number;
   pendingPayments: number;
 };
 
@@ -20,14 +20,14 @@ export type StatusCount = {
   count: number;
 };
 
-export type UpcomingShoot = {
+export type UpcomingProject = {
   id: string;
   title: string;
-  scheduled_at: string;
+  shoot_date: string;
   location: string | null;
   status: string | null;
+  category: string | null;
   client_name: string | null;
-  project_title: string | null;
 };
 
 export type RecentProject = {
@@ -67,11 +67,11 @@ export async function getDashboardData(userId: string) {
     currentMonthFinances,
     priorMonthFinances,
     activeProjectsRes,
-    upcomingShootsCountRes,
+    upcomingProjectsCountRes,
     pendingPaymentsRes,
     revenueSeriesRes,
     statusBreakdownRes,
-    upcomingShootsRes,
+    upcomingProjectsRes,
     recentProjectsRes,
   ] = await Promise.all([
     supabase
@@ -91,11 +91,12 @@ export async function getDashboardData(userId: string) {
       .eq('user_id', userId)
       .in('status', activeStatuses),
     supabase
-      .from('shoots')
+      .from('projects')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .gte('scheduled_at', now.toISOString())
-      .lte('scheduled_at', sevenDaysFromNow),
+      .not('shoot_date', 'is', null)
+      .gte('shoot_date', now.toISOString())
+      .lte('shoot_date', sevenDaysFromNow),
     supabase
       .from('projects')
       .select('package_price, amount_paid')
@@ -112,12 +113,13 @@ export async function getDashboardData(userId: string) {
       .select('status')
       .eq('user_id', userId),
     supabase
-      .from('shoots')
-      .select('id, title, scheduled_at, location, status, clients(full_name), projects(title)')
+      .from('projects')
+      .select('id, title, shoot_date, location, status, category, clients(full_name)')
       .eq('user_id', userId)
-      .gte('scheduled_at', now.toISOString())
-      .lte('scheduled_at', sevenDaysFromNow)
-      .order('scheduled_at', { ascending: true })
+      .not('shoot_date', 'is', null)
+      .gte('shoot_date', now.toISOString())
+      .lte('shoot_date', sevenDaysFromNow)
+      .order('shoot_date', { ascending: true })
       .limit(8),
     supabase
       .from('projects')
@@ -145,7 +147,7 @@ export async function getDashboardData(userId: string) {
     revenueMtd,
     revenuePriorMonth,
     activeProjects: activeProjectsRes.count ?? 0,
-    upcomingShoots: upcomingShootsCountRes.count ?? 0,
+    upcomingProjects: upcomingProjectsCountRes.count ?? 0,
     pendingPayments,
   };
 
@@ -176,19 +178,20 @@ export async function getDashboardData(userId: string) {
     ([status, count]) => ({ status, count })
   );
 
-  const upcomingShootsList: UpcomingShoot[] = (upcomingShootsRes.data ?? []).map((row) => {
-    const client = Array.isArray(row.clients) ? row.clients[0] : row.clients;
-    const project = Array.isArray(row.projects) ? row.projects[0] : row.projects;
-    return {
-      id: row.id,
-      title: row.title,
-      scheduled_at: row.scheduled_at,
-      location: row.location,
-      status: row.status,
-      client_name: client?.full_name ?? null,
-      project_title: project?.title ?? null,
-    };
-  });
+  const upcomingProjectsList: UpcomingProject[] = (upcomingProjectsRes.data ?? [])
+    .filter((row): row is typeof row & { shoot_date: string } => !!row.shoot_date)
+    .map((row) => {
+      const client = Array.isArray(row.clients) ? row.clients[0] : row.clients;
+      return {
+        id: row.id,
+        title: row.title,
+        shoot_date: row.shoot_date,
+        location: row.location,
+        status: row.status,
+        category: row.category,
+        client_name: client?.full_name ?? null,
+      };
+    });
 
   const recentProjects: RecentProject[] = (recentProjectsRes.data ?? []).map((row) => {
     const client = Array.isArray(row.clients) ? row.clients[0] : row.clients;
@@ -204,5 +207,11 @@ export async function getDashboardData(userId: string) {
     };
   });
 
-  return { kpis, revenueSeries, projectStatus, upcomingShoots: upcomingShootsList, recentProjects };
+  return {
+    kpis,
+    revenueSeries,
+    projectStatus,
+    upcomingProjects: upcomingProjectsList,
+    recentProjects,
+  };
 }

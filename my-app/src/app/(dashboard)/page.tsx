@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { KpiCard } from '@/components/dashboard/KpiCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { ProjectStatusChart } from '@/components/dashboard/ProjectStatusChart';
-import { UpcomingShootsStrip } from '@/components/dashboard/UpcomingShootsStrip';
+import { UpcomingProjectsStrip } from '@/components/dashboard/UpcomingProjectsStrip';
 import { RecentProjectsList } from '@/components/dashboard/RecentProjectsList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { TourGate } from '@/components/tour/TourGate';
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { kpis, revenueSeries, projectStatus, upcomingShoots, recentProjects } =
+  const { kpis, revenueSeries, projectStatus, upcomingProjects, recentProjects } =
     await getDashboardData(user.id);
 
   return (
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
           href="/finances"
         />
         <KpiCard label="Active projects" value={kpis.activeProjects} href="/projects" />
-        <KpiCard label="Upcoming shoots" value={kpis.upcomingShoots} href="/shoots" />
+        <KpiCard label="Upcoming projects" value={kpis.upcomingProjects} href="/calendar" />
         <KpiCard
           label="Pending payments"
           value={kpis.pendingPayments}
@@ -92,12 +92,12 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Upcoming shoots strip */}
+      {/* Upcoming projects strip */}
       <Card style={{ marginBottom: '2rem' }}>
         <CardHeader>
-          <CardTitle>Upcoming shoots · next 7 days</CardTitle>
+          <CardTitle>Upcoming projects · next 7 days</CardTitle>
         </CardHeader>
-        <UpcomingShootsStrip shoots={upcomingShoots} />
+        <UpcomingProjectsStrip projects={upcomingProjects} />
       </Card>
 
       {/* Recent projects + quick actions */}
