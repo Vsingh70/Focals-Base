@@ -1032,3 +1032,46 @@ The task doc's enum values were stale. Used web Zod validations as source of tru
 
 ### Dashboard config (manual steps required)
 - No new dashboard config needed for Task 02. Supabase/Google/Apple config from Task 01 still applies.
+
+---
+
+## iOS Task 04 — Navigation & Shell ✅
+
+**Completed:** 2026-04-29
+
+### Tests run
+- `xcodegen generate` — clean
+- `xcodebuild build` for iPhone 17 simulator — BUILD SUCCEEDED, zero errors
+- `xcodebuild test` — 17/17 unit tests pass (no regressions from Task 02 model decoding suite)
+- App launches in iPhone 17 simulator. `xcrun simctl openurl "iPhone 17" focals://project/<UUID>` accepted (custom-scheme deep link is registered)
+
+### Security concerns
+- None new. Deep-link router still rejects `oauth-callback` host so it doesn't leak codes/tokens into navigation paths.
+- The custom `focals://` scheme is unauthenticated — `DeepLinkRouter.resolve(_:)` only navigates the user; any privileged data on the destination screen still has to be loaded through the authenticated Supabase client.
+
+### What was built
+- **`Route` enum** — every navigable destination (13 top-level + 7 detail). No shoot variants.
+- **`AppRouter`** — `@Observable @MainActor` singleton. Per-tab paths (dashboard/inbox/calendar/projects/more), combined `detailPath` for iPad, `presentedSheet`, `sidebarSelection`, `selectedTab`. `navigate(to:)` dispatches by case.
+- **`SheetRoute`** — Identifiable enum with createProject/createClient/createInquiry/createFinance/projectUpload, each producing a stable `id`.
+- **`RouteDestination.swift`** — `routeDestination(_:)` and `sheetDestination(_:)` ViewBuilders shared by both shells.
+- **`TabBarShell`** — iPhone 5-tab `TabView` (Dashboard / Inbox / Calendar / Projects / More), each tab is its own `NavigationStack` with `.navigationDestination(for: Route.self)` wired to `routeDestination`.
+- **`SplitViewShell`** — iPad `NavigationSplitView`. Sidebar lists all 13 modules grouped Main/More. Detail column is a single `NavigationStack(path: detailPath)`.
+- **`RootView` rewrite** — gone is `LoggedInPlaceholder`; replaced with `LoggedInRoot` that picks shell on `horizontalSizeClass` and presents `router.presentedSheet` globally.
+- **`PlaceholderScreens.swift`** — 19 placeholder screens (12 top-level + ProjectUpload + More + 7 detail). Each uses the shared `EmptyState`, sets a navigation title, and points at the task that fills it in. Detail screens print `id.uuidString.prefix(8)…` so route plumbing is verifiable end-to-end. SettingsScreen carries a Sign Out CTA so the Task 03 sign-out flow stays reachable until Task 12 lands the real settings.
+- **`EmptyState`** — SF symbol + title + optional description + optional CTA. Renamed parameter `body` → `description` to avoid shadowing `View.body`.
+- **`LoadingSkeleton`** — `SkeletonCard` (translating gradient shimmer) + `SkeletonList(count:)`.
+- **`Haptics`** — light/medium/success/warning/error helpers with documented convention.
+- **`DetailSheet`** — wraps content in NavigationStack, `.presentationDetents([.medium, .large])`, drag indicator, Done button via `@Environment(\.dismiss)`.
+- **`ConnectivityBanner`** + `ConnectivityMonitor` — `NWPathMonitor`-backed @Observable singleton, "Offline" capsule pill rendered when path is unsatisfied.
+- **`DeepLinkRouter.resolve(_:)`** — maps `focals://project/<UUID>`, `focals://client/<UUID>`, `focals://contract/<UUID>`, `focals://inquiry/<UUID>`, `focals://help/<slug>`, `focals://upload` to the right `AppRouter.navigate(to:)` / `presentedSheet` action.
+- **Info.plist** — second `CFBundleURLTypes` entry registers the `focals` URL scheme alongside the existing OAuth scheme.
+
+### Deferred items
+- [ ] **Wire `ConnectivityBanner` into the toolbar of every list screen** — banner exists and is observable, but no module screen places it yet. Pick this up in Tasks 06+ as each real screen is built.
+- [ ] **Universal Links** for `focals-base.vercel.app/...` — deferred to Task 13 per spec. Custom-scheme `focals://` deep links work today.
+- [ ] **Verify haptics on a real device** — simulator is silent for haptic feedback per the spec; confirm `Haptics.tap()` actually fires on a physical iPhone before Task 14 (Release / Telemetry).
+- [ ] **`ios/Focals/Modules/_README.md`** — task spec asks for this so module tasks don't reinvent top-bar conventions. Skipped for now since the conventions are documented inline in the task file; can add the README in Task 06 if it becomes useful.
+- [ ] **Stage Manager 1/3 width testing on iPad** — the spec calls this out; left for the user to verify on an actual iPad since the simulator's compact-iPad reproduction is fiddly.
+
+### Dashboard config (manual steps required)
+- No new dashboard config needed for Task 04. The `focals://` URL scheme is registered in the app's Info.plist; nothing to set on Supabase/Google/Apple Developer.

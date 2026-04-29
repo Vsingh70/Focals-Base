@@ -14,15 +14,34 @@ struct RootView: View {
             } else if faceIDLock.isLocked {
                 FaceIDLockScreen(lock: faceIDLock)
             } else {
-                LoggedInPlaceholder(
-                    email: session.user?.email ?? "—",
-                    fullName: session.profile?.fullName
-                )
+                LoggedInRoot()
             }
         }
         .background(Color.tokens.bg)
         .onOpenURL { url in
             DeepLinkRouter.shared.handle(url)
+        }
+    }
+}
+
+// Picks TabBarShell vs SplitViewShell based on horizontal size class so
+// iPhone, iPad in compact width (Stage Manager 1/3), and iPad in regular
+// width all land in the right layout. The global sheet presenter lives
+// here so any deeply-nested module can set `router.presentedSheet`.
+private struct LoggedInRoot: View {
+    @Environment(\.horizontalSizeClass) private var hSize
+    @State private var router = AppRouter.shared
+
+    var body: some View {
+        Group {
+            if hSize == .regular {
+                SplitViewShell(router: router)
+            } else {
+                TabBarShell(router: router)
+            }
+        }
+        .sheet(item: $router.presentedSheet) { sheet in
+            sheetDestination(sheet)
         }
     }
 }
@@ -33,39 +52,6 @@ private struct LoadingView: View {
             ProgressView()
                 .tint(Color.tokens.accent)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.tokens.bg)
-    }
-}
-
-/// Stand-in for the real shell that arrives in Task 04 (TabBarShell on iPhone,
-/// SplitViewShell on iPad). This is just enough to verify auth round-trips:
-/// shows who's signed in and a Sign Out button.
-private struct LoggedInPlaceholder: View {
-    let email: String
-    let fullName: String?
-
-    var body: some View {
-        VStack(spacing: Spacing.md) {
-            Spacer()
-            Text("Signed in as")
-                .font(.tokens.body(13))
-                .foregroundStyle(Color.tokens.textTertiary)
-            if let fullName, !fullName.isEmpty {
-                Text(fullName)
-                    .editorialHeadline()
-            }
-            Text(email)
-                .font(.tokens.body(15))
-                .foregroundStyle(Color.tokens.textSecondary)
-            Spacer()
-            Button("Sign out") {
-                Task { try? await SessionStore.shared.signOut() }
-            }
-            .buttonStyle(.bordered)
-            .tint(Color.tokens.danger)
-        }
-        .padding(Spacing.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.tokens.bg)
     }

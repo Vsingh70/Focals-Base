@@ -60,6 +60,14 @@
 				<string>$(OAUTH_URL_SCHEME)</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.focals.ios.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>focals</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

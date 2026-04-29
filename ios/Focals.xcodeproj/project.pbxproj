@@ -9,21 +9,32 @@
 /* Begin PBXBuildFile section */
 		006FFDD87A694908ECC5912E /* FocalsDesign in Frameworks */ = {isa = PBXBuildFile; productRef = 2E1CFF57501D3446C713047E /* FocalsDesign */; };
 		0A078A1268E384D4FC2AA8BA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E00168AFCEA7CAB8937F5A /* LoginView.swift */; };
+		28F7FBCE4461B9ABC8CD99D4 /* LoadingSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798E2D1A8DD128ECA6F869C2 /* LoadingSkeleton.swift */; };
 		2AED61817DB7DC3F2BADAC98 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98CAE792F82FDF6C42F47E89 /* SessionStore.swift */; };
 		3D7B29BACD2A6B5742532572 /* GoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ABA7FC37A0534471D63D235 /* GoogleSignIn.swift */; };
 		410314185B13FC812CA36B13 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7B66FA2D1C7948CB42CE6ACB /* FocalsModels */; };
+		4492D003EBC0CD04FB14454B /* SplitViewShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA0AD6D17B725EAC56C617 /* SplitViewShell.swift */; };
+		47AD39280EE93A5A787A4BD3 /* RouteDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DD4D002D93FADBCFEEAF14 /* RouteDestination.swift */; };
 		4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */; };
 		52EB50AF8AD60982999CAA62 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C527EB360FC6A0F0854648EB /* MarkdownUI */; };
+		5C668608C3368ACF1BE1254D /* ConnectivityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB909F92023C458C618FD64 /* ConnectivityBanner.swift */; };
+		61EDEC09959839D7106C2FC8 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ADA6534A0A21D5E3D0AAB9F /* Haptics.swift */; };
 		6552F70FC5A00A73EEA5C7E8 /* FaceIDLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C188C2F27167D49A3FE1D68 /* FaceIDLock.swift */; };
 		7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B095E92B839F73683DEC72 /* RootView.swift */; };
 		71C785BC3C08F48AF213E350 /* FocalsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B29D589D8F139A09F68D61D /* FocalsUITests.swift */; };
 		74B0748C135893209C377443 /* FocalsAPI in Frameworks */ = {isa = PBXBuildFile; productRef = BD91BDB86CBB768047E4DD11 /* FocalsAPI */; };
 		8B7CF9EC9237F31860B4AB5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */; };
+		921CC09A1552E4E3C905F35F /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DF9E09E1C3717135E5AAAC /* AppRouter.swift */; };
+		9864E26C4F973722CBEE26E2 /* DetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55AC6C4242A3715A914D2912 /* DetailSheet.swift */; };
 		9B5804EE5D9EBEA0414D5B88 /* DeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */; };
+		AAD9C788D2F7328633E56AEB /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2241AE8D86EA997A7C25E7C3 /* Route.swift */; };
 		B044C91F4D63AA296572B0F5 /* AppleSignInButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8388DDCCD3AD94E3DCCDA0 /* AppleSignInButton.swift */; };
 		B11902B70198EB834E17A22B /* FocalsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */; };
 		B2FF5A9A0504E615DD8C4840 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 493AB284786C6E8CD7F6702F /* FocalsModels */; };
+		BDD133459688839A91C7A398 /* PlaceholderScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F48CEEA1E71DAF02E2A0107 /* PlaceholderScreens.swift */; };
 		CD9C80DC8C32EA712FF3A195 /* ModelDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */; };
+		CF158D9964A88239D07ED90C /* TabBarShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4415602BAA7E21D69221C1E8 /* TabBarShell.swift */; };
+		D772714FACE77D78AEE21B19 /* EmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7131AEC8A4B59BD98F40CD9B /* EmptyState.swift */; };
 		DBC3F202B912FFD8CEB5B030 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 840E386896E4563DF3E30057 /* Fixtures */; };
 		DF3ED171404F399B259A47CF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 244FCBFA18AB86AB05762DA6 /* Kingfisher */; };
 		E58D35B80728B663A029EE14 /* DesignTokenGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */; };
@@ -51,18 +62,29 @@
 		06B095E92B839F73683DEC72 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		0B29D589D8F139A09F68D61D /* FocalsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsUITests.swift; sourceTree = "<group>"; };
 		1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenGallery.swift; sourceTree = "<group>"; };
+		2241AE8D86EA997A7C25E7C3 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		3DB909F92023C458C618FD64 /* ConnectivityBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityBanner.swift; sourceTree = "<group>"; };
 		4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsApp.swift; sourceTree = "<group>"; };
+		4415602BAA7E21D69221C1E8 /* TabBarShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarShell.swift; sourceTree = "<group>"; };
+		4ADA6534A0A21D5E3D0AAB9F /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		4B8388DDCCD3AD94E3DCCDA0 /* AppleSignInButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInButton.swift; sourceTree = "<group>"; };
 		4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
+		55AC6C4242A3715A914D2912 /* DetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailSheet.swift; sourceTree = "<group>"; };
 		5C188C2F27167D49A3FE1D68 /* FaceIDLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDLock.swift; sourceTree = "<group>"; };
+		5DDA0AD6D17B725EAC56C617 /* SplitViewShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitViewShell.swift; sourceTree = "<group>"; };
+		7131AEC8A4B59BD98F40CD9B /* EmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyState.swift; sourceTree = "<group>"; };
+		798E2D1A8DD128ECA6F869C2 /* LoadingSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingSkeleton.swift; sourceTree = "<group>"; };
 		7ABA7FC37A0534471D63D235 /* GoogleSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignIn.swift; sourceTree = "<group>"; };
+		7F48CEEA1E71DAF02E2A0107 /* PlaceholderScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderScreens.swift; sourceTree = "<group>"; };
 		840E386896E4563DF3E30057 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fixtures; path = FocalsTests/Fixtures; sourceTree = SOURCE_ROOT; };
 		8D97320272391F8E3EE05B5F /* Focals.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Focals.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		98CAE792F82FDF6C42F47E89 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		A0AF57D113DA222C1D1BC412 /* FocalsUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2E00168AFCEA7CAB8937F5A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		A3DF9E09E1C3717135E5AAAC /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B9B6C2842EBBA10107FBF785 /* FocalsKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FocalsKit; path = FocalsKit; sourceTree = SOURCE_ROOT; };
+		C0DD4D002D93FADBCFEEAF14 /* RouteDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDestination.swift; sourceTree = "<group>"; };
 		D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkRouter.swift; sourceTree = "<group>"; };
 		DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsTests.swift; sourceTree = "<group>"; };
 		DD7E1DACAA07897AA6CC737B /* FocalsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,8 +122,10 @@
 				FDB4648D7027444B4483A68A /* Secrets.xcconfig */,
 				73DA5A3AC37A6E724E7EC2B0 /* App */,
 				B917D88F67F06972B4D0467C /* Auth */,
+				E52B431A6EB0FD33B2A39DD0 /* Modules */,
 				E6F21C3B471E58BC68DF7A4E /* Navigation */,
 				30DAF8BD7CD5EF99D96AB3E8 /* Resources */,
+				8D3919B777B799FE61471EB6 /* Shared */,
 			);
 			path = Focals;
 			sourceTree = "<group>";
@@ -155,6 +179,18 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		8D3919B777B799FE61471EB6 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3DB909F92023C458C618FD64 /* ConnectivityBanner.swift */,
+				55AC6C4242A3715A914D2912 /* DetailSheet.swift */,
+				7131AEC8A4B59BD98F40CD9B /* EmptyState.swift */,
+				4ADA6534A0A21D5E3D0AAB9F /* Haptics.swift */,
+				798E2D1A8DD128ECA6F869C2 /* LoadingSkeleton.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		B5ABBD92702BD26F14961258 /* FocalsUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -183,10 +219,23 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		E52B431A6EB0FD33B2A39DD0 /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				7F48CEEA1E71DAF02E2A0107 /* PlaceholderScreens.swift */,
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
 		E6F21C3B471E58BC68DF7A4E /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
+				A3DF9E09E1C3717135E5AAAC /* AppRouter.swift */,
 				D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */,
+				2241AE8D86EA997A7C25E7C3 /* Route.swift */,
+				C0DD4D002D93FADBCFEEAF14 /* RouteDestination.swift */,
+				5DDA0AD6D17B725EAC56C617 /* SplitViewShell.swift */,
+				4415602BAA7E21D69221C1E8 /* TabBarShell.swift */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -322,15 +371,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				921CC09A1552E4E3C905F35F /* AppRouter.swift in Sources */,
 				B044C91F4D63AA296572B0F5 /* AppleSignInButton.swift in Sources */,
+				5C668608C3368ACF1BE1254D /* ConnectivityBanner.swift in Sources */,
 				9B5804EE5D9EBEA0414D5B88 /* DeepLinkRouter.swift in Sources */,
 				E58D35B80728B663A029EE14 /* DesignTokenGallery.swift in Sources */,
+				9864E26C4F973722CBEE26E2 /* DetailSheet.swift in Sources */,
+				D772714FACE77D78AEE21B19 /* EmptyState.swift in Sources */,
 				6552F70FC5A00A73EEA5C7E8 /* FaceIDLock.swift in Sources */,
 				4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */,
 				3D7B29BACD2A6B5742532572 /* GoogleSignIn.swift in Sources */,
+				61EDEC09959839D7106C2FC8 /* Haptics.swift in Sources */,
+				28F7FBCE4461B9ABC8CD99D4 /* LoadingSkeleton.swift in Sources */,
 				0A078A1268E384D4FC2AA8BA /* LoginView.swift in Sources */,
+				BDD133459688839A91C7A398 /* PlaceholderScreens.swift in Sources */,
 				7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */,
+				AAD9C788D2F7328633E56AEB /* Route.swift in Sources */,
+				47AD39280EE93A5A787A4BD3 /* RouteDestination.swift in Sources */,
 				2AED61817DB7DC3F2BADAC98 /* SessionStore.swift in Sources */,
+				4492D003EBC0CD04FB14454B /* SplitViewShell.swift in Sources */,
+				CF158D9964A88239D07ED90C /* TabBarShell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
