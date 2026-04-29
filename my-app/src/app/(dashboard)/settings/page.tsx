@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProfileSection } from '@/components/settings/ProfileSection';
 import { InquirySourcesSection } from '@/components/settings/InquirySourcesSection';
+import { AiIntegrationSection } from '@/components/settings/AiIntegrationSection';
+import { getIntegrationStatus } from '@/lib/actions/integrations';
 import { AppearanceSection } from '@/components/settings/AppearanceSection';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { CalendarSync } from '@/components/calendar/CalendarSync';
@@ -51,7 +53,7 @@ export default async function SettingsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [profileRes, sourcesRes, feedRes] = await Promise.all([
+  const [profileRes, sourcesRes, feedRes, aiStatusRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('inquiry_sources')
@@ -59,6 +61,7 @@ export default async function SettingsPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
     getCalendarFeed(),
+    getIntegrationStatus(),
   ]);
 
   if (profileRes.error || !profileRes.data) {
@@ -149,6 +152,22 @@ export default async function SettingsPage() {
                 Calendar feed unavailable.
               </p>
             )}
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>AI file import</CardTitle>
+            </CardHeader>
+            <AiIntegrationSection
+              initial={
+                aiStatusRes.data ?? {
+                  provider: 'anthropic',
+                  connected: false,
+                  keyHint: null,
+                  lastUsedAt: null,
+                }
+              }
+            />
           </Card>
 
           <Card>

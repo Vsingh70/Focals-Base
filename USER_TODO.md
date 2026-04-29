@@ -903,3 +903,61 @@ After running:
 - every `formatDate(...)` call site continues to work because they all wrap in `new Date(...)` which handles both formats
 
 Skip this migration if you don't care about the time being persisted yet — the UI will just always show 12:00 AM.
+
+---
+
+## File-upload → LLM project extraction (2026-04-28)
+
+New "Import from file" button on the Projects page. User uploads PDF/CSV/XLSX/DOCX/TXT/JPG/PNG/HEIC, Claude Haiku 4.5 extracts proposed project rows, user reviews/edits/skips in a slide-over, then commits. Supports bulk imports and creates new clients inline when extracted names don't match the user's existing list. BYO Anthropic API key (v1) — modular `LLMProvider` interface lets us flip to a server-paid model later without touching call sites.
+
+### URGENT — required before this works in production
+
+- [ ] **Run the new SQL migration** in the Supabase SQL editor (or via `supabase db push` if the local CLI is wired up):
+  - File: [my-app/supabase/migrations/20260428170000_user_integrations_and_upload_jobs.sql](my-app/supabase/migrations/20260428170000_user_integrations_and_upload_jobs.sql)
+  - Creates two tables: `user_integrations` (encrypted per-user API keys) and `project_upload_jobs` (audit trail). Both RLS-locked to `auth.uid() = user_id`.
+- [ ] **Generate a `LLM_KEY_ENCRYPTION_SECRET`** and add it to BOTH `.env.local` (for local dev) and Vercel's environment variables (for production):
+  ```bash
+  openssl rand -base64 48
+  ```
+  - Add to all three Vercel envs: Production, Preview, Development.
+  - The same secret must be used everywhere. Rotating it invalidates every stored API key.
+- [ ] **Redeploy** to Vercel after adding the env var (`NEXT_PUBLIC_*` vars get baked into the bundle, but server-only vars are read at runtime — actually, you still need a redeploy to pick up the new var). From `my-app/`:
+  ```bash
+  source ~/.vercel-cli-env
+  npx vercel@latest --prod
+  ```
+- [ ] **Get a personal Anthropic API key** at https://console.anthropic.com/settings/keys — ~$5 of credits is plenty for testing. Add it via the new Settings → Integrations → AI file import card.
+
+### How it works (architecture summary)
+
+1. User uploads a file → `POST /api/projects/upload` ([route](my-app/src/app/api/projects/upload/route.ts))
+2. Server extracts text (or base64 image) via per-format extractors at [my-app/src/lib/upload/extractors.ts](my-app/src/lib/upload/extractors.ts) — pdf-parse 2.x, papaparse, xlsx (sheetjs), mammoth (docx), heic-convert (HEIC → JPEG), plain text passthrough
+3. Calls Claude Haiku 4.5 via tool-use forced output ([extractProjects.ts](my-app/src/lib/upload/extractProjects.ts)) — strict JSON tool schema means malformed responses are essentially impossible
+4. Server-side fuzzy-matches each extracted client name against the user's existing clients ([matchClient.ts](my-app/src/lib/upload/matchClient.ts)) using a token-overlap + Levenshtein hybrid score
+5. Returns `AnnotatedProposedProject[]` — proposed projects + per-row client match annotations + warnings
+6. User reviews in [ProjectsUploadDialog.tsx](my-app/src/components/projects/ProjectsUploadDialog.tsx) — every field editable, per-row Skip checkbox, ambiguous client matches force a radio pick, "Create new client" inline option
+7. User clicks "Create N projects" → `commitUploadedProjects` server action ([projects.ts](my-app/src/lib/actions/projects.ts)) loops the user's edited list, validates each row through the existing `createProjectSchema`, creates clients on-the-fly when needed, returns per-row errors so any failures stay in the dialog for retry
+
+### Privacy / security notes
+
+- API keys are encrypted with AES-256-GCM ([encryption.ts](my-app/src/lib/llm/encryption.ts)) before being stored. Postgres only ever sees the ciphertext + nonce + auth tag; the encryption secret lives only in env vars.
+- The masked display on the Settings card is computed at save time from the original input and stored in a separate `key_hint` column (non-encrypted). No way to recover the full key from what's shown.
+- Files are sent to Anthropic for one-time extraction. We log filename / size / MIME / row counts in `project_upload_jobs` but **NOT** the file contents.
+- The file upload endpoint requires a logged-in session — middleware-gated, no public-token bypass.
+
+### Switching from BYO to "we pay" later
+
+When you're ready to fold cost into a paid tier:
+1. Add `ANTHROPIC_API_KEY` env var to Vercel.
+2. Add a `ServerKeyProvider` class to [my-app/src/lib/llm/provider.ts](my-app/src/lib/llm/provider.ts) (parallel to `UserKeyProvider`).
+3. Change `getProvider()` to: `return process.env.ANTHROPIC_API_KEY ? new ServerKeyProvider() : new UserKeyProvider();`
+4. Optionally add a `usage_log` table to count tokens per user for tier enforcement. The `recordUsage(userId, in, out)` hook on `LLMProvider` is already wired into the API route.
+
+That's literally the whole change — no UI updates, no schema changes, no call-site edits. The Settings UI for "Add API key" just becomes optional — users who don't have a key fall through to the server's.
+
+### What v1 doesn't do
+
+- Multi-file upload (single file at a time).
+- OAuth-style "connect Anthropic account" — that doesn't exist as a product. Users must paste an API key.
+- Editing/replaying old upload jobs — `project_upload_jobs` is append-only audit data.
+- ChatGPT/OpenAI provider — the `LLMProvider` interface accommodates it, but only Anthropic is wired in v1.

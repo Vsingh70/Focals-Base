@@ -642,6 +642,106 @@ export type Database = {
           },
         ]
       }
+      user_integrations: {
+        Row: {
+          created_at: string
+          encrypted_key: string
+          id: string
+          is_active: boolean
+          key_hint: string
+          last_used_at: string | null
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_key: string
+          id?: string
+          is_active?: boolean
+          key_hint: string
+          last_used_at?: string | null
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_key?: string
+          id?: string
+          is_active?: boolean
+          key_hint?: string
+          last_used_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_integrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_upload_jobs: {
+        Row: {
+          completed_at: string | null
+          committed_count: number | null
+          created_at: string
+          error: string | null
+          extracted_count: number | null
+          filename: string
+          id: string
+          input_tokens: number | null
+          mime_type: string
+          output_tokens: number | null
+          size_bytes: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          committed_count?: number | null
+          created_at?: string
+          error?: string | null
+          extracted_count?: number | null
+          filename: string
+          id?: string
+          input_tokens?: number | null
+          mime_type: string
+          output_tokens?: number | null
+          size_bytes: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          committed_count?: number | null
+          created_at?: string
+          error?: string | null
+          extracted_count?: number | null
+          filename?: string
+          id?: string
+          input_tokens?: number | null
+          mime_type?: string
+          output_tokens?: number | null
+          size_bytes?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_upload_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

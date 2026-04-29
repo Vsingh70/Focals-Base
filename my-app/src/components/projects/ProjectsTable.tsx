@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { StatusBadge, PaymentBadge } from '@/components/ui/Badge';
 import { ProjectForm, type ProjectFormMode } from './ProjectForm';
+import { ProjectsUploadDialog } from './ProjectsUploadDialog';
 import type { Database } from '@/lib/supabase/types';
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -36,6 +37,18 @@ const primaryButton: React.CSSProperties = {
   background: 'var(--color-accent)',
   color: 'var(--color-bg)',
   border: 'none',
+  borderRadius: 'var(--radius-md)',
+  fontSize: '0.8125rem',
+  fontWeight: 500,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
+};
+
+const secondaryButton: React.CSSProperties = {
+  padding: '0.5rem 0.875rem',
+  background: 'var(--color-bg-tertiary)',
+  color: 'var(--color-text-primary)',
+  border: '1px solid var(--color-border-secondary)',
   borderRadius: 'var(--radius-md)',
   fontSize: '0.8125rem',
   fontWeight: 500,
@@ -78,14 +91,17 @@ function formatDate(d: string | null) {
 export function ProjectsTable({
   projects,
   clients,
+  hasAiKey = false,
 }: {
   projects: Project[];
   clients: ClientLite[];
+  hasAiKey?: boolean;
 }) {
   const [filter, setFilter] = useState<StatusFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('shoot_date');
   const [sortDesc, setSortDesc] = useState(true);
   const [mode, setMode] = useState<ProjectFormMode | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const clientMap = useMemo(
     () => new Map(clients.map((c) => [c.id, c.full_name])),
@@ -180,9 +196,14 @@ export function ProjectsTable({
             );
           })}
         </div>
-        <button type="button" onClick={() => setMode({ kind: 'create' })} style={primaryButton}>
-          + New project
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button type="button" onClick={() => setUploadOpen(true)} style={secondaryButton}>
+            Import from file
+          </button>
+          <button type="button" onClick={() => setMode({ kind: 'create' })} style={primaryButton}>
+            + New project
+          </button>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -362,6 +383,13 @@ export function ProjectsTable({
         clients={clients}
         categorySuggestions={categorySuggestions}
         locationSuggestions={locationSuggestions}
+      />
+
+      <ProjectsUploadDialog
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        clients={clients}
+        hasAiKey={hasAiKey}
       />
     </>
   );
