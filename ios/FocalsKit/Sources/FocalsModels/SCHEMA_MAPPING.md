@@ -46,30 +46,13 @@ When a snapshot test fails after a web schema change, update the Swift struct an
 | title | title | String |
 | client_id | clientId | UUID? |
 | category | category | String? |
-| status | status | ProjectStatus |
-| shoot_date | shootDate | String? |
+| status | status | ProjectStatus? |
+| shoot_date | shootDate | Date? (timestamptz) |
 | location | location | String? |
 | package_price | packagePrice | Double? |
 | amount_paid | amountPaid | Double? |
 | payment_status | paymentStatus | PaymentStatus? |
 | notes | notes | String? |
-| created_at | createdAt | Date |
-| updated_at | updatedAt | Date |
-
-## shoots
-
-| Postgres column | Swift property | Type |
-|---|---|---|
-| id | id | UUID |
-| user_id | userId | UUID |
-| title | title | String |
-| scheduled_at | scheduledAt | Date |
-| duration_minutes | durationMinutes | Int? |
-| location | location | String? |
-| status | status | ShootStatus? |
-| notes | notes | String? |
-| project_id | projectId | UUID? |
-| client_id | clientId | UUID? |
 | created_at | createdAt | Date |
 | updated_at | updatedAt | Date |
 
@@ -206,7 +189,6 @@ Note: no `updated_at` column.
 |---|---|
 | ProjectStatus | inquiry, booked, in_progress, editing, delivered, completed, cancelled |
 | PaymentStatus | unpaid, partial, paid |
-| ShootStatus | scheduled, completed, cancelled, rescheduled |
 | InquiryStatus | new, read, replied, converted, archived |
 | ContractStatus | draft, sent, signed, void |
 | FinanceType | income, expense |

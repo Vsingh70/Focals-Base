@@ -8,13 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		006FFDD87A694908ECC5912E /* FocalsDesign in Frameworks */ = {isa = PBXBuildFile; productRef = 2E1CFF57501D3446C713047E /* FocalsDesign */; };
+		0A078A1268E384D4FC2AA8BA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E00168AFCEA7CAB8937F5A /* LoginView.swift */; };
+		2AED61817DB7DC3F2BADAC98 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98CAE792F82FDF6C42F47E89 /* SessionStore.swift */; };
+		3D7B29BACD2A6B5742532572 /* GoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ABA7FC37A0534471D63D235 /* GoogleSignIn.swift */; };
 		410314185B13FC812CA36B13 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7B66FA2D1C7948CB42CE6ACB /* FocalsModels */; };
 		4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */; };
 		52EB50AF8AD60982999CAA62 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C527EB360FC6A0F0854648EB /* MarkdownUI */; };
+		6552F70FC5A00A73EEA5C7E8 /* FaceIDLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C188C2F27167D49A3FE1D68 /* FaceIDLock.swift */; };
 		7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B095E92B839F73683DEC72 /* RootView.swift */; };
 		71C785BC3C08F48AF213E350 /* FocalsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B29D589D8F139A09F68D61D /* FocalsUITests.swift */; };
 		74B0748C135893209C377443 /* FocalsAPI in Frameworks */ = {isa = PBXBuildFile; productRef = BD91BDB86CBB768047E4DD11 /* FocalsAPI */; };
 		8B7CF9EC9237F31860B4AB5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */; };
+		9B5804EE5D9EBEA0414D5B88 /* DeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */; };
+		B044C91F4D63AA296572B0F5 /* AppleSignInButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8388DDCCD3AD94E3DCCDA0 /* AppleSignInButton.swift */; };
 		B11902B70198EB834E17A22B /* FocalsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */; };
 		B2FF5A9A0504E615DD8C4840 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 493AB284786C6E8CD7F6702F /* FocalsModels */; };
 		CD9C80DC8C32EA712FF3A195 /* ModelDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */; };
@@ -46,12 +52,18 @@
 		0B29D589D8F139A09F68D61D /* FocalsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsUITests.swift; sourceTree = "<group>"; };
 		1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenGallery.swift; sourceTree = "<group>"; };
 		4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsApp.swift; sourceTree = "<group>"; };
+		4B8388DDCCD3AD94E3DCCDA0 /* AppleSignInButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInButton.swift; sourceTree = "<group>"; };
 		4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
+		5C188C2F27167D49A3FE1D68 /* FaceIDLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDLock.swift; sourceTree = "<group>"; };
+		7ABA7FC37A0534471D63D235 /* GoogleSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignIn.swift; sourceTree = "<group>"; };
 		840E386896E4563DF3E30057 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fixtures; path = FocalsTests/Fixtures; sourceTree = SOURCE_ROOT; };
 		8D97320272391F8E3EE05B5F /* Focals.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Focals.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		98CAE792F82FDF6C42F47E89 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		A0AF57D113DA222C1D1BC412 /* FocalsUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2E00168AFCEA7CAB8937F5A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B9B6C2842EBBA10107FBF785 /* FocalsKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FocalsKit; path = FocalsKit; sourceTree = SOURCE_ROOT; };
+		D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkRouter.swift; sourceTree = "<group>"; };
 		DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsTests.swift; sourceTree = "<group>"; };
 		DD7E1DACAA07897AA6CC737B /* FocalsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDB4648D7027444B4483A68A /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
@@ -88,20 +100,10 @@
 				FDB4648D7027444B4483A68A /* Secrets.xcconfig */,
 				73DA5A3AC37A6E724E7EC2B0 /* App */,
 				B917D88F67F06972B4D0467C /* Auth */,
-				F03CFF0A55CE7444E381EFFD /* Design */,
-				E52B431A6EB0FD33B2A39DD0 /* Modules */,
 				E6F21C3B471E58BC68DF7A4E /* Navigation */,
 				30DAF8BD7CD5EF99D96AB3E8 /* Resources */,
-				8D3919B777B799FE61471EB6 /* Shared */,
 			);
 			path = Focals;
-			sourceTree = "<group>";
-		};
-		147CB71E484B2D4D4E9DD73B /* Projects */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Projects;
 			sourceTree = "<group>";
 		};
 		14ACBF41F7A523B54810B419 = {
@@ -116,13 +118,6 @@
 			);
 			sourceTree = "<group>";
 		};
-		236F9D19FD9CD4D72D5B0897 /* Links */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Links;
-			sourceTree = "<group>";
-		};
 		2A57004C8CEB6C986E0F7F3E /* FocalsTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,55 +127,12 @@
 			path = FocalsTests;
 			sourceTree = "<group>";
 		};
-		2E0B993E27D2EC13E67550D3 /* Inbox */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Inbox;
-			sourceTree = "<group>";
-		};
 		30DAF8BD7CD5EF99D96AB3E8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */,
-				452BB7809092EE4DC80D8BFF /* Fonts */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		3F2924DB845EA98DF650BE0B /* Clients */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Clients;
-			sourceTree = "<group>";
-		};
-		452BB7809092EE4DC80D8BFF /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Fonts;
-			sourceTree = "<group>";
-		};
-		475A6E87A2CA3E23C107F5A0 /* Help */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Help;
-			sourceTree = "<group>";
-		};
-		530F6A4AB1457459970EC827 /* Forms */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Forms;
-			sourceTree = "<group>";
-		};
-		5CD1E278431FD75BB048D31C /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Settings;
 			sourceTree = "<group>";
 		};
 		7330269AFA2609694943F024 /* Products */ = {
@@ -203,34 +155,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		7691AE56AE31D1E6AB4BA507 /* Finances */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Finances;
-			sourceTree = "<group>";
-		};
-		7E15AC4E3B15B251C0A5E930 /* Dashboard */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Dashboard;
-			sourceTree = "<group>";
-		};
-		8D3919B777B799FE61471EB6 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		AD0F5BAA84BAFC42527B4F17 /* Gear */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Gear;
-			sourceTree = "<group>";
-		};
 		B5ABBD92702BD26F14961258 /* FocalsUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -242,6 +166,11 @@
 		B917D88F67F06972B4D0467C /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				4B8388DDCCD3AD94E3DCCDA0 /* AppleSignInButton.swift */,
+				5C188C2F27167D49A3FE1D68 /* FaceIDLock.swift */,
+				7ABA7FC37A0534471D63D235 /* GoogleSignIn.swift */,
+				A2E00168AFCEA7CAB8937F5A /* LoginView.swift */,
+				98CAE792F82FDF6C42F47E89 /* SessionStore.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -254,59 +183,12 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		CFF70B598420D781AA0636DE /* Calendar */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Calendar;
-			sourceTree = "<group>";
-		};
-		E09193C75105BC325F5A1A3C /* Contracts */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Contracts;
-			sourceTree = "<group>";
-		};
-		E52B431A6EB0FD33B2A39DD0 /* Modules */ = {
-			isa = PBXGroup;
-			children = (
-				CFF70B598420D781AA0636DE /* Calendar */,
-				3F2924DB845EA98DF650BE0B /* Clients */,
-				E09193C75105BC325F5A1A3C /* Contracts */,
-				7E15AC4E3B15B251C0A5E930 /* Dashboard */,
-				7691AE56AE31D1E6AB4BA507 /* Finances */,
-				530F6A4AB1457459970EC827 /* Forms */,
-				AD0F5BAA84BAFC42527B4F17 /* Gear */,
-				475A6E87A2CA3E23C107F5A0 /* Help */,
-				2E0B993E27D2EC13E67550D3 /* Inbox */,
-				236F9D19FD9CD4D72D5B0897 /* Links */,
-				147CB71E484B2D4D4E9DD73B /* Projects */,
-				5CD1E278431FD75BB048D31C /* Settings */,
-				E544026E278B5C98A4C3B55F /* Shoots */,
-			);
-			path = Modules;
-			sourceTree = "<group>";
-		};
-		E544026E278B5C98A4C3B55F /* Shoots */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shoots;
-			sourceTree = "<group>";
-		};
 		E6F21C3B471E58BC68DF7A4E /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
+				D543F3450FAACA286B91C5AA /* DeepLinkRouter.swift */,
 			);
 			path = Navigation;
-			sourceTree = "<group>";
-		};
-		F03CFF0A55CE7444E381EFFD /* Design */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Design;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -440,9 +322,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B044C91F4D63AA296572B0F5 /* AppleSignInButton.swift in Sources */,
+				9B5804EE5D9EBEA0414D5B88 /* DeepLinkRouter.swift in Sources */,
 				E58D35B80728B663A029EE14 /* DesignTokenGallery.swift in Sources */,
+				6552F70FC5A00A73EEA5C7E8 /* FaceIDLock.swift in Sources */,
 				4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */,
+				3D7B29BACD2A6B5742532572 /* GoogleSignIn.swift in Sources */,
+				0A078A1268E384D4FC2AA8BA /* LoginView.swift in Sources */,
 				7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */,
+				2AED61817DB7DC3F2BADAC98 /* SessionStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

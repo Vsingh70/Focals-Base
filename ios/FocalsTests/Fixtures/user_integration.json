@@ -1,0 +1,10 @@
+{
+  "id": "9c8e7d6b-5a4f-3210-fedc-ba9876543210",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "provider": "anthropic",
+  "key_hint": "sk-ant-api03-…ZRk4",
+  "is_active": true,
+  "last_used_at": "2026-04-29T03:00:00.000000+00:00",
+  "created_at": "2026-04-28T20:15:00.000000+00:00",
+  "updated_at": "2026-04-29T03:00:00.000000+00:00"
+}

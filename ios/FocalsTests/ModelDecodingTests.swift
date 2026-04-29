@@ -39,13 +39,6 @@ struct ModelDecodingTests {
         #expect(model.paymentStatus == .partial)
     }
 
-    @Test func shootDecodes() throws {
-        let data = try loadFixture("shoot")
-        let model = try JSONDecoder.supabase.decode(Shoot.self, from: data)
-        #expect(model.title == "Johnson Engagement Session")
-        #expect(model.durationMinutes == 90)
-        #expect(model.status == .scheduled)
-    }
 
     @Test func contractDecodes() throws {
         let data = try loadFixture("contract")
@@ -121,6 +114,34 @@ struct ModelDecodingTests {
         let json = #"{"id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","user_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","full_name":"Test","email":null,"phone":null,"notes":null,"source":null,"created_at":"2026-04-20T14:22:31+00:00","updated_at":"2026-04-20T14:22:31+00:00"}"#
         let model = try JSONDecoder.supabase.decode(Client.self, from: Data(json.utf8))
         #expect(model.createdAt.timeIntervalSince1970 > 0)
+    }
+
+    @Test func userIntegrationDecodes() throws {
+        let data = try loadFixture("user_integration")
+        let model = try JSONDecoder.supabase.decode(UserIntegration.self, from: data)
+        #expect(model.provider == "anthropic")
+        #expect(model.keyHint.hasPrefix("sk-ant-"))
+        #expect(model.isActive == true)
+        #expect(model.lastUsedAt != nil)
+    }
+
+    @Test func projectUploadJobDecodes() throws {
+        let data = try loadFixture("project_upload_job")
+        let model = try JSONDecoder.supabase.decode(ProjectUploadJob.self, from: data)
+        #expect(model.filename == "spring_2026_bookings.csv")
+        #expect(model.status == "committed")
+        #expect(model.extractedCount == 12)
+        #expect(model.committedCount == 12)
+        #expect(model.completedAt != nil)
+    }
+
+    @Test func projectShootDateDecodesAsTimestamp() throws {
+        // shoot_date is now timestamptz (post-20260429180000 migration); the
+        // fixture must use a full ISO timestamp, and Date? decoding must
+        // succeed.
+        let data = try loadFixture("project")
+        let model = try JSONDecoder.supabase.decode(Project.self, from: data)
+        #expect(model.shootDate != nil)
     }
 }
 

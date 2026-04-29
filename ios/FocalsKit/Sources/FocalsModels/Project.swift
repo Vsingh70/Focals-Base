@@ -6,8 +6,11 @@ public struct Project: Codable, Identifiable, Hashable, Sendable {
     public let title: String
     public let clientId: UUID?
     public let category: String?
-    public let status: ProjectStatus
-    public let shootDate: String?
+    // status is nullable in Postgres (default 'inquiry' but legacy rows can be null)
+    public let status: ProjectStatus?
+    // shoot_date is timestamptz after the 20260429180000 migration — full
+    // ISO 8601 timestamp with timezone.
+    public let shootDate: Date?
     public let location: String?
     public let packagePrice: Double?
     public let amountPaid: Double?

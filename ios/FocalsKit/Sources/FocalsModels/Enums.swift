@@ -16,13 +16,6 @@ public enum PaymentStatus: String, Codable, CaseIterable, Sendable {
     case paid
 }
 
-public enum ShootStatus: String, Codable, CaseIterable, Sendable {
-    case scheduled
-    case completed
-    case cancelled
-    case rescheduled
-}
-
 public enum InquiryStatus: String, Codable, CaseIterable, Sendable {
     case new
     case read
