@@ -1,5 +1,6 @@
 import 'server-only';
-import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export type Kpis = {
   revenueMtd: number;
@@ -51,8 +52,19 @@ function formatDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-export async function getDashboardData(userId: string) {
-  const supabase = await createClient();
+/**
+ * Fetches all dashboard panels in parallel.
+ *
+ * Uses the admin client (RLS bypass) because every query already filters
+ * explicitly by `userId` — same scope as the cookie-session client, but
+ * cookie-free, which lets us wrap the result in `unstable_cache`.
+ *
+ * Cached for 30 seconds, keyed by user_id. Back-to-back navigations to /
+ * (e.g. user clicks Inbox, comes back) skip the 9 parallel Supabase
+ * round-trips entirely.
+ */
+async function getDashboardDataUncached(userId: string) {
+  const supabase = createAdminClient();
   const now = new Date();
   const monthStart = formatDate(startOfMonth(now));
   const priorMonthStart = formatDate(startOfPrevMonth(now));
@@ -215,3 +227,18 @@ export async function getDashboardData(userId: string) {
     recentProjects,
   };
 }
+
+// Public, cached entry point. Note that the cache is per-user (the userId
+// is in the second arg, which `unstable_cache` includes in the cache key)
+// and revalidates every 30 seconds. After mutations through server actions
+// the existing `revalidatePath('/projects')` etc. in actions/projects.ts
+// already busts the page-level data cache for the navigation that triggered
+// the mutation; this dashboard cache will catch up on its TTL.
+export const getDashboardData = unstable_cache(
+  async (userId: string) => getDashboardDataUncached(userId),
+  ['dashboard-data'],
+  {
+    revalidate: 30,
+    tags: ['dashboard'],
+  }
+);

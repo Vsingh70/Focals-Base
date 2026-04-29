@@ -62,6 +62,7 @@ export function NavBody({
     <>
       <Link
         href="/"
+        prefetch={true}
         onClick={onNavigate}
         style={{
           padding: '0 0.75rem',
@@ -84,6 +85,7 @@ export function NavBody({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  prefetch={true}
                   onClick={onNavigate}
                   style={navItemStyle(isActive(item.href))}
                 >
@@ -101,6 +103,7 @@ export function NavBody({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  prefetch={true}
                   onClick={onNavigate}
                   style={navItemStyle(isActive(item.href))}
                 >

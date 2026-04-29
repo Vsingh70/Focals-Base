@@ -6,8 +6,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { KpiCard } from '@/components/dashboard/KpiCard';
-import { RevenueChart } from '@/components/dashboard/RevenueChart';
-import { ProjectStatusChart } from '@/components/dashboard/ProjectStatusChart';
+import { LazyRevenueChart } from '@/components/dashboard/LazyRevenueChart';
+import { LazyProjectStatusChart } from '@/components/dashboard/LazyProjectStatusChart';
 import { UpcomingProjectsStrip } from '@/components/dashboard/UpcomingProjectsStrip';
 import { RecentProjectsList } from '@/components/dashboard/RecentProjectsList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             <CardTitle>Revenue · last 6 months</CardTitle>
           </CardHeader>
           <Suspense fallback={<ChartSkeleton />}>
-            <RevenueChart data={revenueSeries} />
+            <LazyRevenueChart data={revenueSeries} />
           </Suspense>
         </Card>
         <Card>
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
             <CardTitle>Projects by status</CardTitle>
           </CardHeader>
           <Suspense fallback={<ChartSkeleton />}>
-            <ProjectStatusChart data={projectStatus} />
+            <LazyProjectStatusChart data={projectStatus} />
           </Suspense>
         </Card>
       </div>

@@ -1,6 +1,8 @@
 'use client';
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useMemo } from 'react';
+import ReactECharts from 'echarts-for-react';
+import type { EChartsOption } from 'echarts';
 import type { StatusCount } from '@/lib/queries/dashboard';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -13,11 +15,78 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: '#e85040',
 };
 
-function formatStatus(s: string) {
-  return s.replace(/_/g, ' ');
+function humanize(s: string) {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function ProjectStatusChart({ data }: { data: StatusCount[] }) {
+function tokenColor(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return value || fallback;
+}
+
+export default function ProjectStatusChart({ data }: { data: StatusCount[] }) {
+  const option = useMemo<EChartsOption>(() => {
+    const border = tokenColor('--color-border', '#3a3a3a');
+    const textSecondary = tokenColor('--color-text-secondary', '#aaa');
+    const textPrimary = tokenColor('--color-text-primary', '#eaeaea');
+    const bgSecondary = tokenColor('--color-bg-secondary', '#1a1a1a');
+
+    return {
+      animation: true,
+      animationDuration: 300,
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: bgSecondary,
+        borderColor: border,
+        borderWidth: 1,
+        textStyle: { color: textPrimary, fontSize: 13 },
+        formatter: (params) => {
+          // params is a single point object for pie tooltip
+          const p = params as { name: string; value: number; percent: number };
+          return `${humanize(p.name)}<br/>${p.value} (${p.percent}%)`;
+        },
+      },
+      legend: {
+        bottom: 0,
+        textStyle: { color: textSecondary, fontSize: 12 },
+        icon: 'circle',
+        itemWidth: 8,
+        itemHeight: 8,
+        formatter: (name: string) => humanize(name),
+      },
+      series: [
+        {
+          name: 'Projects by status',
+          type: 'pie',
+          radius: ['60%', '85%'],
+          center: ['50%', '45%'],
+          padAngle: 2,
+          itemStyle: {
+            borderColor: bgSecondary,
+            borderWidth: 2,
+          },
+          label: { show: false },
+          labelLine: { show: false },
+          emphasis: {
+            scale: true,
+            scaleSize: 4,
+            label: { show: false },
+          },
+          data: data.map((entry) => ({
+            value: entry.count,
+            name: entry.status,
+            itemStyle: {
+              color: STATUS_COLORS[entry.status] ?? '#555',
+            },
+          })),
+        },
+      ],
+    };
+  }, [data]);
+
   if (data.length === 0) {
     return (
       <div
@@ -36,45 +105,11 @@ export function ProjectStatusChart({ data }: { data: StatusCount[] }) {
   }
 
   return (
-    <div style={{ width: '100%', height: 260 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="count"
-            nameKey="status"
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={90}
-            paddingAngle={2}
-            stroke="var(--color-bg-secondary)"
-            strokeWidth={2}
-          >
-            {data.map((entry) => (
-              <Cell
-                key={entry.status}
-                fill={STATUS_COLORS[entry.status] ?? 'var(--color-border-secondary)'}
-              />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              background: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--color-text-primary)',
-              fontSize: '0.8125rem',
-            }}
-            formatter={(value: number, name: string) => [value, formatStatus(name)]}
-          />
-          <Legend
-            wrapperStyle={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}
-            iconType="circle"
-            formatter={(value) => formatStatus(value as string)}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
+    <ReactECharts
+      option={option}
+      style={{ width: '100%', height: 260 }}
+      opts={{ renderer: 'canvas' }}
+      notMerge={true}
+    />
   );
 }

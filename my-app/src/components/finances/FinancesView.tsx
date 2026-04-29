@@ -1,11 +1,19 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/Badge';
 import { TransactionForm, type TransactionFormMode } from './TransactionForm';
-import { FinancesChart, type ChartPoint } from './FinancesChart';
+import type { ChartPoint } from './FinancesChart';
 import type { Database } from '@/lib/supabase/types';
+
+// Lazy-load the ECharts bundle only when the finances page renders.
+const FinancesChart = dynamic(() => import('./FinancesChart'), {
+  ssr: false,
+  loading: () => <Skeleton height={240} />,
+});
 
 type Transaction = Database['public']['Tables']['finances']['Row'];
 type ProjectLite = { id: string; title: string };
