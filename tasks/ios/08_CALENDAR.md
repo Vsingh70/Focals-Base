@@ -2,9 +2,11 @@
 
 ## Goal
 
-Build the iOS-style stacked-month calendar with **pixel parity** to the web's [MobileCalendarView.tsx](../../my-app/src/components/calendar/MobileCalendarView.tsx), plus EventKit two-way mirror so shoots flow into the user's iOS Calendar. After this task, opening Calendar shows the same scrollable month grid as the mobile web, tapping a day reveals that day's shoots, creating/updating shoots can mirror to iOS Calendar, and users can subscribe to the existing iCal feed for read-only sync.
+Build the iOS-style stacked-month calendar with **pixel parity** to the web's [MobileCalendarView.tsx](../../my-app/src/components/calendar/MobileCalendarView.tsx), plus an EventKit two-way mirror so projects flow into the user's iOS Calendar. After this task, opening Calendar shows the same scrollable month grid as the mobile web, tapping a day reveals that day's projects, creating a project from a slot opens ProjectForm pre-filled, and users can subscribe to the existing iCal feed for read-only sync.
 
 The MobileCalendarView is the **mandatory visual reference** — every dimension, color, font, and animation should match. Side-by-side screenshots are the acceptance test.
+
+> **Background**: the `shoots` table was dropped in web migration `20260429000000` — `projects.shoot_date` (timestamptz) is now the calendar event time. Each project has at most one event; default duration is 60 minutes. There's no separate "shoots" model.
 
 ---
 
@@ -20,19 +22,17 @@ The MobileCalendarView is the **mandatory visual reference** — every dimension
 │ 6  7  8  9  10 11 12                    │
 │ 13 14 15 16 17 18 19  ← tapped day      │
 │ ┌──────────────────────────────────────┐│
-│ │ Feb 17 — 2 shoots                    ││  ← inline detail panel
+│ │ Feb 17 — 2 projects                  ││  ← inline detail panel
 │ │ • 09:00 Sarah J Wedding • Studio A   ││
 │ │ • 14:00 Mike R Portrait • Outdoor    ││
 │ └──────────────────────────────────────┘│
 │ 20 21 22 23 24 25 26                    │
 │ 27 28                                   │
 │ ◤  March 2026                           │
-│ M  T  W  T  F  S  S                     │
-│ ...                                     │
 └──────────────────────────────────────────┘
 ```
 
-12-month window: 2 past + current + 9 forward (matching web). Auto-scroll to current month on first appearance. Up to 3 colored bars per day under the day number (one per shoot, color = status tone).
+12-month window: 2 past + current + 9 forward (matching web). Auto-scroll to current month on first appearance. Up to 3 colored bars per day under the day number (one per project, color = status tone).
 
 ---
 
@@ -51,45 +51,11 @@ public enum CalendarMath {
     /// Returns 6×7 = 42 day cells for a given month, including leading days from
     /// the previous month and trailing days from the next month so the grid always
     /// fills exactly 6 rows. Week starts on Monday.
-    public static func buildMonthCells(year: Int, month: Int) -> [Date] {
-        var components = DateComponents(year: year, month: month, day: 1)
-        let cal = Calendar(identifier: .gregorian)
-        guard let firstOfMonth = cal.date(from: components) else { return [] }
-        // JS getDay: Sun=0; Apple weekday: Sun=1. Apple's "weekday-1" → 0..6 Sun-Sat.
-        // Want Monday-start, so shift: Mon=0, Sun=6.
-        let weekday = cal.component(.weekday, from: firstOfMonth) // 1=Sun, 2=Mon, ... 7=Sat
-        let offset = (weekday + 5) % 7                            // Mon=0, Sun=6
-        components.day = 1 - offset
-        guard let start = cal.date(from: components) else { return [] }
-        return (0..<42).compactMap { i in
-            cal.date(byAdding: .day, value: i, to: start)
-        }
-    }
+    public static func buildMonthCells(year: Int, month: Int) -> [Date] { ... }
 
-    public static func dayKey(_ date: Date) -> String {
-        let cal = Calendar(identifier: .gregorian)
-        let y = cal.component(.year, from: date)
-        let m = cal.component(.month, from: date)
-        let d = cal.component(.day, from: date)
-        return String(format: "%04d-%02d-%02d", y, m, d)
-    }
-
-    public static func monthKey(_ date: Date) -> String {
-        let cal = Calendar(identifier: .gregorian)
-        return String(format: "%04d-%02d", cal.component(.year, from: date), cal.component(.month, from: date))
-    }
-
-    public static func monthRange(now: Date = .now) -> [(year: Int, month: Int)] {
-        let cal = Calendar(identifier: .gregorian)
-        let nowYear = cal.component(.year, from: now)
-        let nowMonth = cal.component(.month, from: now)
-        return (-monthsBack...monthsForward).map { offset -> (Int, Int) in
-            var c = DateComponents(year: nowYear, month: nowMonth)
-            c.month! += offset
-            let date = cal.date(from: c)!
-            return (cal.component(.year, from: date), cal.component(.month, from: date))
-        }
-    }
+    public static func dayKey(_ date: Date) -> String { ... }
+    public static func monthKey(_ date: Date) -> String { ... }
+    public static func monthRange(now: Date = .now) -> [(year: Int, month: Int)] { ... }
 }
 ```
 
@@ -97,24 +63,30 @@ Test against the web's behavior with at least 5 fixture months including DST tra
 
 ## Step 2 — Status → color tone
 
-Match `STATUS_BAR_COLOR` in MobileCalendarView.tsx:
+Match the project status colors used by the web's `MobileCalendarView`:
 
 ```swift
-extension ShootStatus {
+extension ProjectStatus {
     var barColor: Color {
         switch self {
-        case .scheduled:   return .tokens.accent
-        case .completed:   return .tokens.success
+        case .inquiry:     return .tokens.textTertiary
+        case .booked:      return .tokens.accent
+        case .inProgress,
+             .editing:     return .tokens.warning
+        case .delivered,
+             .completed:   return .tokens.success
         case .cancelled:   return .tokens.danger
-        case .rescheduled: return .tokens.warning
         }
     }
     var pillTone: StatusPill.Tone {
         switch self {
-        case .scheduled:   return .accent
-        case .completed:   return .success
+        case .inquiry:     return .neutral
+        case .booked:      return .accent
+        case .inProgress,
+             .editing:     return .warning
+        case .delivered,
+             .completed:   return .success
         case .cancelled:   return .danger
-        case .rescheduled: return .warning
         }
     }
 }
@@ -128,7 +100,7 @@ struct DayCell: View {
     let isInMonth: Bool
     let isToday: Bool
     let isSelected: Bool
-    let shoots: [Shoot]              // shoots on this day, max 3 bars rendered
+    let projects: [Project]              // up to 3 bars rendered
 
     var body: some View {
         VStack(spacing: 2) {
@@ -139,9 +111,9 @@ struct DayCell: View {
                 .background(isToday ? Color.tokens.accent : .clear)
                 .clipShape(Circle())
             VStack(spacing: 2) {
-                ForEach(shoots.prefix(3)) { shoot in
+                ForEach(projects.prefix(3)) { project in
                     Capsule()
-                        .fill(shoot.status.barColor)
+                        .fill(project.status.barColor)
                         .frame(height: 3)
                 }
             }
@@ -154,12 +126,6 @@ struct DayCell: View {
         .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
         .contentShape(Rectangle())
     }
-
-    private var numberColor: Color {
-        if isToday { return .tokens.bg }                  // contrast on accent fill
-        if !isInMonth { return .tokens.textTertiary.opacity(0.4) }
-        return .tokens.textPrimary
-    }
 }
 ```
 
@@ -169,32 +135,21 @@ struct DayCell: View {
 struct MonthSection: View {
     let year: Int
     let month: Int
-    let shootsByDay: [String: [Shoot]]   // key: dayKey(date)
+    let projectsByDay: [String: [Project]]   // key: dayKey(date)
     @Binding var selectedDay: Date?
 
-    private var monthName: String {
-        var c = DateComponents(year: year, month: month, day: 1)
-        let date = Calendar.current.date(from: c)!
-        return date.formatted(.dateTime.month(.wide).year())
-    }
+    private var monthName: String { /* "February 2026" */ }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(monthName)
-                .font(.tokens.display(20))
-                .foregroundStyle(.tokens.textPrimary)
-                .padding(.horizontal, Spacing.md)
-                .padding(.top, Spacing.lg)
+            Text(monthName).font(.tokens.display(20)).foregroundStyle(.tokens.textPrimary)
 
             HStack(spacing: 0) {
                 ForEach(CalendarMath.weekdayHeaders, id: \.self) { wd in
-                    Text(wd)
-                        .font(.tokens.body(11))
-                        .foregroundStyle(.tokens.textTertiary)
+                    Text(wd).font(.tokens.body(11)).foregroundStyle(.tokens.textTertiary)
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, Spacing.sm)
 
             let cells = CalendarMath.buildMonthCells(year: year, month: month)
             LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: 0), count: 7), spacing: 0) {
@@ -204,7 +159,7 @@ struct MonthSection: View {
                         isInMonth: Calendar.current.component(.month, from: date) == month,
                         isToday: Calendar.current.isDateInToday(date),
                         isSelected: selectedDay.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false,
-                        shoots: shootsByDay[CalendarMath.dayKey(date)] ?? []
+                        projects: projectsByDay[CalendarMath.dayKey(date)] ?? []
                     )
                     .onTapGesture {
                         Haptics.tap()
@@ -212,7 +167,6 @@ struct MonthSection: View {
                     }
                 }
             }
-            .padding(.horizontal, Spacing.sm)
         }
     }
 }
@@ -220,41 +174,39 @@ struct MonthSection: View {
 
 ## Step 5 — Inline day detail panel
 
-Web puts the detail panel **inline below the tapped row's week**. iOS replicates: when `selectedDay` is set, render a panel below the section it belongs to with that day's shoots. Keep selection sticky as the user scrolls; clicking a day in another month moves the selection.
+The web puts the detail panel **inline below the tapped row's week**. iOS replicates: when `selectedDay` is set, render a panel below the section it belongs to with that day's projects.
 
 ```swift
 struct DayDetailPanel: View {
     let date: Date
-    let shoots: [Shoot]
+    let projects: [Project]
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
                 .font(.tokens.medium(15))
                 .foregroundStyle(.tokens.textPrimary)
-            if shoots.isEmpty {
-                Text("No shoots scheduled")
+            if projects.isEmpty {
+                Text("No projects scheduled")
                     .font(.tokens.body(13))
                     .foregroundStyle(.tokens.textTertiary)
             } else {
-                ForEach(shoots) { shoot in
+                ForEach(projects) { project in
                     Button {
-                        AppRouter.shared.presentedSheet = .shootDetail(shoot)
+                        AppRouter.shared.navigate(to: .projectDetail(project.id))
                     } label: {
                         HStack(spacing: Spacing.sm) {
                             VStack(alignment: .leading) {
-                                Text(timeString(shoot.scheduledAt))
+                                Text(timeString(project.shootDate))
                                     .font(.tokens.medium(13))
-                                Text(shoot.title)
+                                Text(project.title)
                                     .font(.tokens.body(13))
                                     .foregroundStyle(.tokens.textSecondary)
                             }
                             Spacer()
-                            StatusPill(shoot.status.rawValue.capitalized, tone: shoot.status.pillTone)
+                            StatusPill(project.status.rawValue.capitalized, tone: project.status.pillTone)
                         }
                         .padding(Spacing.sm)
-                        .background(Color.tokens.bg)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
                     }
                     .buttonStyle(.plain)
                 }
@@ -263,7 +215,6 @@ struct DayDetailPanel: View {
         .padding(Spacing.md)
         .background(Color.tokens.bgSecondary)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-        .padding(.horizontal, Spacing.md)
     }
 }
 ```
@@ -273,7 +224,12 @@ struct DayDetailPanel: View {
 ```swift
 struct CalendarScreen: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \CachedShoot.scheduledAt, order: .forward) private var cached: [CachedShoot]
+    @Query(
+        filter: #Predicate<CachedProject> { $0.shootDate != nil },
+        sort: \CachedProject.shootDate,
+        order: .forward
+    )
+    private var cached: [CachedProject]
 
     @State private var selectedDay: Date? = .now
 
@@ -285,21 +241,19 @@ struct CalendarScreen: View {
                         MonthSection(
                             year: ym.year,
                             month: ym.month,
-                            shootsByDay: shootsByDay(forMonth: ym),
+                            projectsByDay: projectsByDay(forMonth: ym),
                             selectedDay: $selectedDay
                         )
                         .id("\(ym.year)-\(ym.month)")
                         if shouldRenderDetail(forMonth: ym) {
                             DayDetailPanel(
                                 date: selectedDay!,
-                                shoots: shootsForDay(selectedDay!)
+                                projects: projectsForDay(selectedDay!)
                             )
                         }
                     }
                 }
-                .padding(.bottom, Spacing.xxl)
             }
-            .background(Color.tokens.bg)
             .navigationTitle("Calendar")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -307,23 +261,28 @@ struct CalendarScreen: View {
                         let now = Date.now
                         selectedDay = now
                         let cal = Calendar.current
-                        proxy.scrollTo("\(cal.component(.year, from: now))-\(cal.component(.month, from: now))", anchor: .top)
+                        proxy.scrollTo(
+                            "\(cal.component(.year, from: now))-\(cal.component(.month, from: now))",
+                            anchor: .top
+                        )
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { AppRouter.shared.presentedSheet = .createShoot(presetDate: selectedDay) }) {
+                    Button(action: {
+                        AppRouter.shared.presentedSheet = .createProject(presetShootDate: selectedDay)
+                    }) {
                         Image(systemName: "plus")
                     }
                 }
             }
             .task {
-                try? await ShootsCacheRepository.shared.refresh(in: context)
+                try? await ProjectsCacheRepository.shared.refresh(in: context)
                 let cal = Calendar.current
                 let now = Date.now
                 proxy.scrollTo("\(cal.component(.year, from: now))-\(cal.component(.month, from: now))", anchor: .top)
             }
             .refreshable {
-                try? await ShootsCacheRepository.shared.refresh(in: context)
+                try? await ProjectsCacheRepository.shared.refresh(in: context)
             }
         }
     }
@@ -332,7 +291,7 @@ struct CalendarScreen: View {
 
 ## Step 7 — EventKit mirror
 
-Create `ios/Focals/Modules/Calendar/EventKitMirror.swift`:
+Create `ios/Focals/Modules/Calendar/EventKitMirror.swift`. Mirrors **projects** with `shoot_date` set into a dedicated `[APP_NAME]` calendar in the user's iOS Calendar app.
 
 ```swift
 import EventKit
@@ -342,6 +301,9 @@ import FocalsModels
 public final class EventKitMirror {
     public static let shared = EventKitMirror()
     private let store = EKEventStore()
+
+    /// Default duration when projects don't carry one. Matches web/iCal feed.
+    private static let defaultDurationMinutes = 60
 
     public var isEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: "EventKitMirrorEnabled") }
@@ -356,38 +318,31 @@ public final class EventKitMirror {
     public func requestAccess() async throws {
         if #available(iOS 17.0, *) {
             try await store.requestFullAccessToEvents()
-        } else {
-            try await withCheckedThrowingContinuation { cont in
-                store.requestAccess(to: .event) { granted, error in
-                    if granted { cont.resume() }
-                    else { cont.resume(throwing: error ?? FocalsAPIError.auth(message: "Calendar access denied")) }
-                }
-            }
         }
     }
 
-    public func mirror(_ shoot: Shoot) async throws {
-        guard isEnabled else { return }
+    public func mirror(_ project: Project) async throws {
+        guard isEnabled, let start = project.shootDate else { return }
         let calendar = try await ensureCalendarExists()
 
-        let existing = findEvent(for: shoot, in: calendar)
+        let existing = findEvent(for: project, in: calendar)
         let event = existing ?? EKEvent(eventStore: store)
         event.calendar = calendar
-        event.title = shoot.title
-        event.startDate = shoot.scheduledAt
-        event.endDate = shoot.scheduledAt.addingTimeInterval(TimeInterval(60 * (shoot.durationMinutes ?? 90)))
-        event.location = shoot.location
-        event.notes = shoot.notes
+        event.title = project.title
+        event.startDate = start
+        event.endDate = start.addingTimeInterval(TimeInterval(60 * Self.defaultDurationMinutes))
+        event.location = project.location
+        event.notes = project.notes
         // Stable identifier so we can update later
-        event.url = URL(string: "focals://shoot/\(shoot.id.uuidString)")
+        event.url = URL(string: "focals://project/\(project.id.uuidString)")
 
         try store.save(event, span: .thisEvent)
     }
 
-    public func remove(_ shoot: Shoot) async throws {
+    public func remove(_ project: Project) async throws {
         guard isEnabled else { return }
         let calendar = try await ensureCalendarExists()
-        if let event = findEvent(for: shoot, in: calendar) {
+        if let event = findEvent(for: project, in: calendar) {
             try store.remove(event, span: .thisEvent)
         }
     }
@@ -408,11 +363,12 @@ public final class EventKitMirror {
         return new
     }
 
-    private func findEvent(for shoot: Shoot, in calendar: EKCalendar) -> EKEvent? {
-        let url = "focals://shoot/\(shoot.id.uuidString)"
+    private func findEvent(for project: Project, in calendar: EKCalendar) -> EKEvent? {
+        guard let start = project.shootDate else { return nil }
+        let url = "focals://project/\(project.id.uuidString)"
         let predicate = store.predicateForEvents(
-            withStart: shoot.scheduledAt.addingTimeInterval(-86400),
-            end: shoot.scheduledAt.addingTimeInterval(86400),
+            withStart: start.addingTimeInterval(-86400),
+            end: start.addingTimeInterval(86400),
             calendars: [calendar]
         )
         return store.events(matching: predicate).first(where: { $0.url?.absoluteString == url })
@@ -420,16 +376,14 @@ public final class EventKitMirror {
 }
 ```
 
-Hook into `ShootsCacheRepository.create/update/delete` so every successful mutation also fires `EventKitMirror.shared.mirror(saved)` (or `remove` on delete) when the toggle is on.
+Hook into `ProjectsCacheRepository.create/update/delete` so every successful mutation also fires `EventKitMirror.shared.mirror(saved)` (or `remove` on delete) when the toggle is on.
 
-Add an `Info.plist` key:
+`Info.plist`:
 
 ```xml
 <key>NSCalendarsUsageDescription</key>
-<string>[APP_NAME] mirrors your scheduled shoots to a dedicated calendar so they show up in the iOS Calendar app.</string>
+<string>[APP_NAME] mirrors your scheduled projects to a dedicated calendar so they show up in the iOS Calendar app.</string>
 ```
-
-(In iOS 17+, also `NSCalendarsFullAccessUsageDescription` if using `requestFullAccessToEvents`.)
 
 ## Step 8 — iCal subscription helper
 
@@ -439,7 +393,7 @@ In Settings (Task 12), expose a "Subscribe in Apple Calendar" button that deep-l
 webcal://focals-base.vercel.app/api/calendar/<userId>?token=<calendar_token>
 ```
 
-Tapping the link from the system Calendar app prompts the user to add a read-only subscription. This is the lowest-friction way to get shoots into the system calendar without the EventKit mirror.
+The endpoint serves projects (not shoots) — same URL the user already had if they were subscribed under the old shoots architecture; the route just changed what it queries.
 
 ```swift
 Button("Subscribe in Apple Calendar") {
@@ -463,18 +417,18 @@ Document in `EventKitMirror.swift`:
 - [ ] Visual parity with `MobileCalendarView.tsx` verified by side-by-side screenshots on iPhone 15 simulator at the same DPI
 - [ ] 12 months render: 2 past + current + 9 forward
 - [ ] Auto-scrolls to current month on first appearance and on "Today" button
-- [ ] Day with shoots renders up to 3 colored bars matching status tones
+- [ ] Day with projects renders up to 3 colored bars matching status tones
 - [ ] Tapping a day shows the inline detail panel below that month section
-- [ ] Tapping a shoot in the panel opens the shoot detail sheet (`AppRouter.shared.presentedSheet = .shootDetail(...)`)
-- [ ] "+" button creates a shoot pre-populated with `selectedDay`
-- [ ] Toggling EventKit mirror in Settings + creating a shoot creates an event in a "[APP_NAME]" calendar visible in the iOS Calendar app
-- [ ] Updating that shoot updates the EventKit event (verified by checking startDate/title in iOS Calendar)
-- [ ] Deleting the shoot removes the EventKit event
+- [ ] Tapping a project in the panel pushes the project detail screen
+- [ ] "+" button opens ProjectForm pre-populated with `selectedDay` as `presetShootDate`
+- [ ] Toggling EventKit mirror in Settings + creating a project (with `shoot_date`) creates an event in a "[APP_NAME]" calendar visible in the iOS Calendar app
+- [ ] Updating that project updates the EventKit event (verified by checking startDate/title in iOS Calendar)
+- [ ] Deleting the project removes the EventKit event
 - [ ] EventKit permission denial shows actionable "Open Settings" message
-- [ ] "Subscribe in Apple Calendar" button (Settings) deep-links to the webcal:// URL
+- [ ] "Subscribe in Apple Calendar" button (Settings) deep-links to the webcal:// URL and the system Calendar shows project events
 - [ ] DST and leap-year transitions render correctly (test February in a leap year, end of March/October)
 
 ## Depends on
 
-- 04 (Shell, sheet infrastructure)
-- 05 (`ShootsCacheRepository`)
+- 04 (Shell, sheet infrastructure, `presentedSheet = .createProject(presetShootDate:)`)
+- 05 (`ProjectsCacheRepository`)

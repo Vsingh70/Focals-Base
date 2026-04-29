@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build the native dashboard with KPI cards, revenue chart, project status donut, upcoming shoots, and quick actions. Numbers must match the web `/` for the same account exactly. After this task, opening the app to a signed-in state shows a real, useful dashboard.
+Build the native dashboard with KPI cards, revenue chart, project status donut, upcoming projects strip, and quick actions. Numbers must match the web `/` for the same account exactly. After this task, opening the app to a signed-in state shows a real, useful dashboard.
 
 Reference: [my-app/src/app/(dashboard)/page.jsx](../../my-app/src/app/(dashboard)/page.jsx).
 
@@ -22,7 +22,7 @@ Reference: [my-app/src/app/(dashboard)/page.jsx](../../my-app/src/app/(dashboard
 ├──────────────────────────────────────────┤
 │ Project Status Donut (SectorMark)        │
 ├──────────────────────────────────────────┤
-│ Upcoming Shoots (next 7 days, hScroll)   │
+│ Upcoming Projects (next 7 days, hScroll) │
 ├──────────────────────────────────────────┤
 │ Quick Actions                            │
 │  [+ Project] [+ Inquiry] [+ Expense]     │
@@ -44,28 +44,30 @@ import FocalsModels
 public struct DashboardSnapshot: Sendable {
     public let revenueMTD: Decimal
     public let activeProjects: Int
-    public let upcomingShoots: Int
-    public let pendingRevenue: Decimal           // amount_paid - package_price for projects in payment_status != paid
+    public let upcomingProjects: Int
+    public let pendingRevenue: Decimal           // package_price - amount_paid for projects in payment_status != paid
     public let revenueByMonth: [(Date, Decimal)] // last 6 months
     public let projectStatusBreakdown: [(ProjectStatus, Int)]
-    public let nextSevenDaysShoots: [Shoot]
+    public let nextSevenDaysProjects: [Project]
 }
 
 public enum DashboardCalculations {
     public static func snapshot(
         projects: [Project],
-        shoots: [Shoot],
         finances: [Finance],
         now: Date = .now
     ) -> DashboardSnapshot {
-        // 1) Revenue MTD: sum finances where type == income AND date in current month
-        // 2) Active projects: count where status in [lead, booked, inProgress]
-        // 3) Upcoming shoots: count where scheduled_at > now AND status == scheduled
+        // 1) Revenue MTD: sum finances where type == income AND date in current month.
+        //    NOTE: the web's sync_project_income trigger auto-creates an income row
+        //    for every project with amount_paid > 0, so this single query covers
+        //    both manually-logged income and project payments.
+        // 2) Active projects: count where status in [inquiry, booked, in_progress, editing]
+        // 3) Upcoming projects: count where shoot_date BETWEEN now AND now + 7 days
         // 4) Pending $: sum (package_price - amount_paid) where payment_status in [unpaid, partial]
         // 5) Revenue by month: 6 months back, grouped by Calendar.startOfMonth
         // 6) Project status breakdown: count grouped by status
-        // 7) Next 7 days shoots: filtered + sorted ascending
-        // ... formulas mirror my-app/src/app/(dashboard)/page.jsx exactly
+        // 7) Next 7 days projects: shoot_date filtered + sorted ascending
+        // ... formulas mirror my-app/src/lib/queries/dashboard.ts exactly
     }
 }
 ```
@@ -205,21 +207,21 @@ struct ProjectStatusDonut: View {
 }
 ```
 
-## Step 5 — Upcoming shoots strip
+## Step 5 — Upcoming projects strip
 
-Horizontal scroll, one card per shoot. Tap → opens shoot detail sheet (Task 09 wires the sheet).
+Horizontal scroll, one card per project (filtered to `shoot_date` in the next 7 days). Tap → push the project detail screen.
 
 ```swift
-struct UpcomingShootsStrip: View {
-    let shoots: [Shoot]
+struct UpcomingProjectsStrip: View {
+    let projects: [Project]
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
-                ForEach(shoots) { shoot in
-                    UpcomingShootCard(shoot: shoot)
+                ForEach(projects) { project in
+                    UpcomingProjectCard(project: project)
                         .onTapGesture {
                             Haptics.tap()
-                            AppRouter.shared.presentedSheet = .shootDetail(shoot)
+                            AppRouter.shared.navigate(to: .projectDetail(project.id))
                         }
                 }
             }
@@ -229,7 +231,7 @@ struct UpcomingShootsStrip: View {
 }
 ```
 
-`UpcomingShootCard`: 200×100, big day number, weekday, title, location pill.
+`UpcomingProjectCard`: 200×100, big day number, weekday, title, location pill.
 
 ## Step 6 — Quick actions
 
@@ -266,9 +268,9 @@ struct DashboardScreen: View {
                     kpiGrid(s)
                     RevenueChart(data: s.revenueByMonth)
                     ProjectStatusDonut(breakdown: s.projectStatusBreakdown)
-                    if !s.nextSevenDaysShoots.isEmpty {
+                    if !s.nextSevenDaysProjects.isEmpty {
                         sectionHeader("Upcoming")
-                        UpcomingShootsStrip(shoots: s.nextSevenDaysShoots)
+                        UpcomingProjectsStrip(projects: s.nextSevenDaysProjects)
                     }
                     sectionHeader("Quick actions")
                     QuickActions()
@@ -290,15 +292,13 @@ struct DashboardScreen: View {
         defer { isRefreshing = false }
         // Refresh underlying caches in parallel
         async let r1: () = ProjectsCacheRepository.shared.refresh(in: context)
-        async let r2: () = ShootsCacheRepository.shared.refresh(in: context)
-        async let r3: () = FinancesCacheRepository.shared.refresh(in: context)
-        _ = try? await (r1, r2, r3)
+        async let r2: () = FinancesCacheRepository.shared.refresh(in: context)
+        _ = try? await (r1, r2)
 
         // Recompute snapshot
         let projects = (try? ProjectsCacheRepository.shared.cached(in: context)) ?? []
-        let shoots   = (try? ShootsCacheRepository.shared.cached(in: context)) ?? []
         let finances = (try? FinancesCacheRepository.shared.cached(in: context)) ?? []
-        snapshot = DashboardCalculations.snapshot(projects: projects, shoots: shoots, finances: finances)
+        snapshot = DashboardCalculations.snapshot(projects: projects, finances: finances)
     }
 
     @ViewBuilder
@@ -306,7 +306,7 @@ struct DashboardScreen: View {
         LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: Spacing.sm) {
             KPICard(label: "Revenue MTD", value: s.revenueMTD.currencyString, trend: s.revenueByMonth.map { Double(truncating: $0.1 as NSDecimalNumber) })
             KPICard(label: "Active Projects", value: "\(s.activeProjects)")
-            KPICard(label: "Upcoming Shoots", value: "\(s.upcomingShoots)")
+            KPICard(label: "Upcoming Projects", value: "\(s.upcomingProjects)")
             KPICard(label: "Pending", value: s.pendingRevenue.currencyString, trendColor: .tokens.warning)
         }
     }
@@ -338,10 +338,10 @@ private var greeting: String {
 ## Acceptance Criteria
 
 - [ ] Dashboard loads cached data within 200ms (verified with Instruments → Time Profiler)
-- [ ] All four KPI numbers match web `/` for the same account, on a fixture with at least 5 projects, 5 shoots, 10 finance rows
+- [ ] All four KPI numbers match web `/` for the same account, on a fixture with at least 5 projects (some with shoot_date in the next 7 days) and 10 finance rows
 - [ ] Revenue chart shows last 6 months grouped by month
 - [ ] Project status donut shows correct counts with legend
-- [ ] Upcoming shoots strip horizontally scrolls and tap opens shoot detail sheet
+- [ ] Upcoming projects strip horizontally scrolls and tap pushes the project detail screen
 - [ ] Quick actions open the right create sheet (verified by tap → sheet appears)
 - [ ] Pull-to-refresh fires `refresh()` and updates the snapshot
 - [ ] Empty account: dashboard shows the layout with zeroes/empty states, doesn't crash
@@ -351,4 +351,4 @@ private var greeting: String {
 ## Depends on
 
 - 04 (Shell, AppRouter, sheet infrastructure)
-- 05 (Cache repos for projects, shoots, finances)
+- 05 (Cache repos for projects, finances)

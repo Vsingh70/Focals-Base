@@ -31,7 +31,7 @@ The web's [MobileCalendarView.tsx](../../my-app/src/components/calendar/MobileCa
 | Networking | [`supabase-swift`](https://github.com/supabase/supabase-swift) (Auth + PostgREST). No Realtime |
 | Charts | Apple Charts framework |
 | PDF | PDFKit (render server-rendered contract PDFs) |
-| Maps | MapKit (static snapshot of shoot location) |
+| Maps | MapKit (static snapshot of project location) |
 | Drawing | PencilKit (iPad contract signing) |
 | Widgets | WidgetKit + App Groups |
 | Background activity | ActivityKit (Live Activities) |
@@ -48,26 +48,27 @@ Every web route maps to exactly one iOS module. Native-only modules (Widgets, In
 
 | # | Web route | iOS module | Supabase tables | Notes |
 |---|---|---|---|---|
-| 1 | `/` (Dashboard) | `Modules/Dashboard/` | `projects`, `shoots`, `finances` | KPI cards + Apple Charts |
+| 1 | `/` (Dashboard) | `Modules/Dashboard/` | `projects`, `finances` | KPI cards + Apple Charts |
 | 2 | `/inbox` | `Modules/Inbox/` | `inquiries`, `clients`, `projects` | Status workflow + convert action |
-| 3 | `/calendar` | `Modules/Calendar/` | `shoots` | Stacked month grid + EventKit mirror |
-| 4 | `/projects`, `/projects/[id]` | `Modules/Projects/` | `projects`, `clients`, `shoots`, `finances` | CRUD + payment tracking |
+| 3 | `/calendar` | `Modules/Calendar/` | `projects` | Stacked month grid + EventKit mirror |
+| 4 | `/projects`, `/projects/[id]` | `Modules/Projects/` | `projects`, `clients`, `finances` | CRUD + payment tracking + LLM file import (Task 15) |
 | 5 | `/clients`, `/clients/[id]` | `Modules/Clients/` | `clients` | CRM + system Contacts link |
-| 6 | `/shoots` | `Modules/Shoots/` | `shoots`, `projects`, `clients` | MapKit + EventKit add |
-| 7 | `/finances` | `Modules/Finances/` | `finances` | Tx list + P&L + receipt capture |
-| 8 | `/contracts`, `/contracts/[id]`, `/contracts/new`, `/contracts/templates` | `Modules/Contracts/` | `contracts`, `contract_templates` | PDFKit viewer + PencilKit signing |
-| 9 | `/gear` | `Modules/Gear/` | `gear` | Inventory + photo per item |
-| 10 | `/forms` | `Modules/Forms/` | `forms` | **Read-only in v1** (creation web-only) |
-| 11 | `/links` | `Modules/Links/` | `links` | Bookmarks + SFSafariViewController |
-| 12 | `/help`, `/help/[slug]` | `Modules/Help/` | (none — fetches markdown from web) | MarkdownUI render |
-| 13 | `/settings` | `Modules/Settings/` | `profiles`, `inquiry_sources` | Profile + integrations + sign out |
+| 6 | `/finances` | `Modules/Finances/` | `finances` | Tx list + P&L + receipt capture |
+| 7 | `/contracts`, `/contracts/[id]`, `/contracts/new`, `/contracts/templates` | `Modules/Contracts/` | `contracts`, `contract_templates` | PDFKit viewer + PencilKit signing |
+| 8 | `/gear` | `Modules/Gear/` | `gear` | Inventory + photo per item |
+| 9 | `/forms` | `Modules/Forms/` | `forms` | **Read-only in v1** (creation web-only) |
+| 10 | `/links` | `Modules/Links/` | `links` | Bookmarks + SFSafariViewController |
+| 11 | `/help`, `/help/[slug]` | `Modules/Help/` | (none — fetches markdown from web) | MarkdownUI render |
+| 12 | `/settings` | `Modules/Settings/` | `profiles`, `inquiry_sources`, `user_integrations` | Profile + AI key + sign out |
 | — | `/login` | `Auth/` | `profiles` | Google OAuth + Apple Sign In |
 
 **Native-only extension targets:**
-- `FocalsWidgets/` — WidgetKit (Today's Shoots, Revenue MTD)
+- `FocalsWidgets/` — WidgetKit ("Today's Schedule", "Revenue MTD")
 - `FocalsIntents/` — App Intents (Log expense, Add inquiry, etc.)
-- `FocalsLiveActivity/` — ActivityKit (shoot countdown)
-- Share Extension (within main app target) — receive URL/text/image → create Inquiry/Link
+- `FocalsLiveActivity/` — ActivityKit (next-project countdown)
+- Share Extension (within main app target) — receive URL/text/image → create Inquiry, Link, or upload-to-projects
+
+**v1 also includes file-upload extraction.** The web app can drop a PDF/CSV/XLSX/DOCX/TXT/image onto Projects and Claude extracts proposed projects for review. iOS mirrors this via a slide-over (Task 15). Per-user Anthropic API keys are stored encrypted in `user_integrations` (table added by web migration `20260428170000_user_integrations_and_upload_jobs.sql`).
 
 ---
 
@@ -82,15 +83,16 @@ Every web route maps to exactly one iOS module. Native-only modules (Widgets, In
 06_DASHBOARD.md                            ← depends on 04, 05
 07_INBOX.md                                ← depends on 04, 05
 08_CALENDAR.md                             ← depends on 04, 05
-09_PROJECTS_CLIENTS_SHOOTS.md              ← depends on 04, 05
+09_PROJECTS_CLIENTS.md                     ← depends on 04, 05
 10_FINANCES.md                             ← depends on 04, 05, 09
 11_CONTRACTS.md                            ← depends on 03, 04, 05
 12_GEAR_LINKS_FORMS_HELP_SETTINGS.md       ← depends on 04, 05
 13_NATIVE_FEATURES.md                      ← depends on 04, 05, 06–12
 14_TESTING_RELEASE_TELEMETRY.md            ← depends on all above
+15_PROJECT_UPLOAD.md                       ← depends on 04, 05, 09, 12
 ```
 
-Tasks 06–12 can execute in parallel (independent module work) once 04 + 05 are done.
+Tasks 06–12 can execute in parallel (independent module work) once 04 + 05 are done. Task 15 (file-upload) depends on 12 because it needs the AI key flow in Settings.
 
 ---
 

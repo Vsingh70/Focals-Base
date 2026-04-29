@@ -221,7 +221,7 @@ Save button at bottom; calls `ProfileRepository.shared.update(...)`.
 ### Calendar
 
 - **Subscribe in Apple Calendar** button (Task 08 — opens `webcal://` URL)
-- **Mirror to iOS Calendar** toggle (EventKitMirror — Task 08)
+- **Mirror projects to iOS Calendar** toggle (EventKitMirror — Task 08). Each project with `shoot_date` becomes one event in the dedicated `[APP_NAME]` calendar.
 - **Calendar feed token** — read-only display with "Regenerate" button. Calls server action via `ProfileRepository.shared.regenerateCalendarToken()`. Confirm prompt: "Regenerating invalidates the existing iCal subscription URL. Continue?"
 
 ### Inquiry sources
@@ -230,11 +230,20 @@ Save button at bottom; calls `ProfileRepository.shared.update(...)`.
 - Per-row: copy webhook URL, regenerate token, deactivate
 - "Add new source" button — sheet matching web settings → InquirySourcesSection
 
+### AI file import (Task 15)
+
+- Heading: **AI file import**
+- Status pill: "Connected" (green) / "Not connected" (neutral)
+- If not connected: button "Add Anthropic API key" → opens a sheet with a password-style input + Save. Validates the key via Anthropic's `/v1/models` before storing.
+- If connected: shows masked key (`sk-ant-…XYZ`), last-used date, "Replace" + "Disconnect" buttons.
+- Backed by the same `user_integrations` table the web reads. Stored encrypted at rest server-side; never round-tripped to iOS in plaintext.
+- Tooltip: "Used only to extract project data from files you upload. Never used for anything else."
+
 ### Notifications (Task 13 detail)
 
 - Toggle: New inquiry alerts
-- Toggle: Shoot reminders (24h before)
-- Toggle: Live Activity for upcoming shoots
+- Toggle: Project reminders (24h before `shoot_date`)
+- Toggle: Live Activity for next upcoming project
 
 ### Security
 
@@ -312,7 +321,8 @@ Use `Form` with the system grouped style here only — settings is the one place
 - [ ] Profile edits round-trip via `ProfileRepository.update`
 - [ ] Calendar token regenerate works (verify by reading new token in DB)
 - [ ] Inquiry sources CRUD parity with web settings
-- [ ] EventKit mirror toggle integrates with Task 08 — flipping ON prompts permission, mirrors existing shoots; flipping OFF deletes mirrored events
+- [ ] EventKit mirror toggle integrates with Task 08 — flipping ON prompts permission, mirrors existing projects; flipping OFF deletes mirrored events
+- [ ] AI file import card: validates a pasted Anthropic key, stores it encrypted via the same server endpoint the web uses, displays a masked hint (`sk-ant-…XYZ`), and supports Replace/Disconnect
 - [ ] Face ID toggle takes effect on next cold start (Task 03)
 - [ ] Reset tutorials clears tutorial_progress JSONB (round-trips via `ProfileRepository`)
 - [ ] Clear cache wipes SwiftData store (verify by re-launching → cache empty)

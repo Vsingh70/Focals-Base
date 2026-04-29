@@ -18,11 +18,12 @@ This directory contains the full iOS implementation plan for [APP_NAME]. Each `.
 06_DASHBOARD.md                            ← Modules — can run in parallel after 05
 07_INBOX.md
 08_CALENDAR.md
-09_PROJECTS_CLIENTS_SHOOTS.md
+09_PROJECTS_CLIENTS.md
 10_FINANCES.md
 11_CONTRACTS.md
 12_GEAR_LINKS_FORMS_HELP_SETTINGS.md
-13_NATIVE_FEATURES.md                      ← Last before release
+13_NATIVE_FEATURES.md
+15_PROJECT_UPLOAD.md                       ← Depends on 04, 05, 09, 12
 14_TESTING_RELEASE_TELEMETRY.md            ← Final task — App Store submission
 ```
 
@@ -95,7 +96,7 @@ Convenience wrappers live in `ios/bin/`:
 - **Design tokens only** — no hardcoded colors. Use `Color.tokens.bg`, `Color.tokens.accent`, etc. Audit with: `rg 'Color\((red|hex|#)' ios/`.
 - **SF Symbols + brand fonts only** — no PNG icons (except the app icon itself). No system fonts (San Francisco) for headlines — use the brand display face.
 - **Public API routes need tokens** — `/api/inquiry` requires `X-Inquiry-Token`, `/api/calendar/[userId]` requires `?token=`. The iOS app reads/writes these tokens via `inquiry_sources` and `profiles.calendar_token`, never embeds them in source.
-- **Never trust client-provided dates for ordering** — `created_at`/`updated_at` come from the server. The client sends the date for `scheduled_at`, `shoot_date`, etc. (those are user-input).
+- **Never trust client-provided dates for ordering** — `created_at`/`updated_at` come from the server. The client sends the date for user-input fields like `shoot_date`.
 
 ---
 

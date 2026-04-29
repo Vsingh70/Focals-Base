@@ -67,7 +67,7 @@ public final class CachedProject {
 }
 ```
 
-Do this for: `CachedProject`, `CachedClient`, `CachedShoot`, `CachedInquiry`, `CachedFinance`, `CachedGear`, `CachedLink`, `CachedContract`, `CachedContractTemplate`.
+Do this for: `CachedProject`, `CachedClient`, `CachedInquiry`, `CachedFinance`, `CachedGear`, `CachedLink`, `CachedContract`, `CachedContractTemplate`.
 
 Skip caching: `profiles` (single row, fetched once on session bootstrap), `forms` (read-only, low frequency), `inquiry_sources` (settings-only).
 
@@ -85,7 +85,6 @@ public enum CacheContainer {
         let schema = Schema([
             CachedProject.self,
             CachedClient.self,
-            CachedShoot.self,
             CachedInquiry.self,
             CachedFinance.self,
             CachedGear.self,

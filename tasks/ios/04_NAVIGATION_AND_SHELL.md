@@ -22,7 +22,7 @@ public enum Route: Hashable, Sendable {
     case calendar
     case projects
     case clients
-    case shoots
+    case projectUpload
     case finances
     case contracts
     case gear
@@ -34,7 +34,8 @@ public enum Route: Hashable, Sendable {
     // Detail destinations (pushed onto a NavigationStack)
     case projectDetail(UUID)
     case clientDetail(UUID)
-    case shootDetail(UUID)
+    // (shootDetail removed — projects ARE the calendar entries now;
+    // use .projectDetail(id) instead.)
     case contractDetail(UUID)
     case contractNew
     case contractTemplates
@@ -86,7 +87,7 @@ struct TabBarShell: View {
 }
 ```
 
-**iPhone has 5 tabs only**: Dashboard, Inbox, Calendar, Projects, More. The "More" tab hosts a list of the remaining 8 modules (Clients, Shoots, Finances, Contracts, Gear, Forms, Links, Help, Settings) — matches the web's `MobileNav.tsx` "Main" vs "More" split.
+**iPhone has 5 tabs only**: Dashboard, Inbox, Calendar, Projects, More. The "More" tab hosts a list of the remaining modules (Clients, Finances, Contracts, Gear, Forms, Links, Help, Settings) — matches the web's `MobileNav.tsx` "Main" vs "More" split.
 
 ## Step 3 — Split view shell (iPad)
 
@@ -108,7 +109,6 @@ struct SplitViewShell: View {
                     NavLink(.calendar, label: "Calendar", systemImage: "calendar")
                     NavLink(.projects, label: "Projects", systemImage: "folder")
                     NavLink(.clients, label: "Clients", systemImage: "person.2")
-                    NavLink(.shoots, label: "Shoots", systemImage: "camera")
                     NavLink(.finances, label: "Finances", systemImage: "dollarsign.circle")
                     NavLink(.contracts, label: "Contracts", systemImage: "doc.text")
                 }
@@ -166,12 +166,11 @@ public final class AppRouter {
 }
 
 public enum SheetRoute: Identifiable, Hashable {
-    case createProject
+    case createProject(presetShootDate: Date? = nil)   // calendar slot prefill
     case createClient(prefilled: Client? = nil)
-    case createShoot(presetDate: Date? = nil)
     case createInquiry
     case createFinance(preselectedType: FinanceType? = nil)
-    case shootDetail(Shoot)
+    case projectUpload                                 // file-import flow (Task 15)
 
     public var id: String { /* stable id from case + payload */ }
 }
@@ -211,7 +210,6 @@ func routeDestination(_ route: Route) -> some View {
     case .calendar:                CalendarScreen()
     case .projects:                ProjectsScreen()
     case .clients:                 ClientsScreen()
-    case .shoots:                  ShootsScreen()
     case .finances:                FinancesScreen()
     case .contracts:               ContractsScreen()
     case .gear:                    GearScreen()
@@ -219,10 +217,10 @@ func routeDestination(_ route: Route) -> some View {
     case .links:                   LinksScreen()
     case .help:                    HelpScreen()
     case .settings:                SettingsScreen()
+    case .projectUpload:           ProjectUploadScreen()
 
     case .projectDetail(let id):   ProjectDetailScreen(id: id)
     case .clientDetail(let id):    ClientDetailScreen(id: id)
-    case .shootDetail(let id):     ShootDetailScreen(id: id)
     case .contractDetail(let id):  ContractDetailScreen(id: id)
     case .contractNew:             ContractNewScreen()
     case .contractTemplates:       ContractTemplatesScreen()
@@ -479,14 +477,13 @@ public extension DeepLinkRouter {
             if let uuid {
                 AppRouter.shared.navigate(to: .inquiryDetail(uuid))
             }
-        case "shoot":
-            if let uuid {
-                AppRouter.shared.navigate(to: .shootDetail(uuid))
-            }
         case "project":
             if let uuid {
                 AppRouter.shared.navigate(to: .projectDetail(uuid))
             }
+        case "upload":
+            // Open the file-import sheet (Task 15) — used by Share Extension.
+            AppRouter.shared.presentedSheet = .projectUpload
         default:
             break
         }

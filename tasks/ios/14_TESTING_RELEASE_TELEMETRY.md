@@ -56,7 +56,7 @@ If time permits, add `swift-snapshot-testing` for key views:
 
 Walk through every screen with:
 - ✅ **Dynamic Type** at AX1, AX3, AX5 — text wraps, doesn't truncate, doesn't overflow card edges
-- ✅ **VoiceOver** — every interactive element announces correctly (KPI cards: "Revenue MTD, $4,500"; calendar cells: "Tuesday April 14, 2 shoots scheduled")
+- ✅ **VoiceOver** — every interactive element announces correctly (KPI cards: "Revenue MTD, $4,500"; calendar cells: "Tuesday April 14, 2 projects scheduled")
 - ✅ **Reduce Motion** — calendar scroll respects preference; live activities don't pulse
 - ✅ **Reduce Transparency** — no glass effects break readability
 - ✅ **Color contrast** — `BrandTextSecondary` on `BrandBg` passes WCAG AA (4.5:1) for body text, AAA (7:1) preferred. Verify with [WebAIM contrast checker](https://webaim.org/resources/contrastchecker/) using the actual hex values from `globals.css`.
@@ -72,8 +72,8 @@ KPICard(label: "Revenue MTD", value: "$4,500")
     .accessibilityLabel("Revenue this month, $4,500")
 
 DayCell(date: date, ...)
-    .accessibilityLabel("\(date.formatted(.dateTime.weekday(.wide).month().day())), \(shoots.count) shoots")
-    .accessibilityHint("Double-tap to view shoots")
+    .accessibilityLabel("\(date.formatted(.dateTime.weekday(.wide).month().day())), \(projects.count) projects")
+    .accessibilityHint("Double-tap to view projects")
 ```
 
 ---
@@ -213,7 +213,7 @@ Recommended set (5–10 screenshots):
 1. Dashboard (Today, KPIs)
 2. Inbox with several inquiries grouped by status
 3. Calendar (stacked month view, with detail panel)
-4. Project detail showing payment progress + linked shoots
+4. Project detail showing payment progress + map + linked records
 5. Contracts list with PDF preview behind it
 6. iPad: split-view with Sidebar + Calendar
 7. Live Activity on lock screen

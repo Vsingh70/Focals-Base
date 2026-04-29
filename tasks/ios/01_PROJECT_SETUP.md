@@ -42,20 +42,20 @@ ios/Focals/
 ├── Design/                # Color+Tokens, Font+Tokens, Spacing, Radius, ViewModifiers
 ├── Auth/                  # (filled in Task 03)
 ├── Navigation/            # (filled in Task 04)
-├── Modules/               # (filled in Tasks 06–12)
+├── Modules/               # (filled in Tasks 06–12, 15)
 │   ├── Dashboard/
 │   ├── Inbox/
 │   ├── Calendar/
 │   ├── Projects/
 │   ├── Clients/
-│   ├── Shoots/
 │   ├── Finances/
 │   ├── Contracts/
 │   ├── Gear/
 │   ├── Forms/
 │   ├── Links/
 │   ├── Help/
-│   └── Settings/
+│   ├── Settings/
+│   └── LLM/               # File-upload review pane (Task 15)
 ├── Shared/                # BottomSheet, EmptyState, KPICard, FormFields, StatusPill (Task 04)
 └── Resources/
     ├── Assets.xcassets    # already exists

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Layer on the iOS-only capabilities that justify a native app over the responsive web: Home Screen widgets, Siri Shortcuts / App Intents, Live Activities for upcoming shoots, a Share Extension for receiving URLs/text, push notifications wired to a server-side trigger, and Universal Links so `focals-base.vercel.app/...` URLs open the app.
+Layer on the iOS-only capabilities that justify a native app over the responsive web: Home Screen widgets, Siri Shortcuts / App Intents, Live Activities for the next upcoming project, a Share Extension for receiving URLs/text, push notifications wired to a server-side trigger, and Universal Links so `focals-base.vercel.app/...` URLs open the app.
 
 This is the largest task in the plan because it spans **five extension targets** plus a small server-side change in `my-app/`. Each section below describes one piece; they can be done in any order after the parity work in Tasks 06–12 is done.
 
@@ -18,7 +18,9 @@ Add to:
 - The same App Group `group.com.[APP_NAME].ios` as the main app (Step 1 of Task 05)
 - Link `FocalsKit` SPM products: `FocalsModels`, `FocalsCache`, `FocalsDesign`
 
-### A.2 — Today's Shoots widget (small + medium)
+### A.2 — Today's Schedule widget (small + medium)
+
+Reads cached projects filtered to those whose `shoot_date` falls on today.
 
 ```swift
 import WidgetKit
@@ -28,24 +30,21 @@ import FocalsModels
 import FocalsCache
 import FocalsDesign
 
-struct TodayShootsEntry: TimelineEntry {
+struct TodayScheduleEntry: TimelineEntry {
     let date: Date
-    let shoots: [Shoot]
+    let projects: [Project]   // projects with shoot_date in today
 }
 
-struct TodayShootsProvider: TimelineProvider {
-    func placeholder(in: Context) -> TodayShootsEntry {
-        TodayShootsEntry(date: .now, shoots: [.preview, .preview])
+struct TodayScheduleProvider: TimelineProvider {
+    func placeholder(in: Context) -> TodayScheduleEntry {
+        TodayScheduleEntry(date: .now, projects: [.preview, .preview])
     }
 
-    func getSnapshot(in: Context, completion: @escaping (TodayShootsEntry) -> Void) {
-        Task { @MainActor in
-            let entry = await loadEntry()
-            completion(entry)
-        }
+    func getSnapshot(in: Context, completion: @escaping (TodayScheduleEntry) -> Void) {
+        Task { @MainActor in completion(await loadEntry()) }
     }
 
-    func getTimeline(in: Context, completion: @escaping (Timeline<TodayShootsEntry>) -> Void) {
+    func getTimeline(in: Context, completion: @escaping (Timeline<TodayScheduleEntry>) -> Void) {
         Task { @MainActor in
             let entry = await loadEntry()
             // Refresh every 15 minutes; iOS may throttle further
@@ -55,26 +54,29 @@ struct TodayShootsProvider: TimelineProvider {
     }
 
     @MainActor
-    private func loadEntry() async -> TodayShootsEntry {
+    private func loadEntry() async -> TodayScheduleEntry {
         guard let userId = SharedAuth.currentUserId() else {
-            return TodayShootsEntry(date: .now, shoots: [])
+            return TodayScheduleEntry(date: .now, projects: [])
         }
         let context = ModelContext(try! CacheContainer.make(for: userId))
-        let allCached = try? ShootsCacheRepository.shared.cached(in: context)
-        let today = (allCached ?? []).filter { Calendar.current.isDateInToday($0.scheduledAt) }
-        return TodayShootsEntry(date: .now, shoots: today)
+        let allCached = (try? ProjectsCacheRepository.shared.cached(in: context)) ?? []
+        let today = allCached.filter { p in
+            guard let d = p.shootDate else { return false }
+            return Calendar.current.isDateInToday(d)
+        }
+        return TodayScheduleEntry(date: .now, projects: today)
     }
 }
 
-struct TodayShootsWidgetView: View {
-    let entry: TodayShootsEntry
+struct TodayScheduleWidgetView: View {
+    let entry: TodayScheduleEntry
     @Environment(\.widgetFamily) var family
 
     var body: some View {
         switch family {
-        case .systemSmall: smallView
+        case .systemSmall:  smallView
         case .systemMedium: mediumView
-        default: smallView
+        default:            smallView
         }
     }
 
@@ -83,40 +85,44 @@ struct TodayShootsWidgetView: View {
             Text("TODAY")
                 .font(.tokens.body(10))
                 .foregroundStyle(.tokens.textTertiary)
-            Text("\(entry.shoots.count)")
+            Text("\(entry.projects.count)")
                 .font(.tokens.display(36))
                 .foregroundStyle(.tokens.textPrimary)
-            Text(entry.shoots.count == 1 ? "shoot" : "shoots")
+            Text(entry.projects.count == 1 ? "project" : "projects")
                 .font(.tokens.body(13))
                 .foregroundStyle(.tokens.textSecondary)
             Spacer()
-            if let next = entry.shoots.sorted(by: { $0.scheduledAt < $1.scheduledAt }).first {
+            if let next = entry.projects
+                .sorted(by: { ($0.shootDate ?? .distantFuture) < ($1.shootDate ?? .distantFuture) })
+                .first,
+               let when = next.shootDate
+            {
                 Text(next.title).font(.tokens.medium(11)).lineLimit(1)
-                Text(next.scheduledAt.formatted(.dateTime.hour().minute()))
+                Text(when.formatted(.dateTime.hour().minute()))
                     .font(.tokens.body(11)).foregroundStyle(.tokens.textTertiary)
             }
         }
         .containerBackground(Color.tokens.bg, for: .widget)
     }
 
-    private var mediumView: some View { /* shoot list, up to 3 rows */ }
+    private var mediumView: some View { /* project list, up to 3 rows */ }
 }
 
 @main
 struct FocalsWidgets: WidgetBundle {
     var body: some Widget {
-        TodayShootsWidget()
+        TodayScheduleWidget()
         RevenueMTDWidget()
     }
 }
 
-struct TodayShootsWidget: Widget {
+struct TodayScheduleWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "TodayShoots", provider: TodayShootsProvider()) {
-            TodayShootsWidgetView(entry: $0)
+        StaticConfiguration(kind: "TodaySchedule", provider: TodayScheduleProvider()) {
+            TodayScheduleWidgetView(entry: $0)
         }
-        .configurationDisplayName("Today's Shoots")
-        .description("Your scheduled shoots for today.")
+        .configurationDisplayName("Today's Schedule")
+        .description("Your scheduled projects for today.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -183,10 +189,12 @@ struct AddInquiryIntent: AppIntent {
     func perform() async throws -> some IntentResult { /* creates inquiry */ }
 }
 
-struct OpenTodayShootIntent: AppIntent {
-    static let title: LocalizedStringResource = "Open Today's Shoot"
+struct OpenTodayScheduleIntent: AppIntent {
+    static let title: LocalizedStringResource = "Open Today's Schedule"
     static let openAppWhenRun: Bool = true
-    func perform() async throws -> some IntentResult { /* deep-links into shoot detail */ }
+    // Deep-links into the project detail if there's exactly one project today,
+    // otherwise into the projects list filtered to today's shoot_date.
+    func perform() async throws -> some IntentResult { ... }
 }
 ```
 
@@ -218,7 +226,7 @@ Spotlight surfaces these intents automatically. Siri voice phrases work after on
 
 ---
 
-## Section C — Live Activity (Dynamic Island shoot countdown)
+## Section C — Live Activity (Dynamic Island next-project countdown)
 
 ### C.1 — Create the extension target
 
@@ -231,28 +239,28 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-public struct ShootCountdownAttributes: ActivityAttributes {
+public struct ProjectCountdownAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
-        public var minutesUntilShoot: Int
+        public var minutesUntilStart: Int
         public var status: String
     }
-    public var shootId: String
+    public var projectId: String
     public var title: String
     public var clientName: String?
     public var location: String?
-    public var scheduledAt: Date
+    public var shootDate: Date
 }
 
-struct ShootCountdownActivity: Widget {
+struct ProjectCountdownActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ShootCountdownAttributes.self) { context in
+        ActivityConfiguration(for: ProjectCountdownAttributes.self) { context in
             // Lock screen
             VStack(alignment: .leading) {
                 Text(context.attributes.title).font(.tokens.medium(15))
                 if let client = context.attributes.clientName {
                     Text(client).font(.tokens.body(13)).foregroundStyle(.tokens.textSecondary)
                 }
-                Text("\(context.state.minutesUntilShoot) min")
+                Text("\(context.state.minutesUntilStart) min")
                     .font(.tokens.display(28))
                     .foregroundStyle(.tokens.accent)
             }
@@ -262,7 +270,7 @@ struct ShootCountdownActivity: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) { Image(systemName: "camera") }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text("\(context.state.minutesUntilShoot)m").font(.tokens.medium(17))
+                    Text("\(context.state.minutesUntilStart)m").font(.tokens.medium(17))
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.attributes.title).font(.tokens.medium(13))
@@ -275,7 +283,7 @@ struct ShootCountdownActivity: Widget {
             } compactLeading: {
                 Image(systemName: "camera")
             } compactTrailing: {
-                Text("\(context.state.minutesUntilShoot)m").font(.tokens.medium(13))
+                Text("\(context.state.minutesUntilStart)m").font(.tokens.medium(13))
             } minimal: {
                 Image(systemName: "camera")
             }
@@ -287,35 +295,36 @@ struct ShootCountdownActivity: Widget {
 
 ### C.3 — Activity orchestration
 
-In the main app, `ShootCountdownActivityManager`:
+In the main app, `ProjectCountdownActivityManager`:
 
 ```swift
 import ActivityKit
 
 @MainActor
-public final class ShootCountdownActivityManager {
-    public static let shared = ShootCountdownActivityManager()
+public final class ProjectCountdownActivityManager {
+    public static let shared = ProjectCountdownActivityManager()
 
-    public func startActivityIfNeeded(for shoot: Shoot) async {
+    public func startActivityIfNeeded(for project: Project) async {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
-        let minutes = Int(shoot.scheduledAt.timeIntervalSinceNow / 60)
+        guard let start = project.shootDate else { return }
+        let minutes = Int(start.timeIntervalSinceNow / 60)
         guard minutes > 0 && minutes <= 240 else { return }   // start 4h before
 
         // Don't double-start
-        if Activity<ShootCountdownAttributes>.activities.contains(where: { $0.attributes.shootId == shoot.id.uuidString }) {
+        if Activity<ProjectCountdownAttributes>.activities.contains(where: { $0.attributes.projectId == project.id.uuidString }) {
             return
         }
 
-        let attrs = ShootCountdownAttributes(
-            shootId: shoot.id.uuidString,
-            title: shoot.title,
+        let attrs = ProjectCountdownAttributes(
+            projectId: project.id.uuidString,
+            title: project.title,
             clientName: nil,
-            location: shoot.location,
-            scheduledAt: shoot.scheduledAt
+            location: project.location,
+            shootDate: start
         )
-        let initial = ShootCountdownAttributes.ContentState(
-            minutesUntilShoot: minutes,
-            status: shoot.status.rawValue
+        let initial = ProjectCountdownAttributes.ContentState(
+            minutesUntilStart: minutes,
+            status: project.status.rawValue
         )
         do {
             _ = try Activity.request(attributes: attrs, content: .init(state: initial, staleDate: nil))
@@ -325,13 +334,18 @@ public final class ShootCountdownActivityManager {
     }
 
     public func updateLoop() async {
-        // Run every minute while there's an activity; updates minutesUntilShoot
-        for activity in Activity<ShootCountdownAttributes>.activities {
-            let minutes = Int(activity.attributes.scheduledAt.timeIntervalSinceNow / 60)
+        // Run every minute while there's an activity; updates minutesUntilStart
+        for activity in Activity<ProjectCountdownAttributes>.activities {
+            let minutes = Int(activity.attributes.shootDate.timeIntervalSinceNow / 60)
             if minutes <= 0 {
-                await activity.end(.init(state: .init(minutesUntilShoot: 0, status: "starting"), staleDate: nil), dismissalPolicy: .after(.now + 600))
+                await activity.end(
+                    .init(state: .init(minutesUntilStart: 0, status: "starting"), staleDate: nil),
+                    dismissalPolicy: .after(.now + 600)
+                )
             } else {
-                await activity.update(.init(state: .init(minutesUntilShoot: minutes, status: activity.content.state.status), staleDate: nil))
+                await activity.update(
+                    .init(state: .init(minutesUntilStart: minutes, status: activity.content.state.status), staleDate: nil)
+                )
             }
         }
     }
@@ -340,7 +354,7 @@ public final class ShootCountdownActivityManager {
 
 Hook into:
 - `RootView.task` — start any eligible activities on app launch
-- `ShootsCacheRepository.create/update` — start/update activity for the affected shoot
+- `ProjectsCacheRepository.create/update` — start/update activity for the affected project
 - A `Timer.publish(every: 60)` while the app is foregrounded to drive `updateLoop()`
 - Background — Live Activities update via push or the `staleDate` mechanism. v1: just rely on app open + push from server (Section E)
 
@@ -465,12 +479,12 @@ Update `Profile` Codable struct + repository. Backfill: NULL on existing rows.
 Create `my-app/supabase/functions/send-push/index.ts`:
 
 ```ts
-// Triggered by webhook on inquiries INSERT and via cron for upcoming shoots
+// Triggered by webhook on inquiries INSERT and via cron for upcoming projects
 import { createClient } from '@supabase/supabase-js'
 import { sign } from 'jsonwebtoken'
 
 interface PushPayload {
-  type: 'new_inquiry' | 'shoot_reminder'
+  type: 'new_inquiry' | 'project_reminder'
   userId: string
   title: string
   body: string
@@ -547,7 +561,7 @@ after insert on inquiries
 for each row execute function notify_new_inquiry();
 ```
 
-**Shoot reminder** — Supabase Cron (pg_cron) at 9pm daily, queries shoots where `scheduled_at::date = now()::date + interval '1 day'` and POSTs one push per shoot.
+**Project reminder** — Supabase Cron (pg_cron) at 9pm daily, queries projects where `shoot_date::date = now()::date + interval '1 day' AND status != 'cancelled'` and POSTs one push per project.
 
 ### E.6 — Payload schema (document in this task)
 
@@ -555,9 +569,9 @@ for each row execute function notify_new_inquiry();
 {
   "aps": { "alert": { "title": ..., "body": ... }, "sound": "default" },
   "data": {
-    "type": "new_inquiry" | "shoot_reminder",
+    "type": "new_inquiry" | "project_reminder",
     "inquiryId"?: UUID,
-    "shootId"?: UUID
+    "projectId"?: UUID
   }
 }
 ```
@@ -580,7 +594,7 @@ Add `my-app/src/app/.well-known/apple-app-site-association` (no extension! — m
         "appIDs": ["TEAMID.com.[APP_NAME].ios"],
         "components": [
           { "/": "/inquiry/*" },
-          { "/": "/shoot/*" },
+          { "/": "/upload" },
           { "/": "/project/*" },
           { "/": "/contract/*" }
         ]
@@ -613,7 +627,7 @@ In Xcode → Signing & Capabilities → Associated Domains → add: `applinks:fo
 ## Acceptance Criteria
 
 ### Widgets
-- [ ] Today's Shoots widget appears on home screen with live data (verified with cached fixture data)
+- [ ] Today's Schedule widget appears on home screen with live data (verified with cached fixture data)
 - [ ] Revenue MTD widget shows correct number after a finance row mutation + `WidgetCenter.reloadAllTimelines()`
 - [ ] Both widgets render correctly in light + dark mode
 - [ ] Sign-out wipes the App Group `currentUserId` so widgets show "—" / empty
@@ -625,10 +639,10 @@ In Xcode → Signing & Capabilities → Associated Domains → add: `applinks:fo
 - [ ] Spotlight search for "expense" surfaces "Log Expense" intent
 
 ### Live Activity
-- [ ] App start with a shoot scheduled in the next 4 hours starts a Live Activity
+- [ ] App start with a project whose `shoot_date` is in the next 4 hours starts a Live Activity
 - [ ] Activity appears on lock screen and Dynamic Island (iPhone 14 Pro+)
 - [ ] Minutes-until counter updates while app is foregrounded
-- [ ] Activity ends 10 minutes after `scheduledAt`
+- [ ] Activity ends 10 minutes after `shoot_date`
 
 ### Share Extension
 - [ ] Sharing a URL from Safari shows "Save as Link" option in share sheet
@@ -641,7 +655,7 @@ In Xcode → Signing & Capabilities → Associated Domains → add: `applinks:fo
 - [ ] Device token persists to `profiles.push_token`
 - [ ] Inserting an inquiry via web `/api/inquiry` triggers a push within 5 seconds (verified by Console.app + receiving notification on device)
 - [ ] Tapping the notification deep-links to the inquiry detail
-- [ ] Daily 9pm cron sends "shoot tomorrow" reminders for shoots scheduled within 24h
+- [ ] Daily 9pm cron sends "project tomorrow" reminders for projects scheduled within 24h
 - [ ] Notification denied → settings shows option to re-enable; in-app warning explains lost functionality
 
 ### Universal Links

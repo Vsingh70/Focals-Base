@@ -12,24 +12,27 @@ This task is the foundation for every module task (06–13). Get the types right
 
 Source of truth: [my-app/src/lib/supabase/types.ts](../../my-app/src/lib/supabase/types.ts).
 
-Twelve tables to mirror:
+Thirteen tables to mirror:
 
 | Table | Purpose |
 |---|---|
 | `profiles` | User business profile, calendar token, tutorial progress |
 | `clients` | Client contacts |
-| `projects` | Photography jobs (with payment tracking) |
-| `shoots` | Scheduled events (linked to projects/clients) |
+| `projects` | Photography jobs — title, shoot_date (timestamptz), payment, status |
 | `contracts` | Contract instances |
 | `contract_templates` | Reusable templates |
 | `forms` | Custom inquiry forms |
 | `inquiries` | Inbound leads |
 | `inquiry_sources` | Per-source webhook tokens + config |
-| `finances` | Income/expense transactions |
+| `finances` | Income/expense transactions (auto-synced from `projects.amount_paid` server-side) |
 | `gear` | Equipment inventory |
 | `links` | Bookmarked URLs |
+| `user_integrations` | Per-user encrypted Anthropic API key (for file upload — Task 15) |
+| `project_upload_jobs` | Audit trail for file-upload extractions |
 
-All twelve have `id: UUID`, `user_id: UUID`, `created_at: Date`, `updated_at: Date` (except `finances`, `gear`, `links` which only have `created_at` per current schema — verify against `types.ts`).
+The `shoots` table was dropped in web migration `20260429000000_drop_shoots_and_auto_finance_income.sql` — `projects.shoot_date` (timestamptz) is the calendar event time. Don't model `shoots` in iOS.
+
+All tables have `id: UUID`, `user_id: UUID`, `created_at: Date`, `updated_at: Date` (with the usual exceptions; verify against `types.ts`).
 
 ## Step 2 — Codable structs in `FocalsModels`
 
@@ -76,14 +79,15 @@ public struct Client: Codable, Identifiable, Hashable, Sendable {
 |---|---|
 | `Profile.swift` | `Profile`, nested `TutorialProgress` |
 | `Client.swift` | `Client` |
-| `Project.swift` | `Project` |
-| `Shoot.swift` | `Shoot` |
+| `Project.swift` | `Project` (with `shootDate: Date?` — timestamptz) |
 | `Contract.swift` | `Contract`, nested `ContractCustomFields` |
 | `ContractTemplate.swift` | `ContractTemplate` |
 | `Form.swift` | `Form`, nested `FormField` |
 | `Inquiry.swift` | `Inquiry`, nested `InquiryRawPayload` (typed-or-AnyCodable) |
 | `InquirySource.swift` | `InquirySource`, nested `InquirySourceConfig` |
 | `Finance.swift` | `Finance` |
+| `UserIntegration.swift` | `UserIntegration` (provider, keyHint, lastUsedAt — `encrypted_key` NOT exposed to iOS) |
+| `ProjectUploadJob.swift` | `ProjectUploadJob` (audit row — filename, status, token counts) |
 | `Gear.swift` | `Gear` |
 | `Link.swift` | `Link` |
 
@@ -152,10 +156,6 @@ public enum ProjectStatus: String, Codable, CaseIterable, Sendable {
 
 public enum PaymentStatus: String, Codable, CaseIterable, Sendable {
     case unpaid, partial, paid, refunded
-}
-
-public enum ShootStatus: String, Codable, CaseIterable, Sendable {
-    case scheduled, completed, cancelled, rescheduled
 }
 
 public enum InquiryStatus: String, Codable, CaseIterable, Sendable {
@@ -306,7 +306,7 @@ public struct ClientsRepository: Repository {
 }
 ```
 
-Repeat for: `ProjectsRepository`, `ShootsRepository`, `ContractsRepository`, `ContractTemplatesRepository`, `FormsRepository`, `InquiriesRepository`, `InquirySourcesRepository`, `FinancesRepository`, `GearRepository`, `LinksRepository`.
+Repeat for: `ProjectsRepository`, `ContractsRepository`, `ContractTemplatesRepository`, `FormsRepository`, `InquiriesRepository`, `InquirySourcesRepository`, `FinancesRepository`, `GearRepository`, `LinksRepository`, `UserIntegrationsRepository`, `ProjectUploadJobsRepository`.
 
 `profiles` is special — only one row per user. Create a dedicated `ProfileRepository` with `getCurrent()`, `update(_:)`, `regenerateCalendarToken()` (server-side action — port logic from [my-app/src/lib/actions/profile.ts](../../my-app/src/lib/actions/profile.ts)).
 
