@@ -135,11 +135,32 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'LLM call failed';
-    // Common case: revoked key → 401 from Anthropic
-    if (message.includes('401') || message.toLowerCase().includes('authentication')) {
+    const lower = message.toLowerCase();
+    // Anthropic surfaces actionable errors with predictable strings; map the
+    // common ones to friendly UI messages so users don't have to read raw
+    // upstream JSON.
+    if (lower.includes('credit balance') || lower.includes('billing')) {
+      return failJob(
+        'Your Anthropic account is out of credits. Top up at console.anthropic.com → Plans & Billing, then try again.',
+        402
+      );
+    }
+    if (message.includes('401') || lower.includes('authentication')) {
       return failJob(
         'Your Anthropic API key was rejected. Re-add it in Settings → Integrations.',
         401
+      );
+    }
+    if (message.includes('429') || lower.includes('rate limit')) {
+      return failJob(
+        'Anthropic rate-limited the request. Wait a minute and try again.',
+        429
+      );
+    }
+    if (lower.includes('overloaded')) {
+      return failJob(
+        "Anthropic's API is temporarily overloaded. Try again in a moment.",
+        503
       );
     }
     return failJob(message, 502);

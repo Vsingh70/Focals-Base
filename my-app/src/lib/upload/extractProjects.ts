@@ -41,7 +41,10 @@ export type ExtractionResult = {
 };
 
 const MODEL = 'claude-haiku-4-5-20251001';
-const MAX_OUTPUT_TOKENS = 4096;
+// 16K is comfortable headroom for ~150 projects with full source excerpts.
+// Haiku 4.5 supports up to 64K output tokens; bumping further if a user
+// regularly uploads >150-project files is a one-line change.
+const MAX_OUTPUT_TOKENS = 16384;
 
 const SYSTEM_PROMPT = `You extract photography-business project data from documents.
 
@@ -199,10 +202,20 @@ export async function extractProjectsFromContent(
   const toolUse = response.content.find(
     (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use'
   );
+
+  // If the response was truncated by hitting the token cap, the tool input
+  // is almost certainly malformed JSON. Surface this clearly so the user
+  // doesn't see an opaque "no projects" message.
+  const hitTokenCap = response.stop_reason === 'max_tokens';
+
   if (!toolUse) {
     return {
       projects: [],
-      warnings: ['LLM did not return a structured response. Try a different file.'],
+      warnings: [
+        hitTokenCap
+          ? `File is too large for a single pass — Claude hit the ${MAX_OUTPUT_TOKENS}-token output limit before finishing. Split the file or upload it in smaller chunks.`
+          : 'LLM did not return a structured response. Try a different file.',
+      ],
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     };
@@ -213,6 +226,18 @@ export async function extractProjectsFromContent(
     ? (raw.projects as ProposedProject[]).map(normalizeProposedProject)
     : [];
   const warnings = Array.isArray(raw.warnings) ? (raw.warnings as string[]) : [];
+
+  // Token cap mid-stream produces a tool_use block with truncated/empty
+  // input. Tell the user.
+  if (hitTokenCap && projects.length === 0) {
+    warnings.unshift(
+      `File is too large — Claude hit the ${MAX_OUTPUT_TOKENS}-token output limit before producing usable data. Try a smaller file or split it.`
+    );
+  } else if (hitTokenCap) {
+    warnings.unshift(
+      `Output was truncated at ${MAX_OUTPUT_TOKENS} tokens — the last few rows in your file may be missing.`
+    );
+  }
 
   return {
     projects,
