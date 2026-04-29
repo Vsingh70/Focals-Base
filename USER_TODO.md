@@ -961,3 +961,74 @@ That's literally the whole change — no UI updates, no schema changes, no call-
 - OAuth-style "connect Anthropic account" — that doesn't exist as a product. Users must paste an API key.
 - Editing/replaying old upload jobs — `project_upload_jobs` is append-only audit data.
 - ChatGPT/OpenAI provider — the `LLMProvider` interface accommodates it, but only Anthropic is wired in v1.
+
+---
+
+## iOS Task 01 — Project Setup, Folder Structure & Design Tokens ✅
+
+**Completed:** 2026-04-28
+
+### Tests run
+- `xcodebuild build` — BUILD SUCCEEDED (zero errors, zero warnings) on iPhone 17 Pro simulator
+- Unit test placeholder (`FocalsTests.swift`) — passes
+- UI test placeholder (`FocalsUITests.swift`) — passes
+- FocalsKit SPM package resolves all dependencies (supabase-swift 2.45.0, Kingfisher 7.12.0, MarkdownUI 2.4.1)
+
+### Security concerns
+- `Secrets.xcconfig` is gitignored (verified with `git check-ignore`). Contains SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_OAUTH_CLIENT_ID, OAUTH_URL_SCHEME
+- Code signing is disabled (`CODE_SIGNING_ALLOWED = NO`) — appropriate for simulator-only dev. Must be re-enabled before device testing or App Store submission (Task 14)
+
+### Deferred items
+- [ ] **Download Inter font files** — Place `Inter-Regular.ttf`, `Inter-Medium.ttf`, `Inter-SemiBold.ttf` into `ios/Focals/Resources/Fonts/`. Download from https://fonts.google.com/specimen/Inter (select Regular 400, Medium 500, SemiBold 600 weights). Without these, the app falls back to system font
+- [ ] **Verify DesignTokenGallery renders correctly** — Launch app on simulator, toggle dark/light mode, confirm all 13 brand colors and typography render as expected
+- [ ] **Verify Info.plist secrets substitution** — After filling in Secrets.xcconfig, confirm `Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL")` returns a value at runtime
+
+### Dashboard config (manual steps required)
+- [ ] **Supabase** — No changes needed for Task 01. Existing project `oqaqopkcpgmjgswaismm` is used as-is
+- [ ] **Google Cloud Console** — Create an iOS OAuth 2.0 client ID at https://console.cloud.google.com/apis/credentials. Set the bundle ID to `com.focals.ios` and add the URL scheme. Copy the client ID into `ios/Focals/Secrets.xcconfig` as `GOOGLE_OAUTH_CLIENT_ID`
+- [ ] **Apple Developer** — No action needed yet. Required starting Task 03 (Apple Sign In capability) and Task 14 (App Store submission)
+- [ ] **Secrets.xcconfig** — Copy `SUPABASE_ANON_KEY` from `my-app/.env.local` (the `NEXT_PUBLIC_SUPABASE_ANON_KEY` value) into `ios/Focals/Secrets.xcconfig`
+
+---
+
+## iOS Task 02 — Data Models & Supabase Client ✅
+
+**Completed:** 2026-04-29
+
+### Tests run
+- `xcodebuild build` — BUILD SUCCEEDED (zero errors, zero warnings) on iPhone 17 Pro simulator
+- 15 unit tests pass: 12 model decoding tests (one per table), 2 date format tests (fractional + whole seconds), 1 existing placeholder test
+- 1 UI test passes (app launches)
+- All fixtures decode correctly including nested JSONB (TutorialProgress, FormField[], AnyCodable for raw_payload/config, [String: String] for custom_fields)
+
+### Security concerns
+- No secrets in model/repository code — `FocalsClient` reads from Info.plist at runtime
+- `user_id` is never included in create payloads — RLS auto-fills via `auth.uid()`
+- All repository methods surface `FocalsAPIError` — no raw `PostgrestError` leaks to callers
+
+### What was built
+- **12 Codable structs** in `FocalsModels`: Profile, Client, Project, Shoot, Contract, ContractTemplate, Form, Inquiry, InquirySource, Finance, Gear, Link
+- **8 status enums** matching web Zod validations (corrected from task doc): ProjectStatus (7 cases), PaymentStatus (3), ShootStatus (4), InquiryStatus (5), ContractStatus (4), FinanceType (2), GearStatus (4), FormFieldType (5)
+- **AnyCodable** helper for JSONB columns with variable shape
+- **JSONDecoder.supabase / JSONEncoder.supabase** with ISO8601 fractional + whole second support
+- **FocalsClient** singleton reading secrets from Info.plist
+- **Repository protocol** with PageRequest cursor pagination (limit 50 default)
+- **12 concrete repositories** (11 conforming to Repository protocol + ProfileRepository with getCurrent/update)
+- **FocalsAPIError** enum with network/auth/rls/decoding/offline/notFound/unknown cases
+- **12 JSON test fixtures** with realistic data
+- **SCHEMA_MAPPING.md** drift detection doc matching current types.ts
+
+### Enum corrections from task doc
+The task doc's enum values were stale. Used web Zod validations as source of truth:
+- ProjectStatus: `inquiry, booked, in_progress, editing, delivered, completed, cancelled` (doc had `lead, booked, inProgress, delivered, archived`)
+- InquiryStatus: `new, read, replied, converted, archived` (doc had `new, responding, quoted, booked, lost`)
+- ContractStatus: `draft, sent, signed, void` (doc had `draft, sent, signed, declined, expired`)
+- PaymentStatus: `unpaid, partial, paid` (doc had extra `refunded`)
+- GearStatus: `owned, wishlist, sold, rented` (doc had `lost` instead of `rented`)
+
+### Deferred items
+- [ ] **Test with real Supabase data** — Once Secrets.xcconfig is filled in (Task 01 deferred), verify `ClientsRepository.shared.list(.init())` returns real data from a signed-in session
+- [ ] **Schema drift workflow** — Currently manual (update SCHEMA_MAPPING.md when web schema changes). Automated `bin/gen-swift-types` script deferred to v1.1
+
+### Dashboard config (manual steps required)
+- No new dashboard config needed for Task 02. Supabase/Google/Apple config from Task 01 still applies.

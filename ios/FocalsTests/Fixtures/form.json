@@ -1,0 +1,12 @@
+{
+  "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Wedding Inquiry Form",
+  "fields": [
+    {"id": "sys_name", "label": "Name", "type": "text", "required": true, "hover_preview": true},
+    {"id": "sys_date", "label": "Date", "type": "date", "required": true, "hover_preview": true},
+    {"id": "budget", "label": "Budget", "type": "currency", "required": false, "hover_preview": false}
+  ],
+  "created_at": "2026-02-01T10:00:00.000000+00:00",
+  "updated_at": "2026-03-10T14:00:00.000000+00:00"
+}

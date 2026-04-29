@@ -1,0 +1,819 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		006FFDD87A694908ECC5912E /* FocalsDesign in Frameworks */ = {isa = PBXBuildFile; productRef = 2E1CFF57501D3446C713047E /* FocalsDesign */; };
+		410314185B13FC812CA36B13 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7B66FA2D1C7948CB42CE6ACB /* FocalsModels */; };
+		4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */; };
+		52EB50AF8AD60982999CAA62 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C527EB360FC6A0F0854648EB /* MarkdownUI */; };
+		7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B095E92B839F73683DEC72 /* RootView.swift */; };
+		71C785BC3C08F48AF213E350 /* FocalsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B29D589D8F139A09F68D61D /* FocalsUITests.swift */; };
+		74B0748C135893209C377443 /* FocalsAPI in Frameworks */ = {isa = PBXBuildFile; productRef = BD91BDB86CBB768047E4DD11 /* FocalsAPI */; };
+		8B7CF9EC9237F31860B4AB5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */; };
+		B11902B70198EB834E17A22B /* FocalsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */; };
+		B2FF5A9A0504E615DD8C4840 /* FocalsModels in Frameworks */ = {isa = PBXBuildFile; productRef = 493AB284786C6E8CD7F6702F /* FocalsModels */; };
+		CD9C80DC8C32EA712FF3A195 /* ModelDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */; };
+		DBC3F202B912FFD8CEB5B030 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 840E386896E4563DF3E30057 /* Fixtures */; };
+		DF3ED171404F399B259A47CF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 244FCBFA18AB86AB05762DA6 /* Kingfisher */; };
+		E58D35B80728B663A029EE14 /* DesignTokenGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */; };
+		F963984F51B37929ECA7B068 /* FocalsCache in Frameworks */ = {isa = PBXBuildFile; productRef = 301C62105196D7CCA75A55AF /* FocalsCache */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		16F5AA935D13FDD83155591C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FF9890FF6A35EDE7171ACE58 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1ECE65A56FB554640570876;
+			remoteInfo = Focals;
+		};
+		903BCE71000FFC26D66D05E5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FF9890FF6A35EDE7171ACE58 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1ECE65A56FB554640570876;
+			remoteInfo = Focals;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		06B095E92B839F73683DEC72 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		0B29D589D8F139A09F68D61D /* FocalsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsUITests.swift; sourceTree = "<group>"; };
+		1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenGallery.swift; sourceTree = "<group>"; };
+		4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsApp.swift; sourceTree = "<group>"; };
+		4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDecodingTests.swift; sourceTree = "<group>"; };
+		840E386896E4563DF3E30057 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fixtures; path = FocalsTests/Fixtures; sourceTree = SOURCE_ROOT; };
+		8D97320272391F8E3EE05B5F /* Focals.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Focals.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0AF57D113DA222C1D1BC412 /* FocalsUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B9B6C2842EBBA10107FBF785 /* FocalsKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FocalsKit; path = FocalsKit; sourceTree = SOURCE_ROOT; };
+		DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalsTests.swift; sourceTree = "<group>"; };
+		DD7E1DACAA07897AA6CC737B /* FocalsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FocalsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDB4648D7027444B4483A68A /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9319AAEF34D3776F602C2719 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				006FFDD87A694908ECC5912E /* FocalsDesign in Frameworks */,
+				B2FF5A9A0504E615DD8C4840 /* FocalsModels in Frameworks */,
+				74B0748C135893209C377443 /* FocalsAPI in Frameworks */,
+				F963984F51B37929ECA7B068 /* FocalsCache in Frameworks */,
+				DF3ED171404F399B259A47CF /* Kingfisher in Frameworks */,
+				52EB50AF8AD60982999CAA62 /* MarkdownUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C29C374CF90402AA1CFB534E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				410314185B13FC812CA36B13 /* FocalsModels in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		12FCD9456008C236E1CC8C23 /* Focals */ = {
+			isa = PBXGroup;
+			children = (
+				FDB4648D7027444B4483A68A /* Secrets.xcconfig */,
+				73DA5A3AC37A6E724E7EC2B0 /* App */,
+				B917D88F67F06972B4D0467C /* Auth */,
+				F03CFF0A55CE7444E381EFFD /* Design */,
+				E52B431A6EB0FD33B2A39DD0 /* Modules */,
+				E6F21C3B471E58BC68DF7A4E /* Navigation */,
+				30DAF8BD7CD5EF99D96AB3E8 /* Resources */,
+				8D3919B777B799FE61471EB6 /* Shared */,
+			);
+			path = Focals;
+			sourceTree = "<group>";
+		};
+		147CB71E484B2D4D4E9DD73B /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Projects;
+			sourceTree = "<group>";
+		};
+		14ACBF41F7A523B54810B419 = {
+			isa = PBXGroup;
+			children = (
+				840E386896E4563DF3E30057 /* Fixtures */,
+				12FCD9456008C236E1CC8C23 /* Focals */,
+				2A57004C8CEB6C986E0F7F3E /* FocalsTests */,
+				B5ABBD92702BD26F14961258 /* FocalsUITests */,
+				C5BEABA0272598D2BBC406DC /* Packages */,
+				7330269AFA2609694943F024 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		236F9D19FD9CD4D72D5B0897 /* Links */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Links;
+			sourceTree = "<group>";
+		};
+		2A57004C8CEB6C986E0F7F3E /* FocalsTests */ = {
+			isa = PBXGroup;
+			children = (
+				DBC8A63A8ABD02E74AF14067 /* FocalsTests.swift */,
+				4F5A2E3BAE4AB2285424225F /* ModelDecodingTests.swift */,
+			);
+			path = FocalsTests;
+			sourceTree = "<group>";
+		};
+		2E0B993E27D2EC13E67550D3 /* Inbox */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Inbox;
+			sourceTree = "<group>";
+		};
+		30DAF8BD7CD5EF99D96AB3E8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B833FF58BEB2EB2BCE7C3E5F /* Assets.xcassets */,
+				452BB7809092EE4DC80D8BFF /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		3F2924DB845EA98DF650BE0B /* Clients */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Clients;
+			sourceTree = "<group>";
+		};
+		452BB7809092EE4DC80D8BFF /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		475A6E87A2CA3E23C107F5A0 /* Help */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Help;
+			sourceTree = "<group>";
+		};
+		530F6A4AB1457459970EC827 /* Forms */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Forms;
+			sourceTree = "<group>";
+		};
+		5CD1E278431FD75BB048D31C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		7330269AFA2609694943F024 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D97320272391F8E3EE05B5F /* Focals.app */,
+				DD7E1DACAA07897AA6CC737B /* FocalsTests.xctest */,
+				A0AF57D113DA222C1D1BC412 /* FocalsUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		73DA5A3AC37A6E724E7EC2B0 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				1C5DED6FB15649F392FF20C6 /* DesignTokenGallery.swift */,
+				4106A91B37381EC1B9E1E1D8 /* FocalsApp.swift */,
+				06B095E92B839F73683DEC72 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		7691AE56AE31D1E6AB4BA507 /* Finances */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Finances;
+			sourceTree = "<group>";
+		};
+		7E15AC4E3B15B251C0A5E930 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		8D3919B777B799FE61471EB6 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		AD0F5BAA84BAFC42527B4F17 /* Gear */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Gear;
+			sourceTree = "<group>";
+		};
+		B5ABBD92702BD26F14961258 /* FocalsUITests */ = {
+			isa = PBXGroup;
+			children = (
+				0B29D589D8F139A09F68D61D /* FocalsUITests.swift */,
+			);
+			path = FocalsUITests;
+			sourceTree = "<group>";
+		};
+		B917D88F67F06972B4D0467C /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		C5BEABA0272598D2BBC406DC /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				B9B6C2842EBBA10107FBF785 /* FocalsKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		CFF70B598420D781AA0636DE /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		E09193C75105BC325F5A1A3C /* Contracts */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Contracts;
+			sourceTree = "<group>";
+		};
+		E52B431A6EB0FD33B2A39DD0 /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				CFF70B598420D781AA0636DE /* Calendar */,
+				3F2924DB845EA98DF650BE0B /* Clients */,
+				E09193C75105BC325F5A1A3C /* Contracts */,
+				7E15AC4E3B15B251C0A5E930 /* Dashboard */,
+				7691AE56AE31D1E6AB4BA507 /* Finances */,
+				530F6A4AB1457459970EC827 /* Forms */,
+				AD0F5BAA84BAFC42527B4F17 /* Gear */,
+				475A6E87A2CA3E23C107F5A0 /* Help */,
+				2E0B993E27D2EC13E67550D3 /* Inbox */,
+				236F9D19FD9CD4D72D5B0897 /* Links */,
+				147CB71E484B2D4D4E9DD73B /* Projects */,
+				5CD1E278431FD75BB048D31C /* Settings */,
+				E544026E278B5C98A4C3B55F /* Shoots */,
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
+		E544026E278B5C98A4C3B55F /* Shoots */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Shoots;
+			sourceTree = "<group>";
+		};
+		E6F21C3B471E58BC68DF7A4E /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		F03CFF0A55CE7444E381EFFD /* Design */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AC9F7AC0F7404EBD1F4C6699 /* FocalsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 93E4C3767731FF0ACF471108 /* Build configuration list for PBXNativeTarget "FocalsTests" */;
+			buildPhases = (
+				C16402B85D2A54874CD49D71 /* Sources */,
+				3B6370C9FDD87DE1C8620829 /* Resources */,
+				C29C374CF90402AA1CFB534E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0120C153E0DFE581B74E53BB /* PBXTargetDependency */,
+			);
+			name = FocalsTests;
+			packageProductDependencies = (
+				7B66FA2D1C7948CB42CE6ACB /* FocalsModels */,
+			);
+			productName = FocalsTests;
+			productReference = DD7E1DACAA07897AA6CC737B /* FocalsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C3838ED91B8DDF2CCB6CBE65 /* FocalsUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 63A8AC9A4E39BB4811694F0D /* Build configuration list for PBXNativeTarget "FocalsUITests" */;
+			buildPhases = (
+				F042FE44978450FF4075E2D1 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8858237C2B45A16B2301016C /* PBXTargetDependency */,
+			);
+			name = FocalsUITests;
+			packageProductDependencies = (
+			);
+			productName = FocalsUITests;
+			productReference = A0AF57D113DA222C1D1BC412 /* FocalsUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		E1ECE65A56FB554640570876 /* Focals */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E589ACD95DE3269B007A3B8 /* Build configuration list for PBXNativeTarget "Focals" */;
+			buildPhases = (
+				4CF1D39860341EC0ED736C41 /* Sources */,
+				960B17D3498B39C87B3E70DA /* Resources */,
+				9319AAEF34D3776F602C2719 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Focals;
+			packageProductDependencies = (
+				2E1CFF57501D3446C713047E /* FocalsDesign */,
+				493AB284786C6E8CD7F6702F /* FocalsModels */,
+				BD91BDB86CBB768047E4DD11 /* FocalsAPI */,
+				301C62105196D7CCA75A55AF /* FocalsCache */,
+				244FCBFA18AB86AB05762DA6 /* Kingfisher */,
+				C527EB360FC6A0F0854648EB /* MarkdownUI */,
+			);
+			productName = Focals;
+			productReference = 8D97320272391F8E3EE05B5F /* Focals.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FF9890FF6A35EDE7171ACE58 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					C3838ED91B8DDF2CCB6CBE65 = {
+						TestTargetID = E1ECE65A56FB554640570876;
+					};
+				};
+			};
+			buildConfigurationList = 54F45F1C0FD151416290A031 /* Build configuration list for PBXProject "Focals" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 14ACBF41F7A523B54810B419;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				01FF729707366C0F238875A6 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				2B729D18064E9D8B29AC28F5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+				15F15EDECA5892601F801DCD /* XCLocalSwiftPackageReference "FocalsKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7330269AFA2609694943F024 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E1ECE65A56FB554640570876 /* Focals */,
+				AC9F7AC0F7404EBD1F4C6699 /* FocalsTests */,
+				C3838ED91B8DDF2CCB6CBE65 /* FocalsUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3B6370C9FDD87DE1C8620829 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBC3F202B912FFD8CEB5B030 /* Fixtures in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		960B17D3498B39C87B3E70DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B7CF9EC9237F31860B4AB5F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4CF1D39860341EC0ED736C41 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E58D35B80728B663A029EE14 /* DesignTokenGallery.swift in Sources */,
+				4895C989581A7D6C88AA6490 /* FocalsApp.swift in Sources */,
+				7103E14EE1643D59CB58AFA5 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C16402B85D2A54874CD49D71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B11902B70198EB834E17A22B /* FocalsTests.swift in Sources */,
+				CD9C80DC8C32EA712FF3A195 /* ModelDecodingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F042FE44978450FF4075E2D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				71C785BC3C08F48AF213E350 /* FocalsUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0120C153E0DFE581B74E53BB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1ECE65A56FB554640570876 /* Focals */;
+			targetProxy = 16F5AA935D13FDD83155591C /* PBXContainerItemProxy */;
+		};
+		8858237C2B45A16B2301016C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1ECE65A56FB554640570876 /* Focals */;
+			targetProxy = 903BCE71000FFC26D66D05E5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		04E01C9FB2D52E8CF3005A45 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FDB4648D7027444B4483A68A /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				INFOPLIST_FILE = Focals/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.ios;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		127F035ACB6A3D9D796F1FE4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.FocalsTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Focals.app/Focals";
+			};
+			name = Debug;
+		};
+		1AF9FB7EDE1EB3B3995A5688 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2DB205D90015262F12B292F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.FocalsUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Focals;
+			};
+			name = Debug;
+		};
+		6AA30CB347D71779CC3ACDC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		9A6CD74EE596E06285264AC6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FDB4648D7027444B4483A68A /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				INFOPLIST_FILE = Focals/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_SWIFT_FLAGS = "-DDEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.ios;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B9BBF7EBFD02352584540B9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.FocalsUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Focals;
+			};
+			name = Release;
+		};
+		DC71C3F6F03BD21F707828DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focals.FocalsTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Focals.app/Focals";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0E589ACD95DE3269B007A3B8 /* Build configuration list for PBXNativeTarget "Focals" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9A6CD74EE596E06285264AC6 /* Debug */,
+				04E01C9FB2D52E8CF3005A45 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		54F45F1C0FD151416290A031 /* Build configuration list for PBXProject "Focals" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1AF9FB7EDE1EB3B3995A5688 /* Debug */,
+				6AA30CB347D71779CC3ACDC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		63A8AC9A4E39BB4811694F0D /* Build configuration list for PBXNativeTarget "FocalsUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DB205D90015262F12B292F8 /* Debug */,
+				B9BBF7EBFD02352584540B9E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		93E4C3767731FF0ACF471108 /* Build configuration list for PBXNativeTarget "FocalsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				127F035ACB6A3D9D796F1FE4 /* Debug */,
+				DC71C3F6F03BD21F707828DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		15F15EDECA5892601F801DCD /* XCLocalSwiftPackageReference "FocalsKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = FocalsKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		01FF729707366C0F238875A6 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.10.0;
+			};
+		};
+		2B729D18064E9D8B29AC28F5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		244FCBFA18AB86AB05762DA6 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 01FF729707366C0F238875A6 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		2E1CFF57501D3446C713047E /* FocalsDesign */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FocalsDesign;
+		};
+		301C62105196D7CCA75A55AF /* FocalsCache */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FocalsCache;
+		};
+		493AB284786C6E8CD7F6702F /* FocalsModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FocalsModels;
+		};
+		7B66FA2D1C7948CB42CE6ACB /* FocalsModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FocalsModels;
+		};
+		BD91BDB86CBB768047E4DD11 /* FocalsAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FocalsAPI;
+		};
+		C527EB360FC6A0F0854648EB /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2B729D18064E9D8B29AC28F5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FF9890FF6A35EDE7171ACE58 /* Project object */;
+}

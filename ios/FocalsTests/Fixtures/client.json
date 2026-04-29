@@ -1,0 +1,11 @@
+{
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "full_name": "Sarah Johnson",
+  "email": "sarah@example.com",
+  "phone": "+1-555-0123",
+  "notes": "Prefers outdoor shoots",
+  "source": "referral",
+  "created_at": "2026-02-10T09:00:00.000000+00:00",
+  "updated_at": "2026-04-18T16:45:00.000000+00:00"
+}

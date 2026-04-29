@@ -44,3 +44,15 @@ yarn-error.log*
 
 # Test
 coverage
+
+# iOS / Xcode
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+ios/**/Secrets.xcconfig
+ios/Focals/Secrets.xcconfig
+ios/**/DerivedData/
+ios/**/.swiftpm/
+ios/**/.build/
+ios/**/build/
+*.ipa
+*.dSYM.zip

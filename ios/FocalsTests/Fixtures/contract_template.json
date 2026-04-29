@@ -1,0 +1,8 @@
+{
+  "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+  "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Standard Wedding Contract",
+  "body": "This Photography Agreement is entered into between {{photographer_name}} and {{client_name}}...",
+  "created_at": "2026-01-20T08:00:00.000000+00:00",
+  "updated_at": "2026-02-14T12:30:00.000000+00:00"
+}
