@@ -71,7 +71,27 @@ Schema fields (all required keys, but most accept null):
 - category (string|null): free-text descriptor like "wedding", "portrait",
   "editorial", "graduation", "engagement", "family". Lowercase singular noun.
 - status: one of [inquiry, booked, in_progress, editing, delivered, completed,
-  cancelled] or null.
+  cancelled] or null. Inference rules (apply in order):
+  * If the document explicitly labels status (e.g. "status: booked"), use that.
+  * If a shoot date is in the past AND the row signals work is delivered (e.g.
+    "edits given: yes", "delivered", "sent gallery", "files sent") AND payment
+    looks complete: status = "completed".
+  * Past shoot date + delivered/edits-given + UNPAID: status = "delivered".
+  * Past shoot date + NOT yet edited (e.g. "edits: x", "edits: no", "in
+    editing", "still editing"): status = "editing" (the shoot happened, you
+    owe edits).
+  * Future shoot date with any sign of confirmation (deposit paid, contract
+    signed, on the calendar): status = "booked".
+  * Future shoot date with no confirmation signal yet (just a name + date):
+    status = "inquiry".
+  * Cancelled / refunded / void rows: status = "cancelled".
+  * If you genuinely cannot tell, return null — DO NOT default to "inquiry"
+    just because the field is unclear.
+  Common shorthand to recognize:
+  * "yes" / "x" / "n/a" columns titled "Edits Given", "Edited", "Delivered":
+    "yes" = work is done, "x" or "no" = work pending, "n/a" = irrelevant.
+  * "Paid" column with "yes" = paid in full; "x" or "no" = unpaid.
+  * "Deposit Paid" column with "yes" = partial payment received.
 - shoot_date (string|null): the date the shoot is/was scheduled. Format rules:
   * If the document gives a date AND a time of day: "YYYY-MM-DDTHH:MM" (24h
     clock, no timezone suffix).
@@ -86,9 +106,22 @@ Schema fields (all required keys, but most accept null):
 - location (string|null): venue, address, or city.
 - package_price (number|null): total price in dollars (NOT cents). Strip "$"
   and commas. If "$2,500" return 2500.
-- amount_paid (number|null): money already received. Same dollar units.
-- payment_status: one of [unpaid, partial, paid] or null. Infer from
-  package_price vs. amount_paid if obvious, otherwise null.
+- amount_paid (number|null): money already received in dollars. Inference:
+  * If the document gives an explicit number, use it.
+  * If a "Paid" column says "yes" (or equivalent) AND package_price is known,
+    set amount_paid = package_price (paid in full).
+  * If "Paid" says "x" / "no" AND there is no separate deposit signal,
+    set amount_paid = 0.
+  * If only a deposit signal is present (e.g. "Deposit Paid: yes") and the
+    package_price is known, you may estimate amount_paid as a typical
+    deposit fraction (~30%) and add a warning. Otherwise leave null.
+- payment_status: one of [unpaid, partial, paid] or null. Inference:
+  * "Paid" column = "yes" (or amount_paid >= package_price): "paid".
+  * "Paid" = "x" / "no" but "Deposit Paid" = "yes": "partial".
+  * "Paid" = "x" and no deposit: "unpaid".
+  * If amount_paid > 0 but < package_price: "partial".
+  * If amount_paid = 0 or unknown and no other signal: "unpaid" by default.
+  Only return null if there's literally no payment information of any kind.
 - notes (string|null): anything else worth keeping (special requests, deliverables,
   travel notes). Keep under 500 characters.
 - source_excerpt (string, required): 1–2 sentences quoted or paraphrased from
