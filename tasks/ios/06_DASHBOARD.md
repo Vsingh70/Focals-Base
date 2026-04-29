@@ -191,7 +191,7 @@ struct ProjectStatusDonut: View {
                     ForEach(breakdown, id: \.0) { status, count in
                         HStack {
                             Circle().fill(color(for: status)).frame(width: 8, height: 8)
-                            Text(status.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+                            Text(status.displayName)   // see Step 5 helper
                                 .font(.tokens.body(13))
                                 .foregroundStyle(.tokens.textSecondary)
                             Spacer()
@@ -231,7 +231,21 @@ struct UpcomingProjectsStrip: View {
 }
 ```
 
-`UpcomingProjectCard`: 200×100, big day number, weekday, title, location pill.
+`UpcomingProjectCard`: 200×100. Big day number + weekday badge on the left, title + client name + location on the right, and a status badge (`StatusPill`) at the bottom. **Always humanize raw `ProjectStatus` raw values before display** — the underlying enum is `inquiry / booked / in_progress / editing / delivered / completed / cancelled`, and rendering `in_progress` literally is jarring. Convert to title case (`In Progress`, `Editing`, etc.) at the call site, e.g.:
+
+```swift
+extension ProjectStatus {
+    /// Human-readable title-cased label for UI.
+    var displayName: String {
+        rawValue
+            .split(separator: "_")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .joined(separator: " ")
+    }
+}
+```
+
+Reuse this everywhere a status renders to the user (donut legend, project rows, calendar detail panel, project detail header, EventKit event description, push notification body).
 
 ## Step 6 — Quick actions
 

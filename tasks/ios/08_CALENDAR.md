@@ -204,7 +204,7 @@ struct DayDetailPanel: View {
                                     .foregroundStyle(.tokens.textSecondary)
                             }
                             Spacer()
-                            StatusPill(project.status.rawValue.capitalized, tone: project.status.pillTone)
+                            StatusPill(project.status.displayName, tone: project.status.pillTone)   // displayName helper from Task 06
                         }
                         .padding(Spacing.sm)
                     }
