@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { StatusBadge, PaymentBadge } from '@/components/ui/Badge';
 import { ProjectForm, type ProjectFormMode } from './ProjectForm';
 import { ProjectsUploadDialog } from './ProjectsUploadDialog';
@@ -102,6 +103,19 @@ export function ProjectsTable({
   const [sortDesc, setSortDesc] = useState(true);
   const [mode, setMode] = useState<ProjectFormMode | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  // Auto-open the edit form when the page is reached via `?edit=<projectId>`
+  // (used by the dashboard's UpcomingProjectsStrip and other deep links).
+  // Only fires when the id matches one of the loaded projects, so a stale or
+  // foreign id silently no-ops instead of opening a blank form.
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (!editId) return;
+    const match = projects.find((p) => p.id === editId);
+    if (match) setMode({ kind: 'edit', project: match });
+  }, [searchParams, projects]);
 
   const clientMap = useMemo(
     () => new Map(clients.map((c) => [c.id, c.full_name])),

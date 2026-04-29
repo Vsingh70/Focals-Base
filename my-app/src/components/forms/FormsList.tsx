@@ -58,7 +58,7 @@ export function FormsList({ forms }: { forms: FormRow[] }) {
             margin: 0,
           }}
         >
-          No forms yet. Create one to define custom fields for projects, finances, or shoots.
+          No forms yet. Create one to define custom fields for projects, clients, or finances.
         </p>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.625rem' }}>

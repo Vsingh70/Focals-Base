@@ -11,6 +11,15 @@ function formatDateBadge(iso: string) {
   };
 }
 
+// Postgres status enums are snake_case (e.g. "in_progress"). Render them
+// as title-cased English so the dashboard reads naturally.
+function humanizeStatus(status: string): string {
+  return status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export function UpcomingProjectsStrip({ projects }: { projects: UpcomingProject[] }) {
   if (projects.length === 0) {
     return (
@@ -42,7 +51,7 @@ export function UpcomingProjectsStrip({ projects }: { projects: UpcomingProject[
         return (
           <Link
             key={p.id}
-            href={`/projects?focus=${p.id}`}
+            href={`/projects?edit=${p.id}`}
             style={{
               flex: '0 0 260px',
               textDecoration: 'none',
@@ -115,7 +124,7 @@ export function UpcomingProjectsStrip({ projects }: { projects: UpcomingProject[
                 {p.client_name ?? '—'} · {date.time}
                 {p.location ? ` · ${p.location}` : ''}
               </div>
-              {p.status ? <Badge tone="neutral">{p.status}</Badge> : null}
+              {p.status ? <Badge tone="neutral">{humanizeStatus(p.status)}</Badge> : null}
             </div>
           </Link>
         );

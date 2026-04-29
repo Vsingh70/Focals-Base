@@ -26,7 +26,7 @@ export default async function FormsPage() {
     <div className="app-page" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader
         title="Forms"
-        subtitle="Define custom fields for projects, finances, or shoots. System fields are always present."
+        subtitle="Define custom fields for projects, clients, and finances. System fields are always present."
       />
       <FormsList forms={forms ?? []} />
       <TourGate tourId="forms" steps={formsTour.steps} helpHref="/help/forms" />
