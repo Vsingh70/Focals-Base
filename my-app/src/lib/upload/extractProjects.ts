@@ -46,11 +46,17 @@ const MODEL = 'claude-haiku-4-5-20251001';
 // regularly uploads >150-project files is a one-line change.
 const MAX_OUTPUT_TOKENS = 16384;
 
-const SYSTEM_PROMPT = `You extract photography-business project data from documents.
+function buildSystemPrompt(): string {
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
+  const currentYear = today.getFullYear();
+  return `You extract photography-business project data from documents.
 
 The user is a photographer using a CRM. They've uploaded a file that may contain
 one or many projects: bookings, inquiries, invoices, contracts, exported CRM
 data, screenshots of messages, etc.
+
+Today's date is ${todayIso}. Use this for resolving relative dates and missing years.
 
 Your job: read the document and return a list of project records. Each record
 must conform to the project schema below. If a field isn't clearly present in
@@ -66,8 +72,17 @@ Schema fields (all required keys, but most accept null):
   "editorial", "graduation", "engagement", "family". Lowercase singular noun.
 - status: one of [inquiry, booked, in_progress, editing, delivered, completed,
   cancelled] or null.
-- shoot_date (string|null): ISO 8601. Prefer "YYYY-MM-DDTHH:MM" if a time is
-  given; otherwise "YYYY-MM-DD". Do not include timezone suffixes.
+- shoot_date (string|null): the date the shoot is/was scheduled. Format rules:
+  * If the document gives a date AND a time of day: "YYYY-MM-DDTHH:MM" (24h
+    clock, no timezone suffix).
+  * If the document gives only a date with no time: return JUST "YYYY-MM-DD"
+    (no T, no time). The user can fill in a time later if they need one.
+    DO NOT make up a time like 00:00 or 12:00 — return the date-only string.
+  * If the document shows a date like "7-Feb" or "March 14" with no year,
+    use the current year (${currentYear}). If that produces a date in the
+    distant past relative to today (${todayIso}) and the rest of the
+    document implies recent or upcoming work, prefer next year (${currentYear + 1}).
+  * Never include a timezone suffix (no "Z", no "+00:00").
 - location (string|null): venue, address, or city.
 - package_price (number|null): total price in dollars (NOT cents). Strip "$"
   and commas. If "$2,500" return 2500.
@@ -87,6 +102,7 @@ Calling rules:
 - If a field is genuinely ambiguous, use null and add a warning identifying
   the project (e.g. ["Sarah Johnson row: couldn't tell if status is 'booked' or 'in_progress'"]).
 - Be conservative: it's far better to return null than to hallucinate values.`;
+}
 
 const TOOL_DEFINITION = {
   name: 'propose_projects',
@@ -191,7 +207,7 @@ export async function extractProjectsFromContent(
   const response = await llm.messages.create({
     model: MODEL,
     max_tokens: MAX_OUTPUT_TOKENS,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(),
     tools: [TOOL_DEFINITION],
     tool_choice: { type: 'tool', name: 'propose_projects' },
     messages: [userMessage],

@@ -87,11 +87,35 @@ type RowState = AnnotatedProposedProject & {
     | { kind: 'none' };
 };
 
+/**
+ * Format an LLM-extracted date string for an <input type="datetime-local">.
+ *
+ * The tricky case: the LLM often returns a bare "YYYY-MM-DD" with no time.
+ * `new Date("2026-02-07")` is treated by JS as UTC midnight, which in any
+ * timezone west of UTC renders as the *previous* day at the local
+ * UTC-offset time (e.g. 2026-02-06 19:00 in EST). To preserve the user's
+ * intent — "Feb 7" — parse date-only strings as a *local* calendar date
+ * and leave the time component blank so the UI doesn't fabricate one.
+ *
+ * Full ISO timestamps (with `T` and a timezone) round-trip normally.
+ */
 function toDatetimeLocal(raw: string | null): string {
   if (!raw) return '';
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return '';
+  const trimmed = raw.trim();
   const pad = (n: number) => String(n).padStart(2, '0');
+
+  // Date-only: "YYYY-MM-DD"
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (dateOnly) {
+    // Leave time blank — the LLM didn't have one. Letting datetime-local
+    // accept "YYYY-MM-DDTHH:mm" with empty HH:mm would be invalid; instead
+    // we default to 00:00 in *local* time so the displayed day matches.
+    return `${dateOnly[1]}-${dateOnly[2]}-${dateOnly[3]}T00:00`;
+  }
+
+  // Full timestamp (with or without TZ): let Date parse and read in local time
+  const d = new Date(trimmed);
+  if (Number.isNaN(d.getTime())) return '';
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
