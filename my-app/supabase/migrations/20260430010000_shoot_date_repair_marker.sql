@@ -1,0 +1,32 @@
+-- =============================================================
+-- Paper-trail repair for the wall-clock backfill.
+--
+-- 20260430000000 ran in production, but somehow ended up applying a
+-- net -8h shift to projects.shoot_date instead of the intended -4h.
+-- We then ran ad-hoc SQL in the dashboard to re-add 4h so the canonical
+-- wall-clock values were restored (e.g. yana grad → 08:30:00+00).
+--
+-- This migration is intentionally a no-op against the production
+-- database — the marker row from 20260430000000 is already present and
+-- the data is already correct. The purpose is solely to ensure that:
+--
+-- 1. A future engineer applying migrations to a fresh Supabase project
+--    sees the full intent: "the previous migration was a one-shot
+--    wall-clock backfill; if you're seeing this for the first time and
+--    the marker isn't already set, the data is correct as-is."
+-- 2. `supabase db push` doesn't try to re-execute 20260430000000 — the
+--    marker is in place, and even if dropped, the prior file's `do`
+--    block guards on the marker.
+--
+-- If you find yourself running this on a database where shoot_date is
+-- visibly wrong (rendered times don't match what the form shows), do
+-- not run more shifts here — diagnose with:
+--     select shoot_date, title from public.projects;
+-- and adjust by hand. The +/-4h dance can run away if you don't trust
+-- the marker.
+-- =============================================================
+
+-- Idempotent: ensure the marker exists. If it doesn't (fresh project),
+-- add it now so the previous migration's `do` block stays a no-op.
+insert into public._migration_marks (key) values ('20260430000000_shoot_date_wall_clock')
+on conflict (key) do nothing;
