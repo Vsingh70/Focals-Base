@@ -95,9 +95,9 @@ Schema fields (all required keys, but most accept null):
 - shoot_date (string|null): the date the shoot is/was scheduled. Format rules:
   * If the document gives a date AND a time of day: "YYYY-MM-DDTHH:MM" (24h
     clock, no timezone suffix).
-  * If the document gives only a date with no time: return JUST "YYYY-MM-DD"
-    (no T, no time). The user can fill in a time later if they need one.
-    DO NOT make up a time like 00:00 or 12:00 — return the date-only string.
+  * If the document gives only a date with no time: return "YYYY-MM-DD"
+    (date only, no T, no time). The server will default it to a sensible
+    hour. DO NOT invent a time of day yourself.
   * If the document shows a date like "7-Feb" or "March 14" with no year,
     use the current year (${currentYear}). If that produces a date in the
     distant past relative to today (${todayIso}) and the rest of the

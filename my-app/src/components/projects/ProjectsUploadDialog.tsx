@@ -119,6 +119,24 @@ function toDatetimeLocal(raw: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/**
+ * Serialize a `datetime-local` value for the commit payload.
+ *
+ * Plain `new Date(localValue).toISOString()` would convert to UTC using the
+ * browser's offset, which means a user in EDT with the input untouched at
+ * "YYYY-MM-DDT00:00" sends `T05:00:00Z` — fine in EDT but renders as the
+ * wrong calendar day for any user east of UTC+5. When the time is exactly
+ * midnight, treat the value as a bare date and let the server schema's
+ * date-aware transform default it to noon UTC instead.
+ */
+function serializeShootDate(value: string): string | null {
+  if (!value) return null;
+  const dateOnlyMatch = /^(\d{4}-\d{2}-\d{2})T00:00$/.exec(value);
+  if (dateOnlyMatch) return dateOnlyMatch[1];
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 function buildInitialRow(p: AnnotatedProposedProject): RowState {
   // Default client choice from the LLM-annotated match
   let clientChoice: RowState['clientChoice'];
@@ -261,9 +279,7 @@ export function ProjectsUploadDialog({
       title: r.edited.title.trim() || 'Untitled project',
       category: r.edited.category.trim() || null,
       status: r.edited.status,
-      shoot_date: r.edited.shoot_date
-        ? new Date(r.edited.shoot_date).toISOString()
-        : null,
+      shoot_date: serializeShootDate(r.edited.shoot_date),
       location: r.edited.location.trim() || null,
       package_price:
         r.edited.package_price.trim() === ''

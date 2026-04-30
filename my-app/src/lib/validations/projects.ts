@@ -17,12 +17,20 @@ export const createProjectSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
   category: z.string().max(60).nullable().optional(),
   status: projectStatusEnum.default('inquiry'),
-  // Accepts either a YYYY-MM-DD date or a full ISO timestamp. Postgres handles
-  // the cast on its end (date column truncates time; timestamptz column stores
-  // both). Once `projects.shoot_date` is migrated to timestamptz, the form
-  // sends datetime-local values verbatim.
+  // Accepts either a YYYY-MM-DD date or a full ISO timestamp. Bare dates
+  // are normalized to noon UTC so they render as the intended calendar
+  // day in any user timezone — Postgres would otherwise cast a bare date
+  // to 00:00:00 UTC, which renders as the previous day for any client
+  // west of UTC (e.g. EDT shows 20:00 the day before).
   shoot_date: z
     .union([z.string().date(), z.string().datetime({ offset: true })])
+    .transform((value) => {
+      // YYYY-MM-DD only — promote to noon UTC.
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return `${value}T12:00:00.000Z`;
+      }
+      return value;
+    })
     .nullable()
     .optional(),
   location: z.string().max(200).nullable().optional(),

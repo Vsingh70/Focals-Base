@@ -1075,3 +1075,41 @@ The task doc's enum values were stale. Used web Zod validations as source of tru
 
 ### Dashboard config (manual steps required)
 - No new dashboard config needed for Task 04. The `focals://` URL scheme is registered in the app's Info.plist; nothing to set on Supabase/Google/Apple Developer.
+
+---
+
+## Web bugfix — `shoot_date` showing previous day at 8 PM ✅
+
+**Completed:** 2026-04-29
+
+### Symptom
+- Projects list, project detail, and calendar pages rendered every imported project's date as "previous day at 8:00 PM" (or whatever the local UTC offset works out to). The dashboard's Upcoming Projects strip rendered the same data correctly.
+
+### Root cause
+- The `20260429180000_projects_shoot_date_to_timestamptz.sql` migration cast the existing `date`-typed column to `timestamptz` via `using shoot_date::timestamptz`, which Postgres interprets as `that-day 00:00:00 UTC`. Every pre-existing row, plus every LLM-upload row that came in as a bare `YYYY-MM-DD` string, ended up stored as UTC midnight.
+- The dashboard's `UpcomingProjectsStrip` is a server component (runs on Vercel, which is UTC) so its `new Date(iso); d.getDate()` rendered the intended day. The projects table, calendar view, and mobile calendar are all client components — same code, but `new Date` runs in the user's browser TZ (EDT / UTC-4), so UTC midnight rendered as previous-day 20:00.
+
+### Tests run
+- `npm run typecheck` — clean
+- `npm run build` — clean (compiled successfully in 3.1s, all 59 routes generated)
+
+### Security concerns
+- None. The migration only updates rows owned by the existing user (RLS still enforces ownership on read/write paths).
+
+### What was changed
+- **NEW migration** `my-app/supabase/migrations/20260429210000_normalize_shoot_date_utc_midnight.sql` — bumps every `projects.shoot_date` that's exactly UTC midnight to noon UTC. Idempotent. Noon UTC renders as the same calendar day in any populated timezone (UTC-11 to UTC+11).
+- **`my-app/src/lib/validations/projects.ts`** — `createProjectSchema.shoot_date` now has a Zod `transform` that promotes any bare `YYYY-MM-DD` input to `T12:00:00.000Z` before insert. Defense-in-depth: covers manual edits, inquiry conversion, and upload commits in one place.
+- **`my-app/src/lib/upload/extractProjects.ts`** — LLM extraction prompt updated so it knows the server defaults the time when only a date is given (less likely the model invents a wrong time).
+- **`my-app/src/components/projects/ProjectsUploadDialog.tsx`** — when the `datetime-local` value is exactly `YYYY-MM-DDT00:00`, the commit payload now sends the bare date string instead of running it through `new Date().toISOString()` (which would lock in the user's local-midnight UTC offset). The server schema's transform takes it from there.
+
+### Manual step required
+- [ ] **Run the new migration in Supabase**: open the Supabase SQL Editor for project `oqaqopkcpgmjgswaismm` and paste the contents of `my-app/supabase/migrations/20260429210000_normalize_shoot_date_utc_midnight.sql`, or run `supabase db push` from the CLI if linked. Until this runs, the existing 52 imported projects will still show as previous-day 8 PM in the user's browser.
+
+### Verification (after running the migration)
+1. Refresh the projects list — every imported project should show its intended calendar day.
+2. Open the calendar — events should sit on the correct day cell.
+3. Edit a project, save without touching `shoot_date` — value stays correct (no shift).
+4. Run another LLM file upload with a bare-date entry — committed `shoot_date` should land at noon UTC, not midnight.
+
+### Deferred / out of scope
+- The user's `Project` detail page rendering still uses the same `new Date(iso)` pattern. After the data fix it'll display correctly, but if a future user is east of UTC+12 (Tonga, Kiribati) noon UTC would still render as the next day. Acceptable for v1.
