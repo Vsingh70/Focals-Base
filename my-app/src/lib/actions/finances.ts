@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { ok, fail, requireUser, type ActionResult } from './_shared';
 import {
   createTransactionSchema,
@@ -30,6 +30,8 @@ export async function createTransaction(
   if (error) return fail(error.message);
   revalidatePath('/finances');
   revalidatePath('/');
+  // dashboard's getDashboardData uses unstable_cache with this tag
+  revalidateTag('dashboard');
   return ok(data);
 }
 
@@ -54,6 +56,8 @@ export async function updateTransaction(
   if (error) return fail(error.message);
   revalidatePath('/finances');
   revalidatePath('/');
+  // dashboard's getDashboardData uses unstable_cache with this tag
+  revalidateTag('dashboard');
   return ok(data);
 }
 
@@ -72,5 +76,7 @@ export async function deleteTransaction(
   if (error) return fail(error.message);
   revalidatePath('/finances');
   revalidatePath('/');
+  // dashboard's getDashboardData uses unstable_cache with this tag
+  revalidateTag('dashboard');
   return ok({ id });
 }

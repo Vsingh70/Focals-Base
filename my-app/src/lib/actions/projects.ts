@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { ok, fail, requireUser, type ActionResult } from './_shared';
 import {
   createProjectSchema,
@@ -31,8 +31,25 @@ export async function createProject(
     .single();
 
   if (error) return fail(error.message);
-  revalidatePath('/projects');
+  bustProjectCaches();
   return ok(data);
+}
+
+/**
+ * Every project mutation needs to flip three caches:
+ * - the /projects route render
+ * - the /projects/[id] detail render (callers pass the id)
+ * - the dashboard's unstable_cache (tagged 'dashboard' in queries/dashboard.ts)
+ *   plus the dashboard page render at '/'
+ *
+ * Without busting the dashboard tag the upcoming-projects strip can show
+ * stale times for up to 30 seconds after a save.
+ */
+function bustProjectCaches(detailId?: string) {
+  revalidatePath('/projects');
+  if (detailId) revalidatePath(`/projects/${detailId}`);
+  revalidatePath('/');
+  revalidateTag('dashboard');
 }
 
 export async function updateProject(
@@ -54,8 +71,7 @@ export async function updateProject(
     .single();
 
   if (error) return fail(error.message);
-  revalidatePath('/projects');
-  revalidatePath(`/projects/${id}`);
+  bustProjectCaches(id);
   return ok(data);
 }
 
@@ -70,7 +86,7 @@ export async function deleteProject(id: string): Promise<ActionResult<{ id: stri
     .eq('user_id', auth.user.id);
 
   if (error) return fail(error.message);
-  revalidatePath('/projects');
+  bustProjectCaches(id);
   return ok({ id });
 }
 
@@ -220,7 +236,7 @@ export async function commitUploadedProjects(input: {
       .eq('user_id', auth.user.id);
   }
 
-  revalidatePath('/projects');
+  bustProjectCaches();
   if (createdClientCount > 0) revalidatePath('/clients');
 
   return ok({
