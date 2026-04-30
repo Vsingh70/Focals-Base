@@ -14,6 +14,34 @@ public struct Gear: Codable, Identifiable, Hashable, Sendable {
     public let notes: String?
     public let createdAt: Date
 
+    public init(
+        id: UUID,
+        userId: UUID,
+        name: String,
+        category: String?,
+        brand: String?,
+        model: String?,
+        serialNumber: String?,
+        purchasePrice: Double?,
+        purchaseDate: String?,
+        status: GearStatus?,
+        notes: String?,
+        createdAt: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.name = name
+        self.category = category
+        self.brand = brand
+        self.model = model
+        self.serialNumber = serialNumber
+        self.purchasePrice = purchasePrice
+        self.purchaseDate = purchaseDate
+        self.status = status
+        self.notes = notes
+        self.createdAt = createdAt
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"

@@ -1113,3 +1113,43 @@ The task doc's enum values were stale. Used web Zod validations as source of tru
 
 ### Deferred / out of scope
 - The user's `Project` detail page rendering still uses the same `new Date(iso)` pattern. After the data fix it'll display correctly, but if a future user is east of UTC+12 (Tonga, Kiribati) noon UTC would still render as the next day. Acceptable for v1.
+
+---
+
+## iOS Task 05 — Read-Cache Layer (SwiftData) ✅
+
+**Completed:** 2026-04-29
+
+### Tests run
+- `xcodegen generate` — clean
+- `xcodebuild build` for iPhone 17 simulator — BUILD SUCCEEDED, zero errors
+- `xcodebuild test` — 17/17 unit tests + 1 UI test pass (no regressions)
+- App launches in iPhone 17 simulator with the new cache plumbing; no crashes from container init
+
+### Security concerns
+- The SwiftData store file is per-user and lives in the App Group container (or `Application Support/` fallback). Sign-out wipes the file before the next user can mount their own container, so a shared device can't leak data.
+- The store contains the same fields as the server (no extra PII), but it IS unencrypted at rest. iOS Data Protection class is `Complete` by default for files under `Application Support/`, which means the file is unreadable when the device is locked — same protection level as `URLCache`. Acceptable for v1.
+
+### What was built
+- **App Group `group.com.focals.ios`** wired via `Focals/Focals.entitlements` + `CODE_SIGN_ENTITLEMENTS` build setting in `project.yml`. CacheContainer uses the App Group container when entitled and falls back to `Application Support/` when running unsigned (simulator without a real provisioning profile, which is the current state until Apple Developer enrollment).
+- **8 SwiftData `@Model` classes** in `FocalsKit/Sources/FocalsCache/Models/`: CachedProject, CachedClient, CachedInquiry, CachedFinance, CachedGear, CachedLink, CachedContract, CachedContractTemplate. Each has `@Attribute(.unique) serverId: UUID`, `init(from:)` / `applyServer(_:)` / `toModel()` round-trip helpers, and `lastSyncedAt` for future delta-cursor work. Dictionary/JSONB fields (`Inquiry.rawPayload`, `Contract.customFields`) are stored as encoded JSON strings to dodge SwiftData's iOS-17.0 Optional-Dictionary edge cases.
+- **8 corresponding public memberwise inits** added to the `FocalsModels` structs (`Project`, `Client`, `Inquiry`, `Finance`, `Gear`, `Link`, `Contract`, `ContractTemplate`) so cache `toModel()` round-trips compile. The structs were already `Codable` but the synthesized memberwise init was internal-only.
+- **`CacheContainer`** factory that builds a per-user `ModelContainer` keyed by `userId`. Provides `make(for:)` and `wipe(userId:)` (also removes SQLite WAL/SHM siblings).
+- **`CacheRepository` protocol** + `CacheConnectivity` seam + `CacheConnectivityRegistry`. The cache layer stays headless; the app target plugs in the real `ConnectivityMonitor` at launch.
+- **8 concrete `*CacheRepository` structs** with `cached/refresh/create/update/delete`. Mutations call `requireOnline()` first so airplane-mode mutations throw `FocalsAPIError.offline` instead of waiting out the URLSession timeout. Successful mutations upsert the server response into the cache so list views see the change without a separate `refresh()`.
+- **`SessionStore.wipeLocalData(userId:)`** now captures the previous user's `id` BEFORE clearing `self.user` (the `.signedOut` event doesn't carry the old session) and calls `CacheContainer.wipe(userId:)`. URLCache + Face ID UserDefaults wipe is preserved.
+- **`RootView`** now mounts the per-user `ModelContainer` only when there's a signed-in user, with `.id(user.id)` to guarantee a fresh container if the signed-in user changes. Has a fallback that re-tries with a wiped store and ultimately drops to an in-memory container so the app stays usable even if the store file is corrupt.
+- **Foreground refresh hook**: `LoggedInRoot.onChange(of: scenePhase)` triggers `refreshAllCaches(in:)` when the app becomes `.active`. Each cache repo runs in parallel via `withTaskGroup`, capped at 5 seconds per repo so a slow query can't block the rest. Errors are swallowed (foreground refresh is non-blocking).
+- **`FocalsApp.init`** registers `ConnectivityMonitor.shared` as the cache layer's `CacheConnectivity` source via `MainActor.assumeIsolated`.
+- **`FocalsCache/OFFLINE_FIRST.md`** documents v1 mutation policy + the v1.1 MutationOutbox design + schema-migration story so the next session doesn't re-derive it.
+
+### Deferred items
+- [ ] **Wire each module screen's `@Query` + `.refreshable` + initial `.task`** — Tasks 06–12 own this. The cache layer is ready; screens just need to add the canonical pattern from the spec (the placeholder screens are still empty `EmptyState`s today).
+- [ ] **Verify cache file location on device** — the spec asks for "verify by inspecting Files app on device → cache file gone after sign-out". Skipped for now since we're still on simulator; verify when a physical device is paired.
+- [ ] **60fps shimmer + <200ms cold render in Instruments** — also a real-device check. The infrastructure is in place; can't measure without a device.
+- [ ] **Schema migration test harness** — the OFFLINE_FIRST doc references `FocalsTests/CacheMigrationTests.swift` for Task 14. Not built yet.
+- [ ] **Per-repo unit tests for upsert idempotency** — Task 14 will cover. The current test suite still only covers Task 02's model decoding (17 tests).
+- [ ] **App Group provisioning** — the `group.com.focals.ios` group needs to be registered in Apple Developer once enrollment lands (Task 14 prereq). Until then the entitlement file is present but the container falls back to `Application Support/`.
+
+### Dashboard config (manual steps required)
+- [ ] **Apple Developer**: when you do enrollment for Task 14, register the App Group `group.com.focals.ios` in https://developer.apple.com/account/resources/identifiers/list/applicationGroup and add it to the iOS app's identifier so signed builds pick up a real shared container. Until then nothing breaks — fallback path works fine.

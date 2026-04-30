@@ -19,6 +19,38 @@ public struct Project: Codable, Identifiable, Hashable, Sendable {
     public let createdAt: Date
     public let updatedAt: Date
 
+    public init(
+        id: UUID,
+        userId: UUID,
+        title: String,
+        clientId: UUID?,
+        category: String?,
+        status: ProjectStatus?,
+        shootDate: Date?,
+        location: String?,
+        packagePrice: Double?,
+        amountPaid: Double?,
+        paymentStatus: PaymentStatus?,
+        notes: String?,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.title = title
+        self.clientId = clientId
+        self.category = category
+        self.status = status
+        self.shootDate = shootDate
+        self.location = location
+        self.packagePrice = packagePrice
+        self.amountPaid = amountPaid
+        self.paymentStatus = paymentStatus
+        self.notes = notes
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"

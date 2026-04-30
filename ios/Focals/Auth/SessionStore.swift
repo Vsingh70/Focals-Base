@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import Supabase
 import FocalsAPI
+import FocalsCache
 import FocalsModels
 
 /// Single source of truth for "who is signed in right now".
@@ -49,33 +50,42 @@ public final class SessionStore {
         authStateTask = Task { [weak self] in
             for await (event, session) in FocalsClient.shared.supabase.auth.authStateChanges {
                 guard let self else { return }
-                self.user = session?.user
 
                 switch event {
                 case .signedIn, .tokenRefreshed, .userUpdated:
+                    self.user = session?.user
                     self.profile = try? await ProfileRepository.shared.getCurrent()
                 case .signedOut:
-                    await self.wipeLocalData()
+                    // Capture the previous user's id before nulling — the
+                    // SwiftData store on disk is keyed by user id, and the
+                    // event itself doesn't carry the old session.
+                    let previousUserId = self.user?.id
+                    self.user = nil
                     self.profile = nil
+                    await self.wipeLocalData(userId: previousUserId)
                 default:
-                    break
+                    self.user = session?.user
                 }
             }
         }
     }
 
     /// Sign out the current user. The auth-state observer above will see the
-    /// `.signedOut` event and trigger `wipeLocalData()`.
+    /// `.signedOut` event and trigger `wipeLocalData(userId:)`.
     public func signOut() async throws {
         try await FocalsClient.shared.supabase.auth.signOut()
     }
 
     /// Best-effort wipe of every cache the iOS client keeps.
-    /// - Cleared today: URLCache, Face ID lock toggle (so the next user on
-    ///   the same device starts unlocked).
-    /// - Tasks 05 and 09 layer in SwiftData + Kingfisher wipes here.
-    private func wipeLocalData() async {
+    /// - URLCache (response bodies)
+    /// - Face ID lock toggle (so the next user on this device starts unlocked)
+    /// - SwiftData read-cache file for the previous user (Task 05)
+    /// - Kingfisher disk cache layered in by Task 09
+    private func wipeLocalData(userId: UUID?) async {
         URLCache.shared.removeAllCachedResponses()
         UserDefaults.standard.removeObject(forKey: "FaceIDLockEnabled")
+        if let userId {
+            try? CacheContainer.wipe(userId: userId)
+        }
     }
 }

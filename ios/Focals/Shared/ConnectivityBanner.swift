@@ -1,14 +1,17 @@
 import SwiftUI
 import Network
 import Observation
+import FocalsCache
 import FocalsDesign
 
 /// Lives for the lifetime of the app and reports network reachability via
 /// NWPathMonitor. The @Observable macro re-renders any views that read
-/// `isOffline` whenever the value flips.
+/// `isOffline` whenever the value flips. Also conforms to FocalsCache's
+/// `CacheConnectivity` so the cache layer can fail mutations fast when
+/// the device is offline (registered in FocalsApp).
 @Observable
 @MainActor
-public final class ConnectivityMonitor {
+public final class ConnectivityMonitor: CacheConnectivity {
     public static let shared = ConnectivityMonitor()
 
     public private(set) var isOffline = false

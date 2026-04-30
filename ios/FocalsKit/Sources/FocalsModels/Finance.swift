@@ -12,6 +12,30 @@ public struct Finance: Codable, Identifiable, Hashable, Sendable {
     public let projectId: UUID?
     public let createdAt: Date
 
+    public init(
+        id: UUID,
+        userId: UUID,
+        type: FinanceType,
+        amount: Double,
+        date: String,
+        category: String?,
+        description: String?,
+        paymentMethod: String?,
+        projectId: UUID?,
+        createdAt: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.type = type
+        self.amount = amount
+        self.date = date
+        self.category = category
+        self.description = description
+        self.paymentMethod = paymentMethod
+        self.projectId = projectId
+        self.createdAt = createdAt
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"

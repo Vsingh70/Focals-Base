@@ -11,6 +11,28 @@ public struct Client: Codable, Identifiable, Hashable, Sendable {
     public let createdAt: Date
     public let updatedAt: Date
 
+    public init(
+        id: UUID,
+        userId: UUID,
+        fullName: String,
+        email: String?,
+        phone: String?,
+        notes: String?,
+        source: String?,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.fullName = fullName
+        self.email = email
+        self.phone = phone
+        self.notes = notes
+        self.source = source
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"
