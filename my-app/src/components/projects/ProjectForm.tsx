@@ -19,14 +19,23 @@ export type ProjectFormMode =
   | { kind: 'edit'; project: Project };
 
 function toDatetimeLocalValue(raw: string | Date | null | undefined): string {
-  // Accept either a YYYY-MM-DD date (legacy), a full ISO timestamp, or a
-  // Date instance, and format for an <input type="datetime-local"> in
-  // local time.
+  // shoot_date is wall-clock (see handleSubmit). For string inputs from the
+  // DB, the UTC components ARE the wall-clock the user typed. For Date
+  // inputs (calendar slot click — JS produces a local-time Date), the local
+  // components are the wall-clock. Pick the right getters per source.
   if (!raw) return '';
-  const d = raw instanceof Date ? raw : new Date(raw);
-  if (Number.isNaN(d.getTime())) return '';
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (typeof raw === 'string') {
+    const naive = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/.exec(raw);
+    if (naive) return naive[1];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return `${raw}T00:00`;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  }
+  // Date instance — read local components.
+  if (Number.isNaN(raw.getTime())) return '';
+  return `${raw.getFullYear()}-${pad(raw.getMonth() + 1)}-${pad(raw.getDate())}T${pad(raw.getHours())}:${pad(raw.getMinutes())}`;
 }
 
 const PROJECT_STATUSES = [
@@ -128,9 +137,12 @@ export function ProjectForm({
     const priceRaw = formData.get('package_price');
     const paidRaw = formData.get('amount_paid');
     const dateLocal = String(formData.get('shoot_date') ?? '');
-    // datetime-local produces "YYYY-MM-DDTHH:mm" without timezone — convert to
-    // a full ISO string so the server stores the user's intended local moment.
-    const shootDate = dateLocal ? new Date(dateLocal).toISOString() : null;
+    // shoot_date is stored as wall-clock — the photographer means "8:30 on
+    // their watch", not "8:30 in some specific timezone". Send the
+    // datetime-local value verbatim ("YYYY-MM-DDTHH:mm"); Postgres parses
+    // it as naive timestamp and stores it under the +00 zone so renderers
+    // formatting in UTC display the same number the user typed.
+    const shootDate = dateLocal || null;
     const payload = {
       title: String(formData.get('title') ?? ''),
       client_id: (formData.get('client_id') as string) || null,

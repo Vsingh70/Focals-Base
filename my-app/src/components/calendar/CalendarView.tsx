@@ -48,8 +48,8 @@ const statusColor: Record<string, string> = {
 
 function projectToEvent(p: Project): RBCEvent | null {
   if (!p.shoot_date) return null;
-  const start = new Date(p.shoot_date);
-  if (Number.isNaN(start.getTime())) return null;
+  const start = wallClockDate(p.shoot_date);
+  if (!start) return null;
   return {
     id: p.id,
     title: p.title,
@@ -57,6 +57,27 @@ function projectToEvent(p: Project): RBCEvent | null {
     end: new Date(start.getTime() + DEFAULT_DURATION_MS),
     resource: p,
   };
+}
+
+/**
+ * Convert a wall-clock ISO timestamp into a JS Date whose *local-time*
+ * components match the stored UTC components. react-big-calendar formats
+ * events using local-time getters (`.getHours()` etc.), so to render a
+ * shoot stored as 2026-05-15T08:30:00Z as "8:30 AM" in any viewer's
+ * timezone, we need the resulting Date to satisfy `.getHours() === 8` in
+ * the viewer's locale. Read UTC parts from the source and feed them to the
+ * local-time Date constructor.
+ */
+function wallClockDate(iso: string): Date | null {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(
+    parsed.getUTCFullYear(),
+    parsed.getUTCMonth(),
+    parsed.getUTCDate(),
+    parsed.getUTCHours(),
+    parsed.getUTCMinutes()
+  );
 }
 
 /**

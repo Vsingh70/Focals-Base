@@ -1153,3 +1153,45 @@ The task doc's enum values were stale. Used web Zod validations as source of tru
 
 ### Dashboard config (manual steps required)
 - [ ] **Apple Developer**: when you do enrollment for Task 14, register the App Group `group.com.focals.ios` in https://developer.apple.com/account/resources/identifiers/list/applicationGroup and add it to the iOS app's identifier so signed builds pick up a real shared container. Until then nothing breaks — fallback path works fine.
+
+---
+
+## Web semantics change — `shoot_date` is now wall-clock ✅
+
+**Completed:** 2026-04-30
+
+### What "wall-clock" means
+The digits a photographer types ("8:30") are the digits we always display, regardless of where the viewer is or where the renderer runs. shoot_date is stored as a `timestamptz` anchored at `+00`, but every renderer formats with `timeZone: 'UTC'`, so the column's UTC components ARE the wall-clock value. No conversion through the user's local timezone — viewing the dashboard from EDT, JST, or Vercel's UTC server shows the same number.
+
+### Why
+Two prior fixes were chasing different sides of the same bug. First fix (noon-UTC backfill) made the *day* render right everywhere. Second fix (client-side TZ formatting on the dashboard) made the *time* render in the user's local TZ. But the user's intent was simpler than either: "I typed 8:30 — show me 8:30." Wall-clock semantics implement that directly.
+
+### Tests run
+- `npm run typecheck` — clean
+- `npm run build` — clean
+
+### What changed
+- **`my-app/src/components/projects/ProjectForm.tsx`** — `handleSubmit` now passes the raw `datetime-local` value (`YYYY-MM-DDTHH:mm`) to the server instead of running it through `new Date().toISOString()`. `toDatetimeLocalValue` reads UTC components from stored ISO strings (so the wall-clock digits round-trip) and local components from `Date` instances (calendar slot clicks).
+- **`my-app/src/components/projects/ProjectsUploadDialog.tsx`** — `serializeShootDate` returns the `datetime-local` value verbatim. `toDatetimeLocal` strips any zone suffix from the LLM's output, taking the leading 16 chars (`YYYY-MM-DDTHH:mm`) as wall-clock.
+- **`my-app/src/lib/validations/projects.ts`** — `createProjectSchema.shoot_date` accepts naive `YYYY-MM-DDTHH:mm`, full ISO with zone, and bare dates. The transform peels off the wall-clock digits and re-anchors at `+00:00.000Z` so storage is canonical regardless of input shape.
+- **`my-app/src/components/dashboard/LocalDateBadge.tsx`** — dropped the client-only `useEffect` TZ swap; now a plain server-renderable component that always formats with `timeZone: 'UTC'`.
+- **`my-app/src/components/projects/ProjectsTable.tsx`** — `formatDate` formats with `timeZone: 'UTC'`.
+- **`my-app/src/components/calendar/CalendarView.tsx`** — added `wallClockDate(iso)` helper that reads UTC components and returns a local-time Date with matching components, so react-big-calendar's local-time formatters render the wall-clock digits unchanged.
+- **`my-app/src/components/calendar/MobileCalendarView.tsx`** — same `wallClockDate` helper, applied to day-bucket and bottom-sheet rendering.
+- **`my-app/src/app/api/calendar/[userId]/route.ts`** — iCal events now use `floating: true`, so Apple Calendar / Google Calendar render the wall-clock time against the viewer's clock. (Without this, an 8:30 wall-clock event would appear at 4:30 AM in EDT after iCal interpreted the +00 anchor literally.)
+- **NEW migration `my-app/supabase/migrations/20260430000000_shoot_date_to_wall_clock.sql`** — subtracts 4 hours from every existing `shoot_date` to recover the wall-clock value. Idempotent via a one-row marker table (`_migration_marks`); safe to re-run. Assumes the user is in EDT (UTC-4); the prior writes always went through `toISOString()` so stored = wall_clock + 4h.
+
+### Manual step required
+- [ ] **Run the new migration in Supabase**: open https://supabase.com/dashboard/project/oqaqopkcpgmjgswaismm/sql/new and paste the body of `20260430000000_shoot_date_to_wall_clock.sql`. Until this runs, every existing project will display 4 hours later than it should (e.g. "yana grad" saved at 8:30 will still show 12:30 because the stored value is still 12:30 UTC).
+
+### Verification (after running the migration)
+1. Refresh the dashboard's Upcoming Projects strip — every project should show the wall-clock time the user typed.
+2. Hard-refresh `/projects` — the table's "Shoot date" column should match.
+3. Open `/calendar` — events sit on the right day cell, and the time inside the event should match what the form shows.
+4. Subscribe to the iCal feed in Apple Calendar — events should appear at their wall-clock times in any device timezone (the floating-time export ignores the viewer's TZ).
+5. Edit "yana grad" → save without changing anything → time stays at 8:30.
+6. Move the user's MacBook to Pacific Time temporarily (System Settings → Date & Time) and reload `/projects` — times should still read 8:30.
+
+### Caveats
+- **East-of-UTC users**: the backfill assumes a UTC-4 origin. If you ever sign in a user in JST (UTC+9), their existing rows would skew further; not a concern right now since you're the only user.
+- **The `_migration_marks` table**: a tiny bookkeeping table introduced just for this run-once migration. Cheap and explicit. Consider promoting to a general migration ledger if more run-once data fixes accumulate.

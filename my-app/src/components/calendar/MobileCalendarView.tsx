@@ -78,6 +78,24 @@ function formatTimeRange(start: Date, durationMin: number) {
   return `${fmt.format(start)} – ${fmt.format(end)}`;
 }
 
+/**
+ * Convert a stored wall-clock ISO timestamp into a local-time Date whose
+ * components match the original digits (so .getHours() etc. return the
+ * value the user typed regardless of viewer locale). See CalendarView for
+ * the rationale.
+ */
+function wallClockDate(iso: string): Date | null {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(
+    parsed.getUTCFullYear(),
+    parsed.getUTCMonth(),
+    parsed.getUTCDate(),
+    parsed.getUTCHours(),
+    parsed.getUTCMinutes()
+  );
+}
+
 function formatLongDay(d: Date) {
   return d.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -108,14 +126,15 @@ export function MobileCalendarView({
     const map = new Map<string, Project[]>();
     for (const p of projects) {
       if (!p.shoot_date) continue;
-      const dt = new Date(p.shoot_date);
-      if (Number.isNaN(dt.getTime())) continue;
+      const dt = wallClockDate(p.shoot_date);
+      if (!dt) continue;
       const key = dayKey(startOfDay(dt));
       const list = map.get(key);
       if (list) list.push(p);
       else map.set(key, [p]);
     }
-    // Sort each day's projects by shoot time.
+    // Sort each day's projects by shoot time. Stored timestamps sort the
+    // same as wall-clock since they all share the +00 anchor.
     for (const list of map.values()) {
       list.sort(
         (a, b) =>
@@ -427,7 +446,7 @@ export function MobileCalendarView({
                       }}
                     >
                       {selectedDayProjects.map((p) => {
-                        const start = new Date(p.shoot_date ?? 0);
+                        const start = wallClockDate(p.shoot_date ?? '') ?? new Date(0);
                         const tone =
                           statusToneMap[p.status as keyof typeof statusToneMap] ?? 'neutral';
                         return (

@@ -82,10 +82,13 @@ function formatCurrency(n: number | null) {
 
 function formatDate(d: string | null) {
   if (!d) return '—';
+  // shoot_date is wall-clock — render in UTC so the number the user typed
+  // is what they see, regardless of viewer locale.
   return new Date(d).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   });
 }
 

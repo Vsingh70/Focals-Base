@@ -77,8 +77,21 @@ export async function GET(
 
   for (const raw of (projects ?? []) as ProjectRow[]) {
     if (!raw.shoot_date) continue;
-    const start = new Date(raw.shoot_date);
-    if (Number.isNaN(start.getTime())) continue;
+    // shoot_date is wall-clock — the digits in the column are the digits the
+    // photographer typed. Read UTC components, feed them into a local-time
+    // Date so ical-generator's floating-time formatter emits the same
+    // YYYYMMDDTHHmmSS without a TZID or Z suffix. Apple Calendar / Google
+    // Calendar render floating times against the viewer's clock, which is
+    // exactly what we want.
+    const stored = new Date(raw.shoot_date);
+    if (Number.isNaN(stored.getTime())) continue;
+    const start = new Date(
+      stored.getUTCFullYear(),
+      stored.getUTCMonth(),
+      stored.getUTCDate(),
+      stored.getUTCHours(),
+      stored.getUTCMinutes()
+    );
     const end = new Date(start.getTime() + DEFAULT_DURATION_MIN * 60_000);
 
     const client = firstOrSelf(raw.clients);
@@ -94,6 +107,7 @@ export async function GET(
       id: raw.id,
       start,
       end,
+      floating: true,
       summary: raw.title,
       description: descLines.join('\n'),
       location: raw.location ?? undefined,
