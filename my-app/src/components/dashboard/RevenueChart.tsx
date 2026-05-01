@@ -41,7 +41,10 @@ export default function RevenueChart({ data }: { data: RevenuePoint[] }) {
     return {
       animation: true,
       animationDuration: 300,
-      grid: { top: 24, right: 16, bottom: 32, left: 56, containLabel: false },
+      // Use containLabel so the y-axis labels are measured into the grid
+      // automatically instead of relying on a fixed left padding (56px
+      // crammed long labels at narrow widths).
+      grid: { top: 24, right: 12, bottom: 32, left: 8, containLabel: true },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'line', lineStyle: { color: border } },
@@ -63,7 +66,14 @@ export default function RevenueChart({ data }: { data: RevenuePoint[] }) {
         data: months,
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { color: textTertiary, fontSize: 12 },
+        axisLabel: {
+          color: textTertiary,
+          fontSize: 12,
+          // Skip every other label automatically once the chart is too
+          // narrow to draw all of them — prevents collision on phone.
+          interval: 'auto',
+          hideOverlap: true,
+        },
       },
       yAxis: {
         type: 'value',
@@ -72,6 +82,19 @@ export default function RevenueChart({ data }: { data: RevenuePoint[] }) {
         splitLine: { lineStyle: { color: border, type: 'dashed' } },
         axisLabel: { color: textTertiary, fontSize: 12, formatter: (v: number) => formatDollars(v) },
       },
+      // Phone-sized override: shrink axis labels and tighten margins so
+      // the line area gets more pixels and labels stay readable.
+      media: [
+        {
+          query: { maxWidth: 480 },
+          option: {
+            grid: { top: 16, right: 8, bottom: 32, left: 4, containLabel: true },
+            xAxis: { axisLabel: { fontSize: 10 } },
+            yAxis: { axisLabel: { fontSize: 10 } },
+            legend: { textStyle: { fontSize: 11 } },
+          },
+        },
+      ],
       series: [
         {
           name: 'income',

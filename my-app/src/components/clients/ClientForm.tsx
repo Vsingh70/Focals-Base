@@ -140,13 +140,47 @@ export function ClientForm({
     });
   };
 
+  const formId = 'client-form';
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isEdit ? (
+        <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
+          Delete
+        </button>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form={formId}
+          disabled={isPending}
+          style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        >
+          {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create client'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <SlideOver
       open={mode !== null}
       onClose={onClose}
       title={isEdit ? 'Edit client' : 'New client'}
+      footer={footer}
     >
-      <form key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+      <form id={formId} key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
         <div>
           <label style={labelStyle} htmlFor="client-full-name">
             Full name
@@ -227,37 +261,6 @@ export function ClientForm({
             {error}
           </p>
         ) : null}
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingTop: '0.5rem',
-            borderTop: '1px solid var(--color-border)',
-          }}
-        >
-          {isEdit ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
-            >
-              {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create client'}
-            </button>
-          </div>
-        </div>
       </form>
     </SlideOver>
   );

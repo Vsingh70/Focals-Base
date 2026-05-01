@@ -78,3 +78,18 @@ export async function setInquirySourceActive(
   revalidatePath('/settings');
   return ok(data);
 }
+
+export async function deleteInquirySource(id: string): Promise<ActionResult<{ id: string }>> {
+  const auth = await requireUser();
+  if ('error' in auth) return fail(auth.error);
+
+  const { error } = await auth.supabase
+    .from('inquiry_sources')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', auth.user.id);
+
+  if (error) return fail(error.message);
+  revalidatePath('/settings');
+  return ok({ id });
+}

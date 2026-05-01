@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { ProjectForm, type ProjectFormMode } from '@/components/projects/ProjectForm';
 import { deriveProjectLocationSuggestions } from './CalendarView';
@@ -104,6 +104,156 @@ function formatLongDay(d: Date) {
   });
 }
 
+/**
+ * Single month's title + weekday header + 6×7 day grid. Memoized so that
+ * unrelated months don't rerender when the user selects a day in some other
+ * month — without this, every selection re-renders all 12 months × 42 cells.
+ *
+ * Out-of-month cells (leading/trailing days from the adjacent month) are
+ * tappable: parent's `onDayTap` smooth-scrolls the strip into that month.
+ */
+type MonthGridProps = {
+  year: number;
+  month: number;
+  monthLabel: string;
+  isCurrent: boolean;
+  todayKey: string;
+  /** dayKey of the selected day IF it falls in this month, else null. */
+  selectedDayKey: string | null;
+  projectsByDay: Map<string, Project[]>;
+  onDayTap: (d: Date) => void;
+};
+
+const MonthGrid = memo(function MonthGrid({
+  year,
+  month,
+  monthLabel,
+  isCurrent,
+  todayKey,
+  selectedDayKey,
+  projectsByDay,
+  onDayTap,
+}: MonthGridProps) {
+  const cells = buildMonthCells(year, month);
+  return (
+    <>
+      <h3
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.125rem',
+          fontWeight: 500,
+          letterSpacing: '-0.01em',
+          color: isCurrent ? 'var(--color-accent)' : 'var(--color-text-primary)',
+          margin: '0 0 0.5rem 0.25rem',
+        }}
+      >
+        {monthLabel}
+      </h3>
+
+      {/* Weekday header row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          marginBottom: '0.25rem',
+        }}
+      >
+        {WEEKDAY_HEADERS.map((label, i) => (
+          <div
+            key={i}
+            style={{
+              textAlign: 'center',
+              fontSize: '0.625rem',
+              color: 'var(--color-text-tertiary)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: '2px',
+        }}
+      >
+        {cells.map((d) => {
+          const inMonth = d.getMonth() === month;
+          const cellKey = dayKey(d);
+          const isToday = cellKey === todayKey;
+          const isSelected = selectedDayKey === cellKey;
+          const dayProjects = projectsByDay.get(cellKey) ?? [];
+          const visibleBars = dayProjects.slice(0, 3);
+
+          return (
+            <button
+              key={cellKey}
+              type="button"
+              onClick={() => onDayTap(d)}
+              className="app-tap-skip"
+              style={{
+                position: 'relative',
+                aspectRatio: '1',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '2px',
+                padding: '6px 0 4px',
+                background: isSelected ? 'var(--color-accent-muted)' : 'transparent',
+                border: isToday ? '1px solid var(--color-accent)' : '1px solid transparent',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.875rem',
+                color: !inMonth
+                  ? 'var(--color-text-tertiary)'
+                  : isSelected
+                    ? 'var(--color-accent)'
+                    : isToday
+                      ? 'var(--color-accent)'
+                      : 'var(--color-text-primary)',
+                opacity: !inMonth ? 0.5 : 1,
+                fontWeight: isToday || isSelected ? 600 : 400,
+                transition: 'background 0.15s, color 0.15s',
+              }}
+            >
+              <span style={{ lineHeight: 1 }}>{d.getDate()}</span>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '2px',
+                  height: '4px',
+                  marginTop: 'auto',
+                }}
+              >
+                {visibleBars.map((p, idx) => (
+                  <span
+                    key={idx}
+                    style={{
+                      width: '4px',
+                      height: '4px',
+                      borderRadius: '2px',
+                      background:
+                        STATUS_BAR_COLOR[p.status ?? 'inquiry'] ??
+                        'var(--color-accent)',
+                    }}
+                  />
+                ))}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+});
+
 export function MobileCalendarView({
   projects,
   clients,
@@ -114,7 +264,9 @@ export function MobileCalendarView({
   const [formMode, setFormMode] = useState<ProjectFormMode | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const currentMonthRef = useRef<HTMLElement | null>(null);
+  // Refs to every rendered month section, keyed by `YYYY-MM`. Lets a tap on
+  // a leading/trailing day-of-adjacent-month smooth-scroll into that month.
+  const monthRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrolledOnce = useRef(false);
 
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -165,15 +317,26 @@ export function MobileCalendarView({
   // Auto-scroll the current month into view on first mount.
   useEffect(() => {
     if (scrolledOnce.current) return;
-    if (currentMonthRef.current && containerRef.current) {
-      currentMonthRef.current.scrollIntoView({ block: 'start', behavior: 'auto' });
+    const node = monthRefs.current[currentMonthKey];
+    if (node && containerRef.current) {
+      node.scrollIntoView({ block: 'start', behavior: 'auto' });
       scrolledOnce.current = true;
     }
-  }, []);
+  }, [currentMonthKey]);
 
-  const handleDayTap = (d: Date) => {
+  // A tap can land on either:
+  //   (a) a regular in-month cell — just toggle selection on that day, or
+  //   (b) a leading/trailing day from the adjacent month — select the day
+  //       AND smooth-scroll the strip to that day's actual month so the
+  //       inline event card renders next to the tapped cell.
+  const handleDayTap = useCallback((d: Date) => {
     setSelectedDay((prev) => (prev && dayKey(prev) === dayKey(d) ? null : d));
-  };
+    const targetKey = monthKey(d);
+    const targetNode = monthRefs.current[targetKey];
+    if (targetNode) {
+      targetNode.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }, []);
 
   const selectedDayKey = selectedDay ? dayKey(selectedDay) : null;
   const selectedDayProjects = selectedDayKey ? projectsByDay.get(selectedDayKey) ?? [] : [];
@@ -196,7 +359,10 @@ export function MobileCalendarView({
         <button
           type="button"
           onClick={() => {
-            currentMonthRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            monthRefs.current[currentMonthKey]?.scrollIntoView({
+              block: 'start',
+              behavior: 'smooth',
+            });
             setSelectedDay(today);
           }}
           style={{
@@ -241,142 +407,41 @@ export function MobileCalendarView({
       >
         {months.map((m) => {
           const isCurrent = m.key === currentMonthKey;
-          const cells = buildMonthCells(m.year, m.month);
           const monthLabel = new Date(m.year, m.month, 1).toLocaleDateString('en-US', {
             month: 'long',
             year: 'numeric',
           });
+          const showDetail =
+            !!selectedDay &&
+            selectedDay.getMonth() === m.month &&
+            selectedDay.getFullYear() === m.year;
+          // selectedDayKey is only relevant to the month it falls in. Other
+          // months pass `null` so React.memo can skip re-rendering them when
+          // the user just changes selection within a different month.
+          const selectionForThisMonth = showDetail ? selectedDayKey : null;
+
           return (
             <section
               key={m.key}
-              ref={isCurrent ? currentMonthRef : undefined}
+              ref={(node) => {
+                monthRefs.current[m.key] = node;
+              }}
               style={{ marginBottom: '1.5rem' }}
             >
-              <h3
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1.125rem',
-                  fontWeight: 500,
-                  letterSpacing: '-0.01em',
-                  color: isCurrent
-                    ? 'var(--color-accent)'
-                    : 'var(--color-text-primary)',
-                  margin: '0 0 0.5rem 0.25rem',
-                }}
-              >
-                {monthLabel}
-              </h3>
-
-              {/* Weekday header row */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, 1fr)',
-                  marginBottom: '0.25rem',
-                }}
-              >
-                {WEEKDAY_HEADERS.map((label, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      textAlign: 'center',
-                      fontSize: '0.625rem',
-                      color: 'var(--color-text-tertiary)',
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {label}
-                  </div>
-                ))}
-              </div>
-
-              {/* Day cells */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, 1fr)',
-                  gap: '2px',
-                }}
-              >
-                {cells.map((d) => {
-                  const inMonth = d.getMonth() === m.month;
-                  const cellKey = dayKey(d);
-                  const isToday = cellKey === todayKey;
-                  const isSelected = selectedDayKey === cellKey;
-                  const dayProjects = projectsByDay.get(cellKey) ?? [];
-                  const visibleBars = dayProjects.slice(0, 3);
-
-                  return (
-                    <button
-                      key={cellKey}
-                      type="button"
-                      onClick={() => inMonth && handleDayTap(d)}
-                      disabled={!inMonth}
-                      className="app-tap-skip"
-                      style={{
-                        position: 'relative',
-                        aspectRatio: '1',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        gap: '2px',
-                        padding: '6px 0 4px',
-                        background: isSelected
-                          ? 'var(--color-accent-muted)'
-                          : 'transparent',
-                        border: isToday
-                          ? '1px solid var(--color-accent)'
-                          : '1px solid transparent',
-                        borderRadius: '50%',
-                        cursor: inMonth ? 'pointer' : 'default',
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '0.875rem',
-                        color: !inMonth
-                          ? 'var(--color-text-tertiary)'
-                          : isSelected
-                            ? 'var(--color-accent)'
-                            : isToday
-                              ? 'var(--color-accent)'
-                              : 'var(--color-text-primary)',
-                        opacity: !inMonth ? 0.35 : 1,
-                        fontWeight: isToday || isSelected ? 600 : 400,
-                        transition: 'background 0.15s, color 0.15s',
-                      }}
-                    >
-                      <span style={{ lineHeight: 1 }}>{d.getDate()}</span>
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '2px',
-                          height: '4px',
-                          marginTop: 'auto',
-                        }}
-                      >
-                        {visibleBars.map((p, idx) => (
-                          <span
-                            key={idx}
-                            style={{
-                              width: '4px',
-                              height: '4px',
-                              borderRadius: '2px',
-                              background:
-                                STATUS_BAR_COLOR[p.status ?? 'inquiry'] ??
-                                'var(--color-accent)',
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <MonthGrid
+                year={m.year}
+                month={m.month}
+                monthLabel={monthLabel}
+                isCurrent={isCurrent}
+                todayKey={todayKey}
+                selectedDayKey={selectionForThisMonth}
+                projectsByDay={projectsByDay}
+                onDayTap={handleDayTap}
+              />
 
               {/* Inline detail: events for the selected day, only if it's
                   inside this month. */}
-              {selectedDay && selectedDay.getMonth() === m.month &&
-              selectedDay.getFullYear() === m.year ? (
+              {showDetail ? (
                 <div
                   style={{
                     marginTop: '0.75rem',

@@ -124,42 +124,37 @@ export function AccountSection() {
         </button>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: '0.9375rem',
-              fontWeight: 500,
-              color: 'var(--color-text-primary)',
-              margin: 0,
-            }}
-          >
-            Replay tutorials
-          </p>
-          <p
-            style={{
-              fontSize: '0.8125rem',
-              color: 'var(--color-text-secondary)',
-              margin: '0.25rem 0 0',
-            }}
-          >
-            Reset the in-app tours so they show again next time you visit each page.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {resetConfirmed ? (
-            <span style={{ color: 'var(--color-success)', fontSize: '0.8125rem' }}>
-              Reset.
-            </span>
-          ) : null}
+      <div style={{ display: 'grid', gap: '0.625rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: '0.9375rem',
+                fontWeight: 500,
+                color: 'var(--color-text-primary)',
+                margin: 0,
+              }}
+            >
+              Replay tutorials
+            </p>
+            <p
+              style={{
+                fontSize: '0.8125rem',
+                color: 'var(--color-text-secondary)',
+                margin: '0.25rem 0 0',
+              }}
+            >
+              Reset the in-app tours so they show again next time you visit each page.
+            </p>
+          </div>
           <button
             type="button"
             onClick={handleResetTours}
@@ -169,6 +164,48 @@ export function AccountSection() {
             {resetting ? 'Resetting…' : 'Replay tutorials'}
           </button>
         </div>
+
+        {/* The tour itself only mounts on tour-eligible pages (Dashboard,
+            Projects, Calendar, etc.) — clicking "Replay tutorials" while
+            on /settings has no visible effect on this page. Surface that
+            with an inline notice so the user knows where to look. */}
+        {resetConfirmed ? (
+          <div
+            role="status"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+              padding: '0.625rem 0.875rem',
+              background: 'rgba(76, 175, 125, 0.08)',
+              border: '1px solid rgba(76, 175, 125, 0.3)',
+              borderRadius: 'var(--radius-md)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.8125rem',
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              Tutorials reset. Open the Dashboard to replay them.
+            </span>
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              style={{
+                ...secondaryButton,
+                background: 'var(--color-accent)',
+                color: 'var(--color-bg)',
+                borderColor: 'transparent',
+              }}
+            >
+              Open Dashboard
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div

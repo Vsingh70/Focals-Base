@@ -435,6 +435,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          project_id: string | null
           title: string
           url: string
           user_id: string
@@ -444,6 +445,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          project_id?: string | null
           title: string
           url: string
           user_id: string
@@ -453,6 +455,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          project_id?: string | null
           title?: string
           url?: string
           user_id?: string
@@ -463,6 +466,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "links_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

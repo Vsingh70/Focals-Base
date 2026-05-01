@@ -181,11 +181,54 @@ export function TemplateEditor({
 
   const tagsInBody = extractTags(body);
 
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isEdit ? (
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isPending}
+          style={dangerButton}
+        >
+          Delete
+        </button>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isPending}
+          style={secondaryButton}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPending || !name.trim() || !body.trim()}
+          style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        >
+          {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create template'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <SlideOver
       open={mode !== null}
       onClose={onClose}
       title={isEdit ? 'Edit template' : 'New template'}
+      footer={footer}
     >
       <div style={{ display: 'grid', gap: '1.25rem' }}>
         <div>
@@ -249,46 +292,6 @@ export function TemplateEditor({
             {error}
           </p>
         ) : null}
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          {isEdit ? (
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isPending}
-              style={dangerButton}
-            >
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isPending}
-              style={secondaryButton}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isPending || !name.trim() || !body.trim()}
-              style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
-            >
-              {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create template'}
-            </button>
-          </div>
-        </div>
       </div>
     </SlideOver>
   );

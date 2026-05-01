@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/Badge';
 import {
   createInquirySource,
   setInquirySourceActive,
+  deleteInquirySource,
 } from '@/lib/actions/inquiry_sources';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { Database } from '@/lib/supabase/types';
 
 type InquirySource = Database['public']['Tables']['inquiry_sources']['Row'];
@@ -92,6 +94,7 @@ export function InquirySourcesSection({
   siteUrl: string;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [showCreate, setShowCreate] = useState(false);
   const [type, setType] = useState<'website' | 'email' | 'instagram' | 'custom'>('website');
   const [label, setLabel] = useState('');
@@ -99,6 +102,20 @@ export function InquirySourcesSection({
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const handleDelete = async (id: string, label: string) => {
+    const confirmed = await confirm({
+      title: 'Delete this inquiry source?',
+      message: `"${label}" will stop accepting submissions. Anything already in your inbox stays.`,
+      confirmLabel: 'Delete source',
+      destructive: true,
+    });
+    if (!confirmed) return;
+    startTransition(async () => {
+      await deleteInquirySource(id);
+      router.refresh();
+    });
+  };
 
   const handleCreate = () => {
     setError(null);
@@ -198,14 +215,28 @@ export function InquirySourcesSection({
                     <Badge tone="neutral">{s.type}</Badge>
                     {!s.is_active ? <Badge tone="danger">inactive</Badge> : null}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(s.id, !s.is_active)}
-                    disabled={isPending}
-                    style={secondaryButton}
-                  >
-                    {s.is_active ? 'Disable' : 'Enable'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.375rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggle(s.id, !s.is_active)}
+                      disabled={isPending}
+                      style={secondaryButton}
+                    >
+                      {s.is_active ? 'Disable' : 'Enable'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(s.id, s.label)}
+                      disabled={isPending}
+                      style={{
+                        ...secondaryButton,
+                        color: 'var(--color-danger)',
+                        borderColor: 'rgba(232, 80, 64, 0.3)',
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
 
                 <div
@@ -535,9 +566,23 @@ export function InquirySourcesSection({
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => setShowCreate(true)} style={primaryButton}>
-          + New inquiry source
-        </button>
+        <div style={{ display: 'grid', gap: '0.375rem' }}>
+          <button type="button" onClick={() => setShowCreate(true)} style={primaryButton}>
+            + New inquiry source
+          </button>
+          {sources.length > 0 ? (
+            <p
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--color-text-tertiary)',
+                margin: 0,
+              }}
+            >
+              You can add more than one source of the same type — e.g. one website form
+              for your portfolio and another for a partner site.
+            </p>
+          ) : null}
+        </div>
       )}
     </div>
   );

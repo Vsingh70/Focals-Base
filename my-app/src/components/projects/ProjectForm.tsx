@@ -194,13 +194,47 @@ export function ProjectForm({
     });
   };
 
+  const formId = 'project-form';
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isEdit ? (
+        <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
+          Delete
+        </button>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form={formId}
+          disabled={isPending}
+          style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        >
+          {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create project'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <SlideOver
       open={mode !== null}
       onClose={onClose}
       title={isEdit ? 'Edit project' : 'New project'}
+      footer={footer}
     >
-      <form key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+      <form id={formId} key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
         <div>
           <label style={labelStyle} htmlFor="proj-title">
             Title
@@ -373,36 +407,45 @@ export function ProjectForm({
           </p>
         ) : null}
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingTop: '0.5rem',
-            borderTop: '1px solid var(--color-border)',
-          }}
-        >
-          {isEdit ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        {isEdit && p ? (
+          <div
+            style={{
+              display: 'grid',
+              gap: '0.375rem',
+              padding: '0.875rem 1rem',
+              background: 'var(--color-bg-tertiary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--color-text-tertiary)',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
             >
-              {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Create project'}
-            </button>
+              Contract
+            </span>
+            <a
+              href={`/contracts/new?projectId=${p.id}&generate=1`}
+              onClick={onClose}
+              style={{
+                fontSize: '0.8125rem',
+                color: 'var(--color-accent)',
+                textDecoration: 'none',
+                fontWeight: 500,
+              }}
+            >
+              Generate contract from this project →
+            </a>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>
+              Uses Claude to draft a contract body from this project&apos;s details.
+              Requires an Anthropic key in Settings.
+            </span>
           </div>
-        </div>
+        ) : null}
       </form>
     </SlideOver>
   );

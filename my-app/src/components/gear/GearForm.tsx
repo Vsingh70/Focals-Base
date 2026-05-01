@@ -164,9 +164,47 @@ export function GearForm({
     });
   };
 
+  const formId = 'gear-form';
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isEdit ? (
+        <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
+          Delete
+        </button>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form={formId}
+          disabled={isPending}
+          style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        >
+          {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Add gear'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <SlideOver open={mode !== null} onClose={onClose} title={isEdit ? 'Edit gear' : 'Add gear'}>
-      <form key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+    <SlideOver
+      open={mode !== null}
+      onClose={onClose}
+      title={isEdit ? 'Edit gear' : 'Add gear'}
+      footer={footer}
+    >
+      <form id={formId} key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
         <div>
           <label style={labelStyle} htmlFor="gear-name">
             Name
@@ -307,36 +345,6 @@ export function GearForm({
             {error}
           </p>
         ) : null}
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '0.5rem',
-          }}
-        >
-          {isEdit ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
-            >
-              {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Add gear'}
-            </button>
-          </div>
-        </div>
       </form>
     </SlideOver>
   );

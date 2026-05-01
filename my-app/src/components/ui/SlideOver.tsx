@@ -7,11 +7,18 @@ export function SlideOver({
   onClose,
   title,
   children,
+  footer,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /**
+   * Optional sticky action bar pinned to the bottom of the panel. Use it
+   * for Save/Cancel/Delete buttons so they remain reachable on phone-sized
+   * viewports where the form would otherwise scroll the buttons offscreen.
+   */
+  footer?: ReactNode;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -95,7 +102,21 @@ export function SlideOver({
             ×
           </button>
         </header>
-        <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>{children}</div>
+        <div style={{ padding: '1.5rem', overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+          {children}
+        </div>
+        {footer ? (
+          <div
+            style={{
+              padding: '1rem 1.5rem',
+              borderTop: '1px solid var(--color-border)',
+              background: 'var(--color-bg-secondary)',
+              flexShrink: 0,
+            }}
+          >
+            {footer}
+          </div>
+        ) : null}
       </aside>
     </>
   );

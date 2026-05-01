@@ -10,8 +10,11 @@ import { LINK_CATEGORIES } from '@/lib/validations/links';
 import type { Database } from '@/lib/supabase/types';
 
 type LinkRow = Database['public']['Tables']['links']['Row'];
+type ProjectLite = { id: string; title: string };
 
-export type LinkFormMode = { kind: 'create' } | { kind: 'edit'; link: LinkRow };
+export type LinkFormMode =
+  | { kind: 'create'; presetProjectId?: string }
+  | { kind: 'edit'; link: LinkRow };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -69,9 +72,11 @@ const dangerButton: React.CSSProperties = {
 export function LinkForm({
   mode,
   onClose,
+  projects = [],
 }: {
   mode: LinkFormMode | null;
   onClose: () => void;
+  projects?: ProjectLite[];
 }) {
   const router = useRouter();
   const { show: showToast } = useToast();
@@ -96,6 +101,7 @@ export function LinkForm({
       url: String(formData.get('url') ?? ''),
       category: (formData.get('category') as string) || null,
       notes: (formData.get('notes') as string) || null,
+      project_id: (formData.get('project_id') as string) || null,
     };
     startTransition(async () => {
       const res = isEdit
@@ -133,9 +139,47 @@ export function LinkForm({
     });
   };
 
+  const formId = 'link-form';
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {isEdit ? (
+        <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
+          Delete
+        </button>
+      ) : (
+        <span />
+      )}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form={formId}
+          disabled={isPending}
+          style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
+        >
+          {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Add link'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <SlideOver open={mode !== null} onClose={onClose} title={isEdit ? 'Edit link' : 'Add link'}>
-      <form key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+    <SlideOver
+      open={mode !== null}
+      onClose={onClose}
+      title={isEdit ? 'Edit link' : 'Add link'}
+      footer={footer}
+    >
+      <form id={formId} key={formKey} action={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
         <div>
           <label style={labelStyle} htmlFor="link-title">
             Title
@@ -187,6 +231,28 @@ export function LinkForm({
         </div>
 
         <div>
+          <label style={labelStyle} htmlFor="link-project">
+            Project (optional)
+          </label>
+          <select
+            id="link-project"
+            name="project_id"
+            defaultValue={
+              link?.project_id ??
+              (mode.kind === 'create' ? mode.presetProjectId ?? '' : '')
+            }
+            style={{ ...inputStyle, appearance: 'auto' }}
+          >
+            <option value="">— Not linked to a project —</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label style={labelStyle} htmlFor="link-notes">
             Notes
           </label>
@@ -204,36 +270,6 @@ export function LinkForm({
             {error}
           </p>
         ) : null}
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '0.5rem',
-          }}
-        >
-          {isEdit ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} style={dangerButton}>
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="button" onClick={onClose} disabled={isPending} style={secondaryButton}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              style={{ ...primaryButton, opacity: isPending ? 0.6 : 1 }}
-            >
-              {isPending ? 'Saving…' : isEdit ? 'Save changes' : 'Add link'}
-            </button>
-          </div>
-        </div>
       </form>
     </SlideOver>
   );

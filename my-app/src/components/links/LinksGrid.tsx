@@ -7,6 +7,7 @@ import { LINK_CATEGORIES } from '@/lib/validations/links';
 import type { Database } from '@/lib/supabase/types';
 
 type LinkRow = Database['public']['Tables']['links']['Row'];
+type ProjectLite = { id: string; title: string };
 
 const primaryButton: React.CSSProperties = {
   padding: '0.5rem 0.875rem',
@@ -51,7 +52,13 @@ function hostname(rawUrl: string) {
   }
 }
 
-export function LinksGrid({ links }: { links: LinkRow[] }) {
+export function LinksGrid({
+  links,
+  projects = [],
+}: {
+  links: LinkRow[];
+  projects?: ProjectLite[];
+}) {
   const [filter, setFilter] = useState<string>('all');
   const [mode, setMode] = useState<LinkFormMode | null>(null);
 
@@ -59,6 +66,11 @@ export function LinksGrid({ links }: { links: LinkRow[] }) {
     if (filter === 'all') return links;
     return links.filter((l) => l.category === filter);
   }, [links, filter]);
+
+  const projectTitleById = useMemo(
+    () => new Map(projects.map((p) => [p.id, p.title])),
+    [projects]
+  );
 
   return (
     <>
@@ -219,9 +231,21 @@ export function LinksGrid({ links }: { links: LinkRow[] }) {
                   </p>
                 ) : null}
 
-                {l.category ? (
-                  <div style={{ marginTop: '0.625rem' }}>
-                    <Badge tone="neutral">{l.category}</Badge>
+                {l.category || (l.project_id && projectTitleById.has(l.project_id)) ? (
+                  <div
+                    style={{
+                      marginTop: '0.625rem',
+                      display: 'flex',
+                      gap: '0.375rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {l.category ? <Badge tone="neutral">{l.category}</Badge> : null}
+                    {l.project_id && projectTitleById.has(l.project_id) ? (
+                      <Badge tone="accent">
+                        {projectTitleById.get(l.project_id)}
+                      </Badge>
+                    ) : null}
                   </div>
                 ) : null}
               </li>
@@ -230,7 +254,7 @@ export function LinksGrid({ links }: { links: LinkRow[] }) {
         </ul>
       )}
 
-      <LinkForm mode={mode} onClose={() => setMode(null)} />
+      <LinkForm mode={mode} onClose={() => setMode(null)} projects={projects} />
     </>
   );
 }

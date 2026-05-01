@@ -117,6 +117,22 @@ body {
 .app-mobile-only-inline { display: none; }
 .app-desktop-only-inline { display: inline-flex; }
 
+/* iOS Safari renders <input type="date"> + <input type="datetime-local">
+   with an intrinsic min-width that ignores width: 100%, causing them to
+   overflow narrow form columns on phones. Reset the platform-specific
+   chrome and let the input fill its grid cell. */
+input[type="date"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+}
+
+/* Smooth in-page anchor scrolling, with enough top offset to clear the
+   56px MobileNav top bar so anchored section headers aren't hidden. */
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 80px; }
+
 /* Main shell: desktop offset for the fixed 220px sidebar; mobile is full-width. */
 .app-shell { margin-left: 220px; }
 

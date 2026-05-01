@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ensureDefaultTemplate } from '@/lib/actions/contract_templates';
@@ -83,7 +84,11 @@ export default async function NewContractPage() {
           </div>
         </div>
       ) : (
-        <NewContractForm templates={templates} projects={projects} clients={clients} />
+        // useSearchParams() inside NewContractForm needs a Suspense boundary
+        // for the prerender bailout to be scoped to just the form.
+        <Suspense fallback={null}>
+          <NewContractForm templates={templates} projects={projects} clients={clients} />
+        </Suspense>
       )}
     </div>
   );

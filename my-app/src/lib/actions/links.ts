@@ -27,6 +27,7 @@ export async function createLink(input: CreateLinkInput): Promise<ActionResult<L
 
   if (error) return fail(error.message);
   revalidatePath('/links');
+  if (data.project_id) revalidatePath(`/projects/${data.project_id}`);
   return ok(data);
 }
 
@@ -48,6 +49,7 @@ export async function updateLink(input: UpdateLinkInput): Promise<ActionResult<L
 
   if (error) return fail(error.message);
   revalidatePath('/links');
+  if (data.project_id) revalidatePath(`/projects/${data.project_id}`);
   return ok(data);
 }
 

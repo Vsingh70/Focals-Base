@@ -16,16 +16,23 @@ export default async function LinksPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  const [{ data: links }, { data: projects }] = await Promise.all([
+    supabase
+      .from('links')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('projects')
+      .select('id, title')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false }),
+  ]);
 
   return (
     <div className="app-page" style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
       <PageHeader title="Links" subtitle="Saved bookmarks for inspiration, references, tools." />
-      <LinksGrid links={links ?? []} />
+      <LinksGrid links={links ?? []} projects={projects ?? []} />
       <TourGate tourId="links" steps={linksTour.steps} helpHref="/help/links" />
     </div>
   );

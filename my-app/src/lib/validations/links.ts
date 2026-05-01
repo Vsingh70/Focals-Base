@@ -14,6 +14,7 @@ export const createLinkSchema = z.object({
   url: z.string().url('Must be a valid URL').max(2000),
   category: z.string().max(60).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  project_id: z.string().uuid().nullable().optional(),
 });
 
 export const updateLinkSchema = createLinkSchema.partial().extend({

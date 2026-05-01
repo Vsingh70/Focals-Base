@@ -2,31 +2,48 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  Home,
+  Inbox as InboxIcon,
+  CalendarDays,
+  FolderOpen,
+  Users,
+  DollarSign,
+  FileText,
+  Camera,
+  ClipboardList,
+  Link as LinkIcon,
+  CircleHelp,
+  Settings as SettingsIcon,
+  type LucideIcon,
+} from 'lucide-react';
 
-type NavItem = { href: string; label: string };
+type NavItem = { href: string; label: string; icon: LucideIcon };
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/inbox', label: 'Inbox' },
-  { href: '/calendar', label: 'Calendar' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/clients', label: 'Clients' },
-  { href: '/finances', label: 'Finances' },
-  { href: '/contracts', label: 'Contracts' },
+  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/inbox', label: 'Inbox', icon: InboxIcon },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/projects', label: 'Projects', icon: FolderOpen },
+  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/finances', label: 'Finances', icon: DollarSign },
+  { href: '/contracts', label: 'Contracts', icon: FileText },
 ];
 
 const SECONDARY_NAV: NavItem[] = [
-  { href: '/gear', label: 'Gear' },
-  { href: '/forms', label: 'Forms' },
-  { href: '/links', label: 'Links' },
-  { href: '/help', label: 'Help' },
-  { href: '/settings', label: 'Settings' },
+  { href: '/gear', label: 'Gear', icon: Camera },
+  { href: '/forms', label: 'Forms', icon: ClipboardList },
+  { href: '/links', label: 'Links', icon: LinkIcon },
+  { href: '/help', label: 'Help', icon: CircleHelp },
+  { href: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
 
 export const ALL_NAV_ITEMS: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
 
 const navItemStyle = (active: boolean): React.CSSProperties => ({
-  display: 'block',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.625rem',
   padding: '0.625rem 0.75rem',
   fontSize: '0.875rem',
   color: active ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
@@ -89,7 +106,8 @@ export function NavBody({
                   onClick={onNavigate}
                   style={navItemStyle(isActive(item.href))}
                 >
-                  {item.label}
+                  <item.icon size={16} strokeWidth={1.75} />
+                  <span>{item.label}</span>
                 </Link>
               </li>
             ))}
@@ -107,7 +125,8 @@ export function NavBody({
                   onClick={onNavigate}
                   style={navItemStyle(isActive(item.href))}
                 >
-                  {item.label}
+                  <item.icon size={16} strokeWidth={1.75} />
+                  <span>{item.label}</span>
                 </Link>
               </li>
             ))}
