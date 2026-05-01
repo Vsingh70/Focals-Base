@@ -50,11 +50,11 @@ export function SlideOver({
       <aside
         role="dialog"
         aria-label={title}
+        className="app-slide-over"
         style={{
           position: 'fixed',
           top: 0,
           right: 0,
-          height: '100vh',
           width: 'min(440px, 100%)',
           background: 'var(--color-bg-secondary)',
           borderLeft: '1px solid var(--color-border)',
@@ -107,6 +107,7 @@ export function SlideOver({
         </div>
         {footer ? (
           <div
+            className="app-slide-over-footer"
             style={{
               padding: '1rem 1.5rem',
               borderTop: '1px solid var(--color-border)',
