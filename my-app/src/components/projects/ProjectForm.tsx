@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { SlideOver } from '@/components/ui/SlideOver';
 import { ClientPicker } from '@/components/clients/ClientPicker';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { createProject, updateProject, deleteProject } from '@/lib/actions/projects';
+import { suggestProjectSlots, type SlotSuggestion } from '@/lib/actions/scheduling';
 import type { Database } from '@/lib/supabase/types';
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -36,6 +38,28 @@ function toDatetimeLocalValue(raw: string | Date | null | undefined): string {
   // Date instance — read local components.
   if (Number.isNaN(raw.getTime())) return '';
   return `${raw.getFullYear()}-${pad(raw.getMonth() + 1)}-${pad(raw.getDate())}T${pad(raw.getHours())}:${pad(raw.getMinutes())}`;
+}
+
+/**
+ * Render a wall-clock ISO ("...T15:00:00.000Z") as a friendly local-feeling
+ * label like "Sat, May 10 · 3:00 PM". Always reads in UTC so the digits the
+ * server picked are exactly what's shown — no viewer-TZ shift.
+ */
+function formatSuggestion(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const day = d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  const time = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  });
+  return `${day} · ${time}`;
 }
 
 const PROJECT_STATUSES = [
@@ -121,9 +145,19 @@ export function ProjectForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [formKey, setFormKey] = useState(0);
+  // Slot-suggestion AI state. Lives only inside the form so closing the
+  // slide-over forgets the most recent suggestions.
+  const [suggestions, setSuggestions] = useState<SlotSuggestion[] | null>(null);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [isSuggesting, startSuggesting] = useTransition();
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const categoryInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setError(null);
+    setSuggestions(null);
+    setSuggestError(null);
     setFormKey((k) => k + 1);
   }, [mode]);
 
@@ -131,6 +165,37 @@ export function ProjectForm({
   const isEdit = mode.kind === 'edit';
   const p = isEdit ? mode.project : null;
   const presetShootDate = !isEdit ? mode.presetShootDate ?? null : null;
+
+  const handleSuggestSlots = () => {
+    setSuggestError(null);
+    setSuggestions(null);
+    const category = categoryInputRef.current?.value?.trim() || p?.category || null;
+    const dateLocal = dateInputRef.current?.value?.trim() || null;
+    const noteSeed =
+      titleInputRef.current?.value?.trim() || p?.title || undefined;
+    startSuggesting(async () => {
+      const res = await suggestProjectSlots({
+        category,
+        // If the user already typed a date, treat it as the anchor; the
+        // heuristic will narrow to ±10 days around it.
+        anchor: dateLocal || null,
+        context: noteSeed,
+      });
+      if (res.error !== null) {
+        setSuggestError(res.error);
+        return;
+      }
+      setSuggestions(res.data);
+    });
+  };
+
+  const applySuggestion = (s: SlotSuggestion) => {
+    if (!dateInputRef.current) return;
+    // Server returned a wall-clock ISO at +00. Strip seconds + zone for
+    // datetime-local. The leading 16 chars are exactly YYYY-MM-DDTHH:mm.
+    dateInputRef.current.value = s.start.slice(0, 16);
+    setSuggestions(null);
+  };
 
   const handleSubmit = (formData: FormData) => {
     setError(null);
@@ -242,6 +307,7 @@ export function ProjectForm({
           <input
             id="proj-title"
             name="title"
+            ref={titleInputRef}
             required
             maxLength={200}
             defaultValue={p?.title ?? ''}
@@ -268,6 +334,7 @@ export function ProjectForm({
             <input
               id="proj-category"
               name="category"
+              ref={categoryInputRef}
               defaultValue={p?.category ?? ''}
               maxLength={60}
               placeholder="portrait, wedding, editorial…"
@@ -304,16 +371,105 @@ export function ProjectForm({
             </select>
           </div>
           <div>
-            <label style={labelStyle} htmlFor="proj-date">
-              Shoot date & time
-            </label>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'space-between',
+                gap: '0.5rem',
+              }}
+            >
+              <label style={labelStyle} htmlFor="proj-date">
+                Shoot date & time
+              </label>
+              <button
+                type="button"
+                onClick={handleSuggestSlots}
+                disabled={isSuggesting}
+                title="Use AI to find an open slot in your calendar."
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: 0,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--color-accent)',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  cursor: isSuggesting ? 'wait' : 'pointer',
+                  fontFamily: 'inherit',
+                  opacity: isSuggesting ? 0.6 : 1,
+                }}
+              >
+                <Sparkles size={12} strokeWidth={1.75} />
+                {isSuggesting ? 'Finding…' : 'Suggest a time'}
+              </button>
+            </div>
             <input
               id="proj-date"
               name="shoot_date"
+              ref={dateInputRef}
               type="datetime-local"
               defaultValue={toDatetimeLocalValue(p?.shoot_date ?? presetShootDate)}
               style={inputStyle}
             />
+            {suggestError ? (
+              <p
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--color-danger)',
+                  margin: '0.375rem 0 0',
+                }}
+              >
+                {suggestError}
+              </p>
+            ) : null}
+            {suggestions && suggestions.length > 0 ? (
+              <ul
+                style={{
+                  listStyle: 'none',
+                  padding: 0,
+                  margin: '0.5rem 0 0',
+                  display: 'grid',
+                  gap: '0.375rem',
+                }}
+              >
+                {suggestions.map((s) => (
+                  <li key={s.start}>
+                    <button
+                      type="button"
+                      onClick={() => applySuggestion(s)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '0.5rem 0.625rem',
+                        background: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-secondary)',
+                        borderRadius: 'var(--radius-sm)',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.8125rem', fontWeight: 500 }}>
+                        {formatSuggestion(s.start)}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '0.6875rem',
+                          color: 'var(--color-text-tertiary)',
+                          marginTop: '0.125rem',
+                        }}
+                      >
+                        {s.reason}
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </div>
 

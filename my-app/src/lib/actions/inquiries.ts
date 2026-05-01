@@ -101,7 +101,7 @@ export async function convertInquiry(
 
   const parsed = convertInquirySchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.message);
-  const { id, createProject, projectTitle } = parsed.data;
+  const { id, createProject, projectTitle, shootDateOverride } = parsed.data;
 
   // Fetch the inquiry (RLS ensures it belongs to the user)
   const { data: inquiry, error: fetchError } = await auth.supabase
@@ -140,7 +140,12 @@ export async function convertInquiry(
         client_id: client.id,
         title,
         category: inquiry.shoot_type,
-        shoot_date: inquiry.preferred_date,
+        // Caller-provided override (AI suggestion) wins over the
+        // inquiry's preferred_date when present. preferred_date is a
+        // bare YYYY-MM-DD that Postgres would store at midnight UTC;
+        // the override is a full wall-clock ISO so renderers don't
+        // shift it.
+        shoot_date: shootDateOverride ?? inquiry.preferred_date,
         status: 'inquiry',
         notes: inquiry.message,
       })

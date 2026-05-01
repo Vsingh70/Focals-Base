@@ -48,6 +48,12 @@ export const convertInquirySchema = z.object({
   id: z.string().uuid(),
   createProject: z.boolean().default(false),
   projectTitle: z.string().min(1).max(200).optional(),
+  /**
+   * If set, overrides the inquiry's preferred_date when creating the
+   * resulting project. Used by the AI "Suggest a time" affordance — the
+   * user picks a slot before clicking Convert and we ship it through.
+   */
+  shootDateOverride: z.string().nullable().optional(),
 });
 
 export type PublicInquiryInput = z.input<typeof publicInquirySchema>;

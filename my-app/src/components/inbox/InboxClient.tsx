@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { SlideOver } from '@/components/ui/SlideOver';
 import { SourceBadge, InquiryStatusBadge } from './SourceBadge';
 import {
@@ -9,6 +10,7 @@ import {
   updateInquiryStatus,
   convertInquiry,
 } from '@/lib/actions/inquiries';
+import { suggestProjectSlots, type SlotSuggestion } from '@/lib/actions/scheduling';
 import type { Database } from '@/lib/supabase/types';
 
 type Inquiry = Database['public']['Tables']['inquiries']['Row'];
@@ -85,13 +87,45 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+/** Wall-clock-aware slot label, e.g. "Sat, May 10 · 3:00 PM". */
+function formatSlot(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const day = d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  const time = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  });
+  return `${day} · ${time}`;
+}
+
 export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [selected, setSelected] = useState<Inquiry | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // AI slot suggestions for the current inquiry. `chosenSlot` is the slot
+  // the user picked — if set, it's passed as shootDateOverride into
+  // convertInquiry. Reset whenever the panel closes or another inquiry is
+  // opened.
+  const [suggestions, setSuggestions] = useState<SlotSuggestion[] | null>(null);
+  const [chosenSlot, setChosenSlot] = useState<SlotSuggestion | null>(null);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [isSuggesting, startSuggesting] = useTransition();
   const router = useRouter();
+
+  useEffect(() => {
+    setSuggestions(null);
+    setChosenSlot(null);
+    setSuggestError(null);
+  }, [selected?.id]);
 
   const newCount = useMemo(
     () => inquiries.filter((i) => i.status === 'new').length,
@@ -137,6 +171,7 @@ export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
         id: selected.id,
         createProject: withProject,
         projectTitle,
+        shootDateOverride: withProject ? chosenSlot?.start ?? null : null,
       });
       if (res.error) {
         setError(res.error);
@@ -144,6 +179,24 @@ export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
       }
       setSelected(null);
       router.refresh();
+    });
+  };
+
+  const handleSuggestForInquiry = () => {
+    if (!selected) return;
+    setSuggestError(null);
+    setSuggestions(null);
+    startSuggesting(async () => {
+      const res = await suggestProjectSlots({
+        category: selected.shoot_type,
+        anchor: selected.preferred_date,
+        context: selected.message,
+      });
+      if (res.error !== null) {
+        setSuggestError(res.error);
+        return;
+      }
+      setSuggestions(res.data);
     });
   };
 
@@ -425,6 +478,115 @@ export function InboxClient({ inquiries }: { inquiries: Inquiry[] }) {
                 }}
               >
                 <div style={labelStyle}>Convert inquiry</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-text-tertiary)',
+                    }}
+                  >
+                    {chosenSlot
+                      ? `Project will be scheduled for ${formatSlot(chosenSlot.start)}.`
+                      : selected.preferred_date
+                        ? `Project will use the inquiry's preferred date.`
+                        : `Project will be created without a date.`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSuggestForInquiry}
+                    disabled={isSuggesting || isPending}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      padding: 0,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--color-accent)',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: isSuggesting ? 'wait' : 'pointer',
+                      fontFamily: 'inherit',
+                      opacity: isSuggesting ? 0.6 : 1,
+                    }}
+                  >
+                    <Sparkles size={12} strokeWidth={1.75} />
+                    {isSuggesting ? 'Finding…' : 'Suggest a time'}
+                  </button>
+                </div>
+                {suggestError ? (
+                  <p
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-danger)',
+                      margin: 0,
+                    }}
+                  >
+                    {suggestError}
+                  </p>
+                ) : null}
+                {suggestions && suggestions.length > 0 ? (
+                  <ul
+                    style={{
+                      listStyle: 'none',
+                      padding: 0,
+                      margin: 0,
+                      display: 'grid',
+                      gap: '0.375rem',
+                    }}
+                  >
+                    {suggestions.map((s) => {
+                      const isChosen = chosenSlot?.start === s.start;
+                      return (
+                        <li key={s.start}>
+                          <button
+                            type="button"
+                            onClick={() => setChosenSlot(isChosen ? null : s)}
+                            style={{
+                              display: 'block',
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: '0.5rem 0.625rem',
+                              background: isChosen
+                                ? 'var(--color-accent-muted)'
+                                : 'var(--color-bg-tertiary)',
+                              border: `1px solid ${
+                                isChosen
+                                  ? 'var(--color-accent)'
+                                  : 'var(--color-border-secondary)'
+                              }`,
+                              borderRadius: 'var(--radius-sm)',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              color: 'var(--color-text-primary)',
+                            }}
+                          >
+                            <div style={{ fontSize: '0.8125rem', fontWeight: 500 }}>
+                              {formatSlot(s.start)}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '0.6875rem',
+                                color: 'var(--color-text-tertiary)',
+                                marginTop: '0.125rem',
+                              }}
+                            >
+                              {s.reason}
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => handleConvert(false)}

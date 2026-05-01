@@ -4,6 +4,7 @@ import { getCalendarFeed } from '@/lib/actions/calendar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { CalendarView, NewProjectButton } from '@/components/calendar/CalendarView';
 import { CalendarSync } from '@/components/calendar/CalendarSync';
+import { UnscheduledProjects } from '@/components/calendar/UnscheduledProjects';
 import { TourGate } from '@/components/tour/TourGate';
 import { calendarTour } from '@/components/tour/tours';
 
@@ -18,7 +19,7 @@ export default async function CalendarPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [projectsRes, clientsRes, feedRes] = await Promise.all([
+  const [projectsRes, clientsRes, feedRes, unscheduledRes] = await Promise.all([
     // Only projects with a shoot_date can show up on the calendar; the rest
     // (e.g. unbooked inquiries) live on /projects until they're scheduled.
     supabase
@@ -33,10 +34,30 @@ export default async function CalendarPage() {
       .eq('user_id', user.id)
       .order('full_name', { ascending: true }),
     getCalendarFeed(),
+    // Projects with no shoot_date and not cancelled — feeds the AI
+    // "Schedule unscheduled projects" widget.
+    supabase
+      .from('projects')
+      .select('id, title, category, clients(full_name)')
+      .eq('user_id', user.id)
+      .is('shoot_date', null)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false })
+      .limit(20),
   ]);
 
   const projects = projectsRes.data ?? [];
   const clients = clientsRes.data ?? [];
+  const unscheduled = (unscheduledRes.data ?? []).map((p) => {
+    const c = p.clients as { full_name: string | null } | { full_name: string | null }[] | null;
+    const client = Array.isArray(c) ? c[0] ?? null : c;
+    return {
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      client_name: client?.full_name ?? null,
+    };
+  });
 
   // Distinct prior project locations — feed the <datalist> autosuggest in
   // the ProjectForm. Derived server-side so NewProjectButton (which doesn't
@@ -61,6 +82,7 @@ export default async function CalendarPage() {
         <div data-tour="calendar-grid">
           <CalendarView projects={projects} clients={clients} />
         </div>
+        <UnscheduledProjects projects={unscheduled} />
         {feedRes.data ? (
           <section data-tour="calendar-sync">
             <h2
