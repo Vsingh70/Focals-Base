@@ -30,7 +30,7 @@ export function RecentProjectsList({ projects }: { projects: RecentProject[] }) 
       {projects.map((p) => (
         <li key={p.id}>
           <Link
-            href={`/projects/${p.id}`}
+            href={`/projects?edit=${p.id}`}
             style={{
               display: 'flex',
               alignItems: 'center',
