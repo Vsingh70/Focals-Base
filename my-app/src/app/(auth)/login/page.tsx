@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { signInWithGoogle } from '@/lib/actions/auth';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 export const metadata = {
   title: `Sign in · ${process.env.NEXT_PUBLIC_APP_NAME ?? ''}`,
@@ -31,16 +32,8 @@ export default function LoginPage() {
           gap: '2.5rem',
         }}
       >
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '2.25rem',
-            color: 'var(--color-text-primary)',
-            margin: 0,
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {process.env.NEXT_PUBLIC_APP_NAME}
+        <h1 style={{ margin: 0 }}>
+          <Wordmark fontSize="2.25rem" letterSpacing="-0.02em" />
         </h1>
         <form action={signInWithGoogle} style={{ width: '100%' }}>
           <button

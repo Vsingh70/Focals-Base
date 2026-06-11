@@ -17,6 +17,7 @@ import {
   Settings as SettingsIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 
@@ -81,17 +82,9 @@ export function NavBody({
         href="/"
         prefetch={true}
         onClick={onNavigate}
-        style={{
-          padding: '0 0.75rem',
-          fontFamily: 'var(--font-display)',
-          fontSize: '1.125rem',
-          fontWeight: 500,
-          color: 'var(--color-text-primary)',
-          textDecoration: 'none',
-          letterSpacing: '-0.01em',
-        }}
+        style={{ padding: '0 0.75rem', textDecoration: 'none' }}
       >
-        {process.env.NEXT_PUBLIC_APP_NAME}
+        <Wordmark fontSize="1.125rem" />
       </Link>
 
       <nav style={{ display: 'grid', gap: '1rem', flex: 1 }}>

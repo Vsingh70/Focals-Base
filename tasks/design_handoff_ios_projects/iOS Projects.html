@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lenslate — Projects (iOS redesign)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #050505;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 28px;
+  }
+  @keyframes pspin { to { transform: rotate(360deg); } }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  input::placeholder, textarea::placeholder { color: #555; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="pdata.jsx"></script>
+<script type="text/babel" src="patoms.jsx"></script>
+<script type="text/babel" src="plist.jsx"></script>
+<script type="text/babel" src="pdetail.jsx"></script>
+<script type="text/babel" src="pform.jsx"></script>
+<script type="text/babel">
+const { useState, useRef, useCallback, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "listStyle": "Cards"
+}/*EDITMODE-END*/;
+const STYLE_MAP = { Editorial: 'A', Cards: 'B', Pipeline: 'C' };
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [projects, setProjects] = useState(PROJECTS);
+
+  // detail navigation (push)
+  const [held, setHeld] = useState(null);
+  const [detailVisible, setDetailVisible] = useState(false);
+
+  // form sheet
+  const [sheetCfg, setSheetCfg] = useState({ mode: 'create', project: null });
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const openDetail = useCallback((p) => {
+    setHeld(p);
+    requestAnimationFrame(() => requestAnimationFrame(() => setDetailVisible(true)));
+  }, []);
+  const closeDetail = useCallback(() => setDetailVisible(false), []);
+
+  const openForm = (mode, project) => { setSheetCfg({ mode, project }); setSheetOpen(true); };
+
+  const handleSave = (payload) => {
+    setProjects((list) => {
+      const idx = list.findIndex((p) => p.id === payload.id);
+      if (idx >= 0) {
+        const next = list.slice();
+        next[idx] = { ...list[idx], ...payload };
+        return next;
+      }
+      return [payload, ...list];
+    });
+    // keep the open detail in sync after an edit
+    setHeld((h) => (h && h.id === payload.id ? { ...h, ...payload } : h));
+    setSheetOpen(false);
+  };
+
+  const handleDelete = (p) => {
+    setProjects((list) => list.filter((x) => x.id !== p.id));
+    closeDetail();
+  };
+
+  const liveHeld = held ? (projects.find((p) => p.id === held.id) || held) : null;
+
+  // dev-only deep link for screenshots (set via localStorage, fires once)
+  useEffect(() => {
+    try {
+      const d = localStorage.getItem('pproto_dev');
+      if (!d) return;
+      localStorage.removeItem('pproto_dev');
+      if (d.indexOf('detail:') === 0) { const p = projects.find((x) => x.id === d.slice(7)); if (p) openDetail(p); }
+      else if (d.indexOf('edit:') === 0) { const p = projects.find((x) => x.id === d.slice(5)); if (p) { openDetail(p); setTimeout(() => openForm('edit', p), 60); } }
+      else if (d === 'new') { openForm('create', null); }
+    } catch (e) {}
+  }, []);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <IOSDevice dark width={390} height={844}>
+        <div style={{ position: 'relative', height: '100%', background: '#0a0a0a' }}>
+          {/* List (base) */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 1, isolation: 'isolate' }}>
+            <ProjectsScreen
+              projects={projects}
+              direction={STYLE_MAP[t.listStyle] || 'A'}
+              onOpen={openDetail}
+              onNew={() => openForm('create', null)}
+              onImport={() => openForm('create', null)}
+            />
+          </div>
+
+          {/* Detail (push layer) */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 2, background: '#0a0a0a',
+            transform: detailVisible ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform .34s cubic-bezier(.32,.72,0,1)',
+            boxShadow: detailVisible ? '-12px 0 40px rgba(0,0,0,0.5)' : 'none',
+          }}>
+            {liveHeld && (
+              <DetailScreen
+                project={liveHeld}
+                onBack={closeDetail}
+                onEdit={() => openForm('edit', liveHeld)}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+
+          {/* Form sheet */}
+          <ProjectFormSheet
+            open={sheetOpen}
+            mode={sheetCfg.mode}
+            project={sheetCfg.project}
+            onCancel={() => setSheetOpen(false)}
+            onSave={handleSave}
+          />
+        </div>
+      </IOSDevice>
+
+      <TweaksPanel>
+        <TweakSection label="List layout" />
+        <TweakRadio
+          label="Direction"
+          value={t.listStyle}
+          options={['Editorial', 'Cards', 'Pipeline']}
+          onChange={(v) => setTweak('listStyle', v)}
+        />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

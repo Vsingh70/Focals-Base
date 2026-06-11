@@ -12,9 +12,11 @@ const PUBLIC_ROUTES = [
   '/favicon.ico',
   '/api/auth',
   '/api/inquiry',
+  '/api/waitlist',
   '/api/calendar',
   '/api/health',
   '/widget',
+  '/landing',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -67,6 +69,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/inquiry|api/calendar|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/inquiry|api/waitlist|api/calendar|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lenslate — Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --color-bg: #0a0a0a;
+    --color-bg-secondary: #111111;
+    --color-bg-tertiary: #1a1a1a;
+    --color-border: #222222;
+    --color-border-secondary: #2a2a2a;
+    --color-text-primary: #f0f0f0;
+    --color-text-secondary: #888888;
+    --color-text-tertiary: #555555;
+    --color-accent: #e8e0d0;
+    --color-accent-muted: #3a3530;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    /* Real app uses Canela; Playfair Display stands in for this mockup. */
+    --font-display: 'Canela', 'Playfair Display', Georgia, serif;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: #0a0a0a; }
+  [data-lucide] { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="brand.jsx"></script>
+<script type="text/babel">
+  const { useEffect } = React;
+  function App() {
+    useEffect(() => {
+      const t = setTimeout(() => window.lucide && window.lucide.createIcons(), 60);
+      return () => clearTimeout(t);
+    });
+    return (
+      <DesignCanvas title="Lenslate — Brand" subtitle="Temporary identity · Direction A · editorial dark + light · Canela wordmark">
+
+        <DCSection id="wordmark" title="Wordmark" subtitle="The wordmark holds in both themes. Real wordmark renders in Canela.">
+          <DCArtboard id="wm-dark" label="Dark theme" width={480} height={240}>
+            <WordmarkStage><LogoLockup variant="A" size="lg" /></WordmarkStage>
+          </DCArtboard>
+          <DCArtboard id="wm-light" label="Light theme" width={480} height={240}>
+            <WordmarkStage light><LogoLockup variant="A" size="lg" /></WordmarkStage>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="appicon" title="App icon / favicon" subtitle="Placeholder mark — bone Canela ‘L’ — until the final logo lands.">
+          <DCArtboard id="ic" label="Icon · 132 / 56 / 32px" width={400} height={240}>
+            <IconStage>
+              <AppIcon px={132} />
+              <AppIcon px={56} />
+              <AppIcon px={32} />
+            </IconStage>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="login" title="Login screen" subtitle="The real sign-in card, branded.">
+          <DCArtboard id="lg-dark" label="Dark theme" width={480} height={600}>
+            <LoginScreen variant="A" />
+          </DCArtboard>
+          <DCArtboard id="lg-light" label="Light theme" width={480} height={600}>
+            <LoginScreen variant="A" light />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="sidebar" title="Sidebar" subtitle="The real app navigation, branded.">
+          <DCArtboard id="sb-dark" label="Dark theme" width={240} height={600}>
+            <SidebarMock variant="A" />
+          </DCArtboard>
+          <DCArtboard id="sb-light" label="Light theme" width={240} height={600}>
+            <SidebarMock variant="A" light />
+          </DCArtboard>
+        </DCSection>
+
+      </DesignCanvas>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

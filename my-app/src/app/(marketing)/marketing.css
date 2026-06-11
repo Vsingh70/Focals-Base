@@ -1,0 +1,208 @@
+/* =============================================================
+   Marketing landing pages (/landing, /landing/ios).
+
+   Everything here is scoped under .lp-root / lp-* class names so it
+   can't leak into the app shell. The marketing pages are dark-only:
+   .lp-root re-declares the color tokens so the user's theme / accent
+   preference (ThemeProvider sets .light + inline --color-accent on
+   <html>) never flips the landing pages.
+   ============================================================= */
+
+.lp-root {
+  /* Dark palette lock — mirrors :root in globals.css */
+  --color-bg: #0a0a0a;
+  --color-bg-secondary: #111111;
+  --color-bg-tertiary: #1a1a1a;
+  --color-border: #222222;
+  --color-border-secondary: #2a2a2a;
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #888888;
+  --color-text-tertiary: #555555;
+  --color-accent: #e8e0d0;
+  --color-accent-muted: #3a3530;
+  --color-success: #4caf7d;
+  --color-warning: #e8a020;
+  --color-danger: #e85040;
+
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.lp-root ::selection {
+  background: var(--color-accent);
+  color: #0a0a0a;
+}
+
+/* globals.css gives every <main> bottom padding for the legacy bottom
+   nav — the landing pages have no bottom nav. */
+.lp-root main {
+  padding-bottom: 0;
+}
+
+.lp-section {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ── Scroll reveal — CSS entrance, guaranteed visible at rest ──── */
+@keyframes lpReveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--lp-ry, 22px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lp-reveal {
+  animation: lpReveal 0.72s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Hover affordances (the prototype used JS mouse handlers) ──── */
+.lp-btn {
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    background 0.15s;
+}
+
+.lp-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.lp-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.lp-link:hover {
+  color: var(--color-text-primary);
+}
+
+.lp-card {
+  transition:
+    border-color 0.2s,
+    transform 0.2s,
+    background 0.2s;
+}
+
+.lp-card:hover {
+  border-color: var(--color-border-secondary);
+  transform: translateY(-2px);
+}
+
+/* ── Waitlist form ──────────────────────────────────────────────── */
+.lp-input {
+  border: 1px solid var(--color-border-secondary);
+}
+
+.lp-input::placeholder {
+  color: #555555;
+}
+
+.lp-input:focus {
+  border-color: var(--color-accent);
+}
+
+/* Declared after :focus so the error tint wins while focused too. */
+.lp-input-error,
+.lp-input-error:focus {
+  border-color: var(--color-danger);
+}
+
+/* Honeypot — visually hidden, still in the form for bots to fill. */
+.lp-hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Scrollytelling ─────────────────────────────────────────────── */
+.lp-scrolly-inline {
+  display: none;
+}
+
+@media (min-width: 861px) {
+  .lp-scrolly-chapter {
+    opacity: 0.35;
+    transition: opacity 0.35s ease;
+  }
+
+  .lp-scrolly-chapter.is-active {
+    opacity: 1;
+  }
+}
+
+/* ── Responsive (ported from the prototype) ─────────────────────── */
+@media (max-width: 860px) {
+  .lp-navlinks {
+    display: none !important;
+  }
+
+  .lp-fgrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .lp-footgrid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 28px !important;
+  }
+
+  .lp-hero-cta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .lp-feat-head {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lp-scrolly {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lp-scrolly-device {
+    display: none !important;
+  }
+
+  .lp-scrolly-inline {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .lp-scrolly-chapter {
+    min-height: 0 !important;
+    padding: 36px 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-fgrid {
+    grid-template-columns: 1fr !important;
+  }
+}

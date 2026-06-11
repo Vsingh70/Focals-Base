@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lenslate for iPhone — the studio in your pocket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #0a0a0a; color: #f0f0f0; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: #e8e0d0; color: #0a0a0a; }
+  a { color: inherit; }
+  .lp-section { max-width: 1180px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  @media (max-width: 860px) {
+    .lp-navlinks { display: none !important; }
+    .lp-fgrid { grid-template-columns: 1fr 1fr !important; }
+    .lp-footgrid { grid-template-columns: 1fr 1fr !important; gap: 28px !important; }
+    .lp-hero-cta { flex-direction: column !important; align-items: stretch !important; }
+    .lp-feat-head { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 560px) {
+    .lp-fgrid { grid-template-columns: 1fr !important; }
+  }
+  input::placeholder { color: #555; }
+</style>
+</head>
+<body>
+<div id="top"></div>
+<div id="root"></div>
+<script>
+  // ── Lenslate waitlist endpoint ───────────────────────────────
+  // Claude Code: set this to your deployed route handler, e.g.
+  //   "https://app.lenslate.com/api/waitlist"  (or "/api/waitlist" if same-origin)
+  // Leave empty to run the page in demo mode (no network call).
+  window.LENSLATE_WAITLIST_ENDPOINT = "https://focals-base.vercel.app/api/waitlist";
+  // Optional shared secret — sent as the X-Waitlist-Token header if set.
+  window.LENSLATE_WAITLIST_TOKEN = "";
+</script>
+<script type="text/babel" src="pdata.jsx"></script>
+<script type="text/babel" src="landing-shared.jsx"></script>
+<script type="text/babel" src="landing-mocks.jsx"></script>
+<script type="text/babel" src="landing-scrolly.jsx"></script>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const HEADLINES = {
+  'Studio OS': {
+    pre: 'The studio OS for',
+    rotate: ['photographers', 'videographers', 'media teams'],
+    post: '.',
+    sub: 'Projects, clients, contracts, and payments — every shoot in one calm, fast home. Now in your pocket.',
+  },
+  'Less admin': {
+    pre: 'Less admin.',
+    rotate: ['More shooting', 'More filming', 'More creating'],
+    post: '.',
+    sub: 'Lenslate handles the bookings, balances, and paperwork so you can stay behind the lens.',
+    stacked: true,
+  },
+  'One home': {
+    pre: 'Your whole business,',
+    rotate: ['in one pocket', 'one tap away', 'on every shoot'],
+    post: '.',
+    sub: 'From first inquiry to final invoice — photographers, videographers, and agencies run it all from Lenslate.',
+  },
+};
+
+function Hero({ headlineKey }) {
+  const h = HEADLINES[headlineKey] || HEADLINES['Studio OS'];
+  return (
+    <header style={{ position: 'relative', paddingTop: 150, paddingBottom: 40, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)', width: 900, height: 600, background: 'radial-gradient(50% 50% at 50% 50%, rgba(232,224,208,0.10), transparent 70%)', pointerEvents: 'none' }} />
+      <div className="lp-section" style={{ position: 'relative', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Reveal>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 13px', borderRadius: 999, border: `0.5px solid ${LT.border2}`, background: LT.bg2, marginBottom: 26 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 999, background: LT.accent }} />
+            <span style={{ fontFamily: LT.ui, fontSize: 13, fontWeight: 500, color: LT.text2 }}>Now on iPhone — built for iOS</span>
+          </div>
+        </Reveal>
+        <Reveal delay={60}>
+          <h1 style={{ fontFamily: LT.serif, fontWeight: 500, fontSize: 'clamp(38px, 6.4vw, 76px)', lineHeight: 1.04, letterSpacing: '-0.03em', margin: '0 auto', maxWidth: 920, textWrap: 'balance' }}>
+            {h.pre}<br /><RotatingWord words={h.rotate} />{h.post}
+          </h1>
+        </Reveal>
+        <Reveal delay={130}>
+          <p style={{ fontFamily: LT.ui, fontSize: 'clamp(17px, 2vw, 21px)', lineHeight: 1.55, color: LT.text2, maxWidth: 600, margin: '26px auto 0', textWrap: 'pretty' }}>{h.sub}</p>
+        </Reveal>
+        <Reveal delay={200}>
+          <div className="lp-hero-cta" style={{ display: 'flex', gap: 13, justifyContent: 'center', marginTop: 36 }}>
+            <AppStoreBadge />
+            <Btn kind="ghost" size="lg" href="#" icon={<Icon name="import" size={18} />}>Start on web</Btn>
+          </div>
+        </Reveal>
+        <Reveal delay={120} style={{ marginTop: 16 }}>
+          <div style={{ fontFamily: LT.ui, fontSize: 13, color: LT.text3 }}>Free 14-day trial · No card required · iOS 17+</div>
+        </Reveal>
+        {/* hero phone */}
+        <Reveal delay={160} y={40} style={{ marginTop: 64 }}>
+          <PhoneFrame width={356}><MockProjects /></PhoneFrame>
+        </Reveal>
+      </div>
+    </header>
+  );
+}
+
+const SCROLLY = [
+  { icon: 'folderPlus', eyebrow: 'Projects', title: 'Your pipeline, grouped.', body: 'Every shoot lands in a status pipeline — Inquiries, Upcoming, In progress, Delivered. No more scrolling one endless list to find what needs you today.', points: ['Cards show client, balance, and shoot date at a glance', 'Search and filter by phase in a tap'], render: () => <MockProjects /> },
+  { icon: 'dollar', eyebrow: 'A project, in full', title: 'Open one. See everything.', body: 'Tap a project and the whole story is right there — a summary of the shoot, the balance owed, and how much is paid, before a single scroll.', points: ['Shoot · Balance · Paid, surfaced up top', 'Payment, details, location, and notes below'], render: () => <MockDetail /> },
+  { icon: 'tag', eyebrow: 'Finances', title: 'Know your numbers.', body: 'Revenue, outstanding balances, and every transaction — tracked as you book and deliver. The spreadsheet retires for good.', points: ['Month-over-month revenue at a glance', 'Outstanding invoices you can chase in one tap'], render: () => <MockFinances /> },
+];
+
+function PlatformBand() {
+  return (
+    <section className="lp-section" style={{ padding: '40px 24px 100px' }}>
+      <Reveal>
+        <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 24, border: `0.5px solid ${LT.border}`, background: `linear-gradient(180deg, ${LT.bg2}, ${LT.bg})`, padding: 'clamp(36px, 6vw, 64px)', textAlign: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(60% 80% at 50% 0%, rgba(232,224,208,0.08), transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative' }}>
+            <Eyebrow>iPhone today · web anywhere</Eyebrow>
+            <h2 style={{ fontFamily: LT.serif, fontWeight: 500, fontSize: 'clamp(28px, 4vw, 46px)', lineHeight: 1.08, letterSpacing: '-0.02em', margin: '18px auto 0', maxWidth: 640, textWrap: 'balance' }}>Shoot with your phone. Run the studio from your desk.</h2>
+            <p style={{ fontFamily: LT.ui, fontSize: 18, lineHeight: 1.55, color: LT.text2, maxWidth: 540, margin: '18px auto 0' }}>Lenslate syncs instantly between iPhone and the web app — start a contract on set, finish the invoice at home.</p>
+            <div style={{ display: 'flex', gap: 13, justifyContent: 'center', marginTop: 30, flexWrap: 'wrap' }}>
+              <AppStoreBadge size="md" />
+              <Btn kind="quiet" size="md" href="Lenslate Web.html" icon={<Icon name="import" size={17} />}>Explore the web app</Btn>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+function App() {
+  const [headline, setHeadline] = useState('Studio OS');
+  return (
+    <div>
+      <TopNav
+        platform="iOS"
+        links={[{ label: 'Features', href: '#features' }, { label: 'How it works', href: '#how' }, { label: 'Web app', href: 'Lenslate Web.html' }, { label: 'Waitlist', href: '#waitlist' }]}
+        cta={<Btn kind="primary" size="md" href="#download">Download</Btn>}
+      />
+
+      <Hero headlineKey={headline} />
+
+      {/* logo / trust strip */}
+      <div className="lp-section" style={{ padding: '24px 24px 80px' }}>
+        <Reveal>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(20px,5vw,56px)', flexWrap: 'wrap', opacity: 0.7 }}>
+            <span style={{ fontFamily: LT.ui, fontSize: 12.5, color: LT.text3, letterSpacing: '0.04em' }}>TRUSTED BY STUDIOS SHOOTING</span>
+            {['Weddings', 'Editorial', 'Brand', 'Portrait', 'Product'].map((x) => (
+              <span key={x} style={{ fontFamily: LT.serif, fontSize: 20, color: LT.text2, fontStyle: 'italic' }}>{x}</span>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+
+      <div id="how" />
+      <Scrolly chapters={SCROLLY} renderDevice={(c) => <PhoneFrame width={300} glow={false}>{c.render()}</PhoneFrame>} />
+
+      {/* feature grid */}
+      <section id="features" className="lp-section" style={{ padding: '60px 24px 40px' }}>
+        <Reveal>
+          <Eyebrow>Everything in one place</Eyebrow>
+          <div className="lp-feat-head" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', alignItems: 'end', gap: '28px 40px', margin: '18px 0 36px' }}>
+            <SectionTitle max={560}>Six tools that used to be six apps.</SectionTitle>
+            <Lead max={360}>Lenslate replaces the patchwork of notes, spreadsheets, and calendars with one considered system.</Lead>
+          </div>
+        </Reveal>
+        <FeatureGrid />
+      </section>
+
+      <PlatformBand />
+
+      {/* waitlist CTA */}
+      <section id="waitlist" style={{ borderTop: `0.5px solid ${LT.border}`, background: LT.bg2 }}>
+        <div className="lp-section" style={{ padding: 'clamp(60px, 9vw, 110px) 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <Reveal>
+            <Wordmark size={30} />
+            <h2 style={{ fontFamily: LT.serif, fontWeight: 500, fontSize: 'clamp(30px, 5vw, 54px)', lineHeight: 1.05, letterSpacing: '-0.02em', margin: '24px 0 0', maxWidth: 620, textWrap: 'balance' }}>Get early access to Lenslate for iPhone.</h2>
+            <p style={{ fontFamily: LT.ui, fontSize: 18, lineHeight: 1.55, color: LT.text2, maxWidth: 480, margin: '18px auto 32px' }}>Join the waitlist and we’ll send your invite the moment a spot opens in your region.</p>
+          </Reveal>
+          <Reveal delay={80} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <Waitlist note="We email about your invite and launch. No spam, unsubscribe anytime." source="ios-landing" />
+          </Reveal>
+        </div>
+      </section>
+
+      <Footer other={<AppStoreBadge size="md" />} />
+
+      {/* Tweaks */}
+      <TweaksPanel>
+        <TweakSection label="Hero headline" />
+        <TweakRadio label="Direction" value={headline} options={['Studio OS', 'Less admin', 'One home']} onChange={setHeadline} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+window.__renderApp = () => ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">window.__renderApp();</script>
+</body>
+</html>

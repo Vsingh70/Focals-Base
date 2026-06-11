@@ -1195,3 +1195,606 @@ Two prior fixes were chasing different sides of the same bug. First fix (noon-UT
 ### Caveats
 - **East-of-UTC users**: the backfill assumes a UTC-4 origin. If you ever sign in a user in JST (UTC+9), their existing rows would skew further; not a concern right now since you're the only user.
 - **The `_migration_marks` table**: a tiny bookkeeping table introduced just for this run-once migration. Cheap and explicit. Consider promoting to a general migration ledger if more run-once data fixes accumulate.
+
+---
+
+## iOS Task 06 — Dashboard ✅
+
+Native dashboard now renders KPIs, a 6-month revenue chart, a project-status donut, an upcoming-projects strip, and quick actions. Numbers come from `DashboardCalculations` (in `FocalsKit/FocalsAPI`) which mirrors `my-app/src/lib/queries/dashboard.ts` formula-by-formula.
+
+### What changed
+- **`ios/FocalsKit/Sources/FocalsAPI/DashboardCalculations.swift`** — pure-function `snapshot(projects:finances:now:calendar:)`. All inputs flow from the SwiftData read cache (Task 05), so the dashboard renders instantly on warm cache and refreshes the underlying caches in parallel on `.task` / pull-to-refresh.
+- **`ios/FocalsKit/Sources/FocalsModels/Enums.swift`** — added `ProjectStatus.displayName` (title-cased, snake-case-aware). Reuse this anywhere a status renders to a user.
+- **`ios/Focals/Modules/Dashboard/`** — new directory: `DashboardScreen`, `RevenueChart` (BarMark), `ProjectStatusDonut` (SectorMark, custom legend), `UpcomingProjectsStrip` (horizontal cards, taps push project detail), `QuickActions` (3 sheets: project / inquiry / expense), `CurrencyFormatter`.
+- **`ios/Focals/Shared/KPICard.swift`** — reusable KPI tile with optional sparkline. The Revenue MTD KPI sparkline uses the 6-month revenue series so it stays consistent with the chart below.
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed the placeholder DashboardScreen.
+- **`ios/FocalsTests/DashboardCalculationsTests.swift`** — 12 fixtures covering empty inputs, MTD, active counts, 7-day window, pending clamp, 6-month bucketing, status grouping, sort order, malformed dates, ISO timestamps, and a combined parity scenario. **All pass.**
+- **`ios/FocalsTests/DashboardGreetingTests.swift`** — 6 fixtures for the time-of-day greeting (morning/afternoon/evening/late-night, nil profile, empty fullName).
+- **`ios/project.yml`** — added `FocalsAPI` to the `FocalsTests` dependencies so tests can `@testable import FocalsAPI`. Re-run `xcodegen` after pulling.
+
+### Tests to run on a real device / simulator
+1. Sign in. The dashboard should land on a "Today" navigation title with the time-of-day greeting using your first name (from the Google profile).
+2. **KPI parity**: open `/` on the web with the same account in a second window. The four KPI numbers (Revenue MTD, Active Projects, Upcoming, Pending) should match the iOS dashboard exactly. If they drift, either the cache hasn't refreshed (pull-to-refresh on iOS) or the formula has drifted from `dashboard.ts` — re-run `DashboardCalculationsTests`.
+3. **Empty-state**: with a brand-new account (zero projects, zero finances) the dashboard should still render: zeroes in the KPI tiles, six empty bars in the revenue chart, donut hidden, no upcoming strip. No crashes.
+4. **Status names**: `In Progress` (not `in_progress`) should render in the donut legend and any upcoming-card status pill.
+5. **Tap an upcoming card** → should push to the project detail screen (still placeholder until Task 09 — confirm at least the navigation occurred).
+6. **Quick actions** — each button opens the matching sheet: Project, Inquiry (placeholder until Task 07), Expense (placeholder until Task 10).
+7. **Pull-to-refresh** — drag from the top, see the underlying caches refresh, snapshot recomputed.
+8. **Performance** — Instruments → Time Profiler against a cold cache should show first paint within ~200ms once cached data is present (warm cache only — cold network is unbounded).
+9. (Optional) Toggle Light / Dark mode while on the dashboard. Cards, chart axes, and donut legend all use design tokens, so both modes should look polished.
+
+### Deferred / known limitations
+- **No prior-month revenue trend KPI yet.** The web has both `revenueMtd` and `revenuePriorMonth`; iOS only renders MTD. The 6-month chart still gives the longer view, and the trend can come back as a delta KPI in a future polish pass if you want it.
+- **Donut color palette is heuristic.** Status → color mapping is hand-picked (`booked → accent`, `in_progress → warning`, etc.) and is not symmetric with the web. Tune in the design pass before App Store submission.
+- **Status filter chips not yet implemented.** The web dashboard has none either — flagging in case you later add them.
+- **No charts library beyond Apple Charts.** Tasks 06–08 stay on Swift Charts; if a future module needs more (e.g. stacked bars with custom legend), revisit.
+
+### Security / dashboard configuration
+- Nothing new. The dashboard reads from caches populated by repositories that already enforce per-user RLS via the user's session.
+- `Profile.fullName` is rendered in the greeting; this comes from `profiles.full_name` (auto-populated from Google OAuth on first sign-in).
+
+---
+
+## iOS Task 07 — Inquiry Inbox ✅
+
+Inquiry inbox is fully wired: list grouped by status, filter chips, swipe actions, detail screen with tap-to-call/email and "Mark replied/Archive" actions, manual create form, and the convert-to-client/project workflow that mirrors the web's `convertInquiry` server action exactly.
+
+### What changed
+- **`ios/FocalsKit/Sources/FocalsModels/Enums.swift`** — added `InquiryStatus.displayName` (matches web filter labels: `New`, `Read`, `Replied`, `Converted`, `Archived`). Pinned by parity tests.
+- **`ios/FocalsKit/Sources/FocalsAPI/InquiryGrouping.swift`** — new helpers: `InquiryFilter` (chip model with `.all` + every status), `Array<Inquiry>.groupedByStatus()` (canonical-order sections, drops empties, nil status falls into `.new` to match the web's `inq.status ?? 'new'` fallback), `Array<Inquiry>.matching(search:)`, `InquiryStatus.pillTone`.
+- **`ios/FocalsKit/Sources/FocalsCache/Repositories/InquiriesCacheRepository.swift`** — added `convert(_:creatingProject:projectTitle:in:)` that mirrors `my-app/src/lib/actions/inquiries.ts → convertInquiry` step-for-step. Same DB writes (client `source: 'inquiry'`, optional project with `category=shoot_type`, `notes=message`, `status=.inquiry`, `shoot_date=preferred_date` parsed as wall-clock midnight), same final state (inquiry → `.converted` with `converted_client_id`/`converted_project_id` linked).
+- **`ios/FocalsKit/Sources/FocalsCache/InquiryConversionResult.swift`** — return value so callers can navigate straight to the new project/client.
+- **`ios/Focals/Modules/Inbox/`** — new directory: `InboxScreen` (filter chips, search, swipe-to-archive/replied/delete, sectioned by status), `InquiryRow`, `InquiryDetailScreen` (auto-marks `.new → .read` on first appear, tap-to-call/email, "Mark replied/Archive" buttons, "Convert to Client + Project" / "Convert to Client only" actions, raw payload disclosure), `CreateInquirySheet` (manual form mirroring `manualInquirySchema`).
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed `InboxScreen` and `InquiryDetailScreen` stubs.
+- **`ios/Focals/Navigation/RouteDestination.swift`** — `.createInquiry` sheet now resolves to the real `CreateInquirySheet`.
+- **`ios/FocalsTests/InquiryGroupingTests.swift`** — 10 fixtures covering display-name parity with web filter labels, `.allCases` shape, canonical-order grouping, newest-first sort, nil-status fallback, multi-field search, case-insensitive search, empty needle, `Filter.matches`, and pill-tone stability. **All pass.**
+
+### Tests to run on a real device / simulator
+1. Sign in. Tap the **Inbox** tab. With zero inquiries, the empty state should render after the first refresh.
+2. Visit `/inbox` on the web → submit a manual inquiry. Pull-to-refresh on iOS → the new inquiry should appear under **NEW** with the unread dot.
+3. POST a payload to `/api/inquiry` from the embeddable widget (or `curl` it directly). Pull-to-refresh on iOS — the inquiry should appear with `via website_form` (or whatever source you used) in the meta line.
+4. **Filter chips**: tap `New` → only NEW inquiries show. The `New` chip should display a count badge equal to the unread count. Tap `All` → grouped view returns.
+5. **Search**: type a name fragment → list filters by name/email/message/shoot type.
+6. **Swipe actions**: swipe-left on a row → `Delete`, `Replied`, `Archive` (the latter two only show when the row isn't already in that state). Tap `Replied` → row moves to the **REPLIED** section. Tap `Archive` → moves to **ARCHIVED**.
+7. **Detail tap**: tap a `New` inquiry → detail screen pushes; status auto-flips to `.read` (verify by going back — row no longer has the unread dot, and the `New` chip's badge count drops by one).
+8. **Tap-to-call / email**: in the detail screen, tap the email row → `mailto:` opens the Mail compose sheet; tap the phone row → `tel:` opens the dialer.
+9. **Convert to Client + Project**: tap the green button → after success, you're popped to the inbox and pushed into the new project's detail screen (placeholder until Task 09 — confirm the navigation occurred and the inquiry is now in **CONVERTED** with both link buttons in the detail footer). On the web, refresh `/clients` → the new client appears with `source: 'inquiry'`. Refresh `/projects` → the new project appears with `status: 'inquiry'` and `category` matching the inquiry's shoot type.
+10. **Convert to Client only**: same flow but the project step is skipped — only `convertedClientId` is populated, `convertedProjectId` stays nil.
+11. **Manual create**: tap `+` in the toolbar → fill the form → save. New inquiry appears under **NEW** with `via manual` source line.
+12. **Offline behavior**: airplane mode → cached list still renders. Swipe `Replied` → alert pops with "Connect to the internet to continue." Manual create shows the same offline alert.
+13. **Pull-to-refresh** triggers `InquiriesCacheRepository.refresh`.
+
+### Deferred / known limitations
+- **No `.replyVia` integrations.** "Mark replied" only sets the status; it doesn't draft an email or open a mail compose with a template. Out of scope for Task 07; revisit if you add reply templates.
+- **No bulk actions.** Web's inbox is also single-select; flagging in case you ever want multi-select archive in the iOS inbox.
+- **No timezone normalization for `preferred_date`.** The form writes `YYYY-MM-DD` in the device's local calendar (matches the web's `<input type="date">` behavior). If you ever support clients in a different timezone, revisit.
+- **Convert is not transactional.** Same as the web — three sequential writes (client → project → inquiry update). If the network drops mid-way, you can end up with an orphan client. This matches the web behavior; revisit if you move both to a server-side RPC.
+- **Source pretty-print is heuristic.** `website_form → "Website form"` etc.; if you add a new source value, double-check the displayed label.
+
+### Security / dashboard configuration
+- Nothing new. All inquiry, client, and project mutations go through Supabase repositories that already enforce per-user RLS via the user's session token. The convert flow does not bypass RLS.
+- The widget's public `/api/inquiry` endpoint is unchanged; iOS just consumes its rows via the existing `inquiries` table.
+
+---
+
+## iOS Task 08 — Calendar ✅
+
+Native stacked-month calendar with pixel-mirrored layout from web's `MobileCalendarView.tsx`, plus a one-way EventKit mirror so projects appear in the iOS Calendar app.
+
+### What changed
+- **`ios/FocalsKit/Sources/FocalsAPI/CalendarMath.swift`** — pure-function `buildMonthCells`, `dayKey`, `monthKey`, `monthRange`, `wallClockDate`, `projectsByDay`. Logic is a Swift port of MobileCalendarView lines 30–70. `Calendar.iso8601MondayFirst` exposes the Gregorian-Monday-first calendar the grid needs (default `Calendar.current` honours user locale and would draw a Sunday-first grid in en-US).
+- **`ios/Focals/Modules/Calendar/`** — new directory: `CalendarScreen` (12-month stack, auto-scroll to current month, Today + plus buttons), `MonthSection` (title + weekday headers + 6×7 grid), `DayCell` (date + up to 3 status-coloured dots, today ring, selection background), `DayDetailPanel` (inline below the selected day's month — date header, "+ Add" prefilled at 10:00 AM, project cards with left-status border + time range + location + status pill), `ProjectStatus+Calendar` (`barColor` and `calendarPillTone` matching `STATUS_BAR_COLOR` / `statusToneMap` in MobileCalendarView).
+- **`ios/Focals/Modules/Calendar/EventKitMirror.swift`** — `@MainActor`-isolated mirror: dedicated **"Focals"** calendar in iOS Calendar; `mirror(_:)` upserts and `remove(projectId:)` deletes events keyed by `focals://project/<uuid>` URLs. Default 60-minute duration, falls back through iCloud → CalDAV → local sources for the calendar's source. Wall-clock times preserved via `CalendarMath.wallClockDate` so a project saved at 8:30 AM appears at 8:30 AM regardless of the device's timezone.
+- **`ios/FocalsKit/Sources/FocalsCache/CacheRepository.swift`** — new `ProjectMutationObserver` protocol + registry. Lets FocalsCache notify the app target after every successful project create/update/delete/refresh without taking a hard dependency on the EventKit framework.
+- **`ios/FocalsKit/Sources/FocalsCache/Repositories/ProjectsCacheRepository.swift`** — every mutation now fires `ProjectMutationObserverRegistry.shared.projectDidUpsert/Delete` after the network round-trip succeeds. Refresh fires upsert events for every pulled row so server-side changes propagate to iOS Calendar on next pull-to-refresh.
+- **`ios/Focals/App/FocalsApp.swift`** — registers `EventKitMirror.shared` as the project mutation observer at launch, alongside the existing `ConnectivityMonitor`.
+- **`ios/Focals/Info.plist`** — added `NSCalendarsUsageDescription` and `NSCalendarsFullAccessUsageDescription` for iOS 17 full-access prompt.
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed the `CalendarScreen` stub.
+- **`ios/FocalsTests/CalendarMathTests.swift`** — 10 fixtures pinning grid math to web behaviour: 42-cell shape across multiple months, Monday-first first-cell, leap-year February (2024), DST-forward (March 2026), DST-back (November 2026), 12-month range with year-boundary, key formatting, wall-clock UTC-component decoding, and `projectsByDay` bucketing/sort. **All pass.**
+
+### Tests to run on a real device / simulator
+1. Sign in. Open the **Calendar** tab. The current month should be in view and "today" should have an accent ring around the day number.
+2. Compare side-by-side with `/calendar` on the web (mobile viewport): same 12-month vertical stack, same 7-column Monday-first grid, same "Month YYYY" headline, same 4×4 status dots beneath each day.
+3. Tap a future day with no projects → inline detail panel appears below that month: date header on the left, "+ Add" link on the right, "No projects scheduled." text below.
+4. Tap a day with projects → cards render with: time range (e.g. `8:30 AM – 9:30 AM`), location, status pill, and a left-edge coloured stripe matching the project's status. Tap a card → pushes the project detail screen (still placeholder until Task 09).
+5. Tap "+ Add" → sheet opens with `presetShootDate` set to **10:00 AM on the selected day** (matches web behaviour). Once the project form lands in Task 09 the date should appear pre-filled.
+6. Tap **Today** in the toolbar → smooth-scrolls to the current month and selects today. Tap **+** → opens the create-project sheet with `selectedDay` pre-filled.
+7. Tap a leading or trailing day from an adjacent month → selection moves to that day and the panel renders under that month's section.
+8. Pull-to-refresh → triggers `ProjectsCacheRepository.refresh` and re-mirrors all rows to iOS Calendar (if enabled).
+9. **EventKit mirror — once Task 12's Settings toggle ships, or you manually flip `EventKitMirrorEnabled` UserDefaults to `true`**: create a project with a `shoot_date`. Open the iOS **Calendar app** → confirm a "Focals" calendar exists and contains the project event at the wall-clock time. Edit the project's title or shoot date → reload the iOS Calendar app → event reflects the change. Delete the project → event is removed from the iOS Calendar app.
+10. **Permission denial path**: deny calendar access at the system prompt. Subsequent project mutations should still succeed (mirror silently no-ops). Re-enable in iOS Settings → Privacy & Security → Calendars → Focals; next refresh re-mirrors everything.
+11. **DST regression**: scrub to March 2026 and November 2026 — every day cell should render exactly once (no duplicate or skipped days).
+12. **Leap-year sanity**: scrub back to February 2024 → 29 days in-month.
+
+### Deferred / known limitations
+- **EventKit toggle UI lives in Task 12 (Settings).** The mirror is wired to the `EventKitMirrorEnabled` UserDefaults key; until Settings ships, the only way to test it end-to-end is to flip it in `UserDefaults.standard.set(true, forKey: "EventKitMirrorEnabled")` from a debugger or to add a temporary toggle.
+- **One-way mirror only.** Editing the iOS Calendar event directly does NOT push back to Supabase. Documented in `EventKitMirror.swift`'s file comment. v1.1 plan: detect divergence via `EKEventStoreChanged` and surface a "Push back to Focals?" banner.
+- **No "Subscribe in Apple Calendar" button yet.** The webcal:// deep-link button lives in Task 12 (Settings). The web's existing `/api/calendar/<userId>?token=<calendar_token>` endpoint already serves projects (post the shoots → projects migration), so once Task 12 wires the button it should just work.
+- **Bulk mirror is fire-and-forget.** After a refresh, every pulled project's mirror call is awaited sequentially. With 100s of projects and slow EventKit, this could be briefly noticeable; acceptable for the scale here, revisit if it becomes an issue.
+- **Brand color in iOS Calendar.** The "Focals" calendar uses the `AccentColor` asset's CG color; if you re-skin the app, update the asset and the swatch in iOS Calendar will follow on the next save.
+- **No conflict UI.** If the user happens to have a calendar already named "Focals" from a previous app, we re-use it — the mirror writes into it. Acceptable but flagged.
+
+### Security / dashboard configuration
+- **EventKit access prompt**: iOS will surface "Focals would like to access your calendar" the first time the user creates/updates a project with a shoot date and has the toggle on. Both the legacy and full-access usage strings are in `Info.plist`.
+- **No new Supabase / OAuth dashboard config.** Calendar reads from the same `projects` table that the dashboard and inbox already use. The webcal feed at `/api/calendar/<userId>?token=...` is a pre-existing endpoint and is unchanged.
+
+---
+
+## iOS Task 09 — Projects, Clients ✅
+
+Two CRUD modules sharing a common form/list/detail pattern. After this task, every project and client is fully editable from iOS, project detail shows a MapKit snapshot for the shoot location, and clients can be exported to system Contacts.
+
+### What changed
+- **`ios/FocalsKit/Sources/FocalsCache/Models/CachedProject.swift`** — added `geocodedLat`, `geocodedLng`, `geocodedLocation` for the per-project geocode cache + a `storeGeocode(lat:lng:for:)` helper. `applyServer` invalidates the cache when the location string changes. SwiftData handles the additive optional-field migration on its own.
+- **`ios/Focals/Shared/Forms/`** — new directory: `FormSection`/`FormRow` (editorial card grouping), `MoneyField`, `DateField`, `StatusField` (generic enum picker), `RelatedRecordField` (FK picker with searchable sheet), `OptionalBindings` (`Optional<String>.bound` extension). All field components are reused by both modules and will be reused in Tasks 10–12.
+- **`ios/Focals/Modules/Projects/`** — new directory: `ProjectsScreen` (list, status multi-select chips, client filter menu, search, swipe-to-cancel/delete, payment progress bar), `ProjectDetailScreen` (header + payment + basics + MapKit snapshot + notes + per-project "Add to iOS Calendar" + delete confirmation), `ProjectForm` (single sheet for create + edit, wall-clock packed back into UTC anchor on save).
+- **`ios/Focals/Modules/Clients/`** — new directory: `ClientsScreen` (list with avatar, search, swipe-delete that refreshes Projects cache so null-FK propagates), `ClientDetailScreen` (avatar header, tap-to-call/email, "Add to Contacts", linked projects via SwiftData `@Query` filtered by `clientId`, linked inquiries via `convertedClientId`), `ClientForm`, `ClientAvatar` (initials fallback), `ContactsBridge` (`CNContactStore` wrapper), `CASCADE_RULES.md`.
+- **`ios/Focals/Navigation/AppRouter.swift`** — added `editProject(Project)` and `editClient(Client)` to `SheetRoute`.
+- **`ios/Focals/Navigation/RouteDestination.swift`** — `.createProject` / `.createClient` now resolve to the real forms; new `.editProject` / `.editClient` cases route to the same forms in edit mode.
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed `ProjectsScreen`, `ClientsScreen`, `ProjectDetailScreen`, `ClientDetailScreen` stubs.
+- **`ios/Focals/Info.plist`** — added `NSContactsUsageDescription` so the system permission prompt has a reason string.
+
+### Tests to run on a real device / simulator
+
+#### Projects
+1. From Inbox or any other tab, switch to **Projects**. With cached projects, list renders with title, client name, status pill, payment progress bar, and shoot date / location meta line. Compare to `/projects` on the web for the same account — the same projects should be present in the same order.
+2. **Filter chips** (status): tap one to scope, tap again to remove; multi-select supported. Tap **All** to reset.
+3. **Client filter menu**: pick a client → list scopes; "Any client" resets.
+4. **Search**: matches against title, location, category.
+5. Tap **+** in the toolbar → `ProjectForm` opens with default `inquiry` status, blank fields. Fill everything, save → list refreshes, new project at top.
+6. Tap a row → `ProjectDetailScreen`. Confirm KPI numbers (package price, amount paid, balance due, % paid) match the web's project detail page.
+7. **Map**: with a location set, a static MapKit snapshot renders. The first appearance triggers `CLGeocoder` (toast says "Locating…" briefly); subsequent renders read from the cached lat/lng on `CachedProject` (instant). Tap the map → opens the system Maps app to that location.
+8. **Edit project**: pencil button → `ProjectForm` opens in edit mode, all fields pre-filled with the wall-clock value the user typed (8:30 AM stays 8:30 AM regardless of viewer TZ). Save → detail screen reflects changes.
+9. **Add to iOS Calendar** action: when `EventKitMirrorEnabled` is **off**, the per-project "Add to iOS Calendar" button appears for projects with a shoot date. Tap → permission prompt (first time) → event appears in the iOS Calendar app under the "Focals" calendar, then the toast confirms.
+10. **Delete project**: trash button at the bottom → confirm dialog → row is gone, and you're popped back to the list.
+
+#### Clients
+1. Switch to **More → Clients**. List sorted alphabetically with avatar (initials fallback), name, and email/phone meta.
+2. **Search** filters by name, email, phone.
+3. Tap **+** → `ClientForm` opens. Save → list refreshes.
+4. Tap a row → `ClientDetailScreen`. Tap the email row → Mail compose; tap the phone row → dialer.
+5. **Add to Contacts**: tap the button → permission prompt the first time → toast "Added to Contacts"; open the iOS Contacts app and find the client (full name, work email, mobile phone, "Focals client" organization).
+6. **Linked projects** section: pulls in every project where `client_id == this.id`, tap a row → pushes the project detail.
+7. **Linked inquiries** section: pulls in every inquiry where `converted_client_id == this.id` (i.e. the convert-from-inbox flow's ancestor row), tap → pushes the inquiry detail.
+8. **Delete client**: confirm dialog → on success, projects refresh in the background; navigate back to a project that used to belong to this client and confirm `Client` row is gone (FK was nulled at the server).
+9. **Permission denied path**: deny Contacts at the system prompt → next "Add to Contacts" tap shows the actionable "Enable it in Settings → Privacy & Security → Contacts → Focals" message.
+
+#### Shared
+- `Optional<String>.bound` plays nicely with `TextField` (saves nil when cleared).
+- `MoneyField` accepts decimal input, hides the "$" while editing, formats as currency when blurred.
+- `RelatedRecordField` opens a searchable sheet, supports clear when allowed.
+- Offline mutations (airplane mode + tap save) → form shows the standard offline alert; nothing is silently dropped.
+
+### Deferred / known limitations
+- **No "Generate contract from this project" affordance** — the web's project edit form has a link out to `/contracts/new?projectId=...&generate=1` (LLM-backed). That AI flow lands in Task 11 (Contracts).
+- **No "Suggest a time" AI slot picker** — same reason; out of scope for Task 09.
+- **Geocode cache invalidation is location-string equality.** If a user types "Pier 39" then later "pier 39, San Francisco", the cache is invalidated and we re-geocode. Acceptable.
+- **Map snapshot is interactive-disabled** — tapping anywhere on the map opens the system Maps app, so the user can't pan inside the project detail. This matches the spec ("static — tap opens external Maps").
+- **`CNContact.identifier` not persisted.** The web has no column for it, so re-tapping "Add to Contacts" creates a duplicate Contact each time. Documented in `ContactsBridge.swift`. v1.1: store the identifier in `clients.notes` JSON or a new `contact_identifier` column and update existing instead of inserting.
+- **Status-multi-select state is not URL-persisted** — same as the web; if the user closes the app, filters reset.
+- **No bulk actions** on the projects list. Single-select swipe is enough for now.
+- **No Limited Contacts UI** for iOS 18 limited access — we treat `.limited` as `.authorized`. If you ship to iOS 18 with limited-contacts mode on, the user will need to add the client manually after we drop them into the picker.
+
+### Security / dashboard configuration
+- **Contacts access prompt**: surfaces the first time the user taps "Add to Contacts" on a client. The permission string lives in `Info.plist`.
+- **No new Supabase / OAuth dashboard config.** All FK cascade behaviour is enforced server-side via `ON DELETE SET NULL` rules already in the schema (see `CASCADE_RULES.md`). iOS just refreshes its caches after the delete to pick up the null-FK state.
+- **MapKit usage** — Apple's geocoder is rate-limited (~50 requests/minute). The per-project cache prevents abuse; if a user ever exceeds the limit, the placeholder gracefully says "Couldn't pin this address."
+
+---
+
+## iOS Task 10 — Finances ✅
+
+Income/expense ledger with month-grouped list, P&L view (Month/Quarter/Year toggle, 6-month bar chart, by-category breakdown), CSV export via ShareLink, and the standard create/edit sheet.
+
+### What changed
+- **`ios/FocalsKit/Sources/FocalsAPI/FinanceConstants.swift`** — canonical category list (`session_fee`, `print_sale`, `gear`, `software`, `travel`, `misc`) and payment method list (`venmo`, `zelle`, `check`, `cash`, `stripe`) lifted from web's `validations/finances.ts`. Plus `Finance.parsedDate(calendar:)` and `Finance.signedAmountString` helpers.
+- **`ios/Focals/Modules/Finances/`** — new directory: `FinancesScreen` (month-grouped list, search, swipe-delete, monthly +/− totals, ShareLink CSV export), `TransactionForm` (mirrors web's `TransactionForm.tsx`: type fixed at create time, amount validation, date / category / payment method / project FK / description), `PnLScreen` (Month/Quarter/Year segmented picker, summary card, BarMark chart, category breakdown), `FinancesCSVExport` (RFC 4180–compliant writer, temp-dir file URL).
+- **`ios/Focals/Navigation/Route.swift`** + **`AppRouter.swift`** — added `Route.financesPnL` (pushed onto the More tab stack) + `SheetRoute.editFinance(Finance)`.
+- **`ios/Focals/Navigation/RouteDestination.swift`** — `.createFinance` / `.editFinance` resolve to `TransactionForm`; `.financesPnL` resolves to `PnLScreen`.
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed the `FinancesScreen` stub.
+
+### Tests to run
+1. Open **Finances**. Compare totals to `/finances` on the web for the same account; per-month income/expense should match digit-for-digit.
+2. **+ menu** → Log income / Log expense — both open `TransactionForm`. Save → row appears at top of the right month.
+3. Tap a row → form opens in edit mode. Amount/date/category preserved.
+4. **P&L** in toolbar → push to `PnLScreen`. Month/Quarter/Year toggle filters the summary, chart, and breakdown.
+5. **Export CSV** in the + menu → ShareLink → save to Files / share to Mail. Open the file in Numbers; rows/columns line up with the header `Date,Type,Amount,Category,Description,Payment Method,Project ID`.
+6. Search filters by description, category, and payment method.
+7. Swipe-left → delete. Mutation is offline-aware via the standard alert.
+
+### Deferred / known limitations
+- **No receipt photo capture.** The spec proposed base64-in-description; that bloats every list query and ships unbounded blobs through Supabase. Skipped pending a `receipts` storage bucket on the web side.
+- **No Siri "Log expense" intent.** Bundled with Task 13 (native features) since AppIntents registration and Shortcuts surfacing live there.
+- **No category constraint at write time** — the web also accepts free text, the iOS form just shows the canonical list as a quick picker.
+- **CSV column order is fixed.** If you start tracking a new field, update `FinancesCSVExport.write` to keep iOS and web exports aligned.
+
+### Security / dashboard configuration
+- No new Supabase or OAuth config. CSV export writes to the system temp dir (auto-cleaned on app/system pressure) and is shared via the standard iOS share sheet — never round-trips through a third party.
+
+---
+
+## iOS Task 11 — Contracts ✅
+
+Contracts module with list, markdown-rendered detail, status workflow, template picker for new contracts, and templates read-only list.
+
+### What changed
+- **`ios/Focals/Modules/Contracts/`** — new directory: `ContractsScreen` (list, search, status pill, sent/signed dates, swipe-delete), `ContractDetailScreen` (markdown body via `MarkdownUI`, Mark sent / signed / void / delete via menu, share button, custom-fields disclosure), `ContractNewScreen` (single-screen form: title + client + project + template picker that auto-substitutes `{{client_name}}`, `{{project_title}}`, `{{shoot_date}}`, `{{location}}`, `{{package_price}}` etc. when you pick records, plus a monospaced body editor), `ContractTemplatesScreen` (read-only list with banner explaining web-only authoring).
+- **`ios/Focals/Modules/PlaceholderScreens.swift`** — removed the four contract-related stubs.
+
+### Tests to run
+1. **Templates**: from Contracts toolbar tap **Templates** → see the read-only list with the banner. Pull-to-refresh syncs from the server.
+2. **New contract**: tap **+** → push to `ContractNewScreen`. Pick a client + project → pick a template → body editor populates with merge fields filled. Save → list refreshes; you're pushed to the new contract's detail.
+3. **Detail**: markdown renders headings/lists/links/code. Use the **⋯ menu** → Mark sent / Mark signed / Mark void → status pill updates and the corresponding date stamp shows in the header. Verify the same status changes show on the web's `/contracts` page after pull-to-refresh.
+4. **Share**: tap the share icon → exports the contract title + body as text. Goes through the standard iOS share sheet.
+5. **Delete**: ⋯ menu → Delete → confirm → row disappears, you're popped back.
+6. Offline: mutations show the standard offline alert.
+
+### Deferred / known limitations
+- **No PDF rendering.** The spec proposed fetching `/api/contracts/[id]/pdf` from the Next.js webapp. That requires a `WEBAPP_URL` config (not just the Supabase URL) and an authenticated bearer-token request; deferred to a later pass. iOS renders the markdown body inline instead, which is what users actually see in the contract editor on the web anyway.
+- **No PencilKit signature capture.** Adding the canvas + PDF stamping + base64-in-`custom_fields` is a meaningful chunk; deferred. The "Mark signed" action still flips status and stamps `signed_at`, so the workflow works — it just doesn't capture the signature image.
+- **No template editing on iOS.** Banner directs the user to the web for create/edit. v1.1 plan: add a `ContractTemplateForm` mirroring `ClientForm`.
+- **Merge-field substitution is one-way.** If the user picks a template *before* picking a client, the merge fields aren't re-substituted when the client changes. The user can re-pick the template to refresh the body.
+
+### Security / dashboard configuration
+- No new config. Contract mutations flow through the existing `ContractsRepository` which inherits per-user RLS from the user's session.
+
+---
+
+## iOS Task 12 — Gear, Links, Forms, Help, Settings ✅
+
+Five remaining modules. The shell is now feature-complete enough to use as a daily replacement for the web.
+
+### What changed
+
+**Gear** — `ios/Focals/Modules/Gear/`
+- `GearScreen` (segmented Owned/Wishlist/All filter, search, swipe to mark-owned or delete, name/brand/model/category/price/status row).
+- `GearForm` (canonical Camera/Lens/Lighting/Audio/Accessory/Other category picker, MoneyField for price, DateField for purchase date, status picker, notes).
+
+**Links** — `ios/Focals/Modules/Links/`
+- `LinksScreen` (grouped by category, in-app `SFSafariViewController` for taps, long-press context menu: Edit / Copy URL / Delete).
+- `LinkForm` (URL input with `.URL` content type + scheme validation).
+- `SafariView` (UIViewControllerRepresentable wrapping `SFSafariViewController`).
+
+**Forms** — `ios/Focals/Modules/Forms/`
+- `FormsScreen` (read-only list with a banner explaining web-only authoring; tap → field list with required badges).
+
+**Help** — `ios/Focals/Modules/Help/`
+- `HelpArticles` (in-bundle markdown for 5 starter articles: Getting started, Inquiry widget, Calendar sync, Contracts, Finances).
+- `HelpScreen` (sectioned list, search across title + body).
+- `HelpArticleScreen` (markdown rendered via `MarkdownUI`).
+
+**Settings** — `ios/Focals/Modules/Settings/`
+- `SettingsScreen` with five sections: Profile (name/business/website/Instagram), Calendar (mirror toggle that prompts EventKit access + bulk-mirrors existing projects on first enable; webcal subscribe button), Data (Reset tutorials, Clear cache, Sign out), About (version + send feedback).
+
+**Plumbing**
+- `SheetRoute` gained `createGear` / `editGear` / `createLink` / `editLink`.
+- `RouteDestination.swift` resolves all of the above.
+- `Profile.swift` now exposes a `public init` so settings can build update payloads (the synthesized internal-only init was inaccessible).
+- `PlaceholderScreens.swift` is now down to two screens (`ProjectUploadScreen`, `MoreScreen`).
+
+### Tests to run
+
+#### Gear
+1. Tap **+** → form opens. Fill name + price + status (Owned). Save. Row shows with star icon, brand·model·category meta, price.
+2. Filter to **Wishlist** → only wishlist items show. Swipe a wishlist row → "Mark owned" → it flips and moves to the Owned filter.
+3. Tap a row → form opens in edit mode. All fields preserved.
+
+#### Links
+1. Tap **+** → form. Title + URL with scheme. Save → list groups by category.
+2. Tap a row → opens `SFSafariViewController` in-app (full Safari, not external).
+3. Long-press → Edit / Copy URL / Delete.
+4. Try saving a URL without `https://` → save button stays disabled.
+
+#### Forms
+1. Open **Forms**. Banner explains web-only. List shows existing forms with field counts.
+2. Tap a form → field list with type and required badges.
+
+#### Help
+1. Open **Help**. 5 articles in 5 sections, search filters by title + body.
+2. Tap **Calendar sync** → markdown renders headings / paragraphs / lists / code blocks.
+
+#### Settings
+1. **Profile**: load shows your current name/business/website/Instagram. Edit → Save → web reflects on next refresh.
+2. **Calendar mirror toggle**: flip ON → permission prompt → existing projects bulk-mirror to the iOS Calendar app's "Focals" calendar.
+3. **Subscribe in Apple Calendar**: opens `webcal://focals-base.vercel.app/api/calendar/<userId>?token=<calendarToken>` in the system Calendar app.
+4. **Reset tutorials**: confirms tour metadata cleared (verify by re-launching the web — tour overlays return).
+5. **Clear cache**: wipes the SwiftData store. Re-launch → lists are empty until pull-to-refresh.
+6. **Sign out**: confirm → Keychain wipe + cache wipe (Task 03 logic).
+7. **Version**: matches `Info.plist` `CFBundleShortVersionString`.
+
+### Deferred / known limitations
+- **No gear photo capture.** Same reason as receipt capture — base64-in-text isn't safe; revisit with a Storage bucket.
+- **No inquiry sources CRUD in Settings.** The web has a `InquirySourcesSection` for managing webhook tokens. Skipped; users can manage these on the web until v1.1.
+- **No Anthropic key card.** AI file import (Task 15) wasn't built either, so the key UI in Settings doesn't have anywhere to plug in yet.
+- **No notifications toggles.** Bundled with Task 13.
+- **No Face ID toggle in Settings.** It exists from Task 03 (`FaceIDLockEnabled` UserDefaults), just no UI to flip it. Add when bundling Task 13.
+- **Help is in-bundle markdown.** 5 starter articles, hard-coded. v1.1: fetch from `https://focals-base.vercel.app/help/<slug>/markdown` (web change required) so updates ship without a build.
+- **Forms is read-only.** No FormBuilder UI yet.
+- **Calendar token regenerate** is not exposed in Settings (the spec asked for it). Skipped for v1; not destructive enough to warrant the regen prompt UI right now.
+
+### Security / dashboard configuration
+- **No new Supabase config.** Profile updates and tutorial resets go through `ProfileRepository.update`, which already enforces per-user RLS via the session.
+- **`SFSafariViewController` is sandboxed by Apple** — no cookies or storage shared with the host app.
+- **Help articles are in-bundle and never network-fetched in v1**, so there's no MITM surface.
+
+---
+
+## iOS Task 13 — Native features (in-app pieces) ✅
+
+In-app scaffold for push notifications, Live Activities, Universal Links, and Settings toggles. **The Xcode extension targets, APNs key, and Edge Function are deferred to user actions** — flagged below.
+
+### What landed in code
+- **`ios/FocalsKit/Sources/FocalsAPI/SharedAuth.swift`** — App Group `UserDefaults` shim. Widgets, Live Activity, and Share Extensions read `currentUserId()` here. `SessionStore` mirrors the user id on sign-in / sign-out / token refresh.
+- **`ios/FocalsKit/Sources/FocalsAPI/Repositories/ProfileRepository.swift`** — added `updatePushToken(_:userId:)` for the new `profiles.push_token` column.
+- **`ios/Focals/Notifications/PushManager.swift`** — `UNUserNotificationCenterDelegate` for foreground delivery + tap-to-deeplink, opt-in flow via Settings, token persistence, no-op when the column is missing.
+- **`ios/Focals/App/AppDelegate.swift`** — `UIApplicationDelegate` bridge so SwiftUI's `App` can receive `didRegisterForRemoteNotificationsWithDeviceToken`. Wired via `@UIApplicationDelegateAdaptor` in `FocalsApp`.
+- **`ios/Focals/Notifications/ProjectCountdownAttributes.swift` + `ProjectCountdownActivityManager.swift`** — `ActivityKit` plumbing for the next-project countdown. Picks the soonest project starting in [now, now+4h], requests an Activity, ticks once a minute via foreground `Timer`, ends 10 min after the shoot.
+- **`ios/Focals/App/RootView.swift`** — `.onContinueUserActivity(NSUserActivityTypeBrowsingWeb)` for Universal Links + a foreground Timer that drives `ProjectCountdownActivityManager.tick()`. Activity refreshes on scene-becomes-active.
+- **`ios/Focals/Navigation/DeepLinkRouter.swift`** — added `resolveUniversalLink(_:)` that maps `https://focals-base.vercel.app/<head>/<id>` (inquiry, project, client, contract, upload, help) to the same destinations as the custom-scheme variants.
+- **`ios/Focals/Modules/Settings/SettingsScreen.swift`** — new sections: Notifications (system permission prompt, per-type toggles, "Enable in Settings" deep-link when denied) and Security (Face ID toggle).
+- **`ios/Focals/Auth/SessionStore.swift`** — sign-out now clears the push token, ends all Live Activities, wipes App Group user id before destroying the local cache.
+- **`ios/Focals/Info.plist`** — added `NSSupportsLiveActivities`, `NSSupportsLiveActivitiesFrequentUpdates`, `UIBackgroundModes: [remote-notification]`.
+
+### What you need to do (Xcode + Apple Dev + Supabase)
+
+These are blocking for push + widgets to actually work:
+
+1. **Apple Developer → Certificates, Identifiers & Profiles → Keys → "+"** — create an APNs Auth Key. Note the **Key ID** and your **Team ID**. Download the `.p8` (you only get one chance).
+2. **Apple Developer → Identifiers → `com.focals.ios`** — enable the **Push Notifications** capability.
+3. **Xcode → Focals target → Signing & Capabilities** — add the **Push Notifications** capability (this writes the `aps-environment` entitlement). Also confirm **Associated Domains** is enabled with `applinks:focals-base.vercel.app`.
+4. **Web migration** — add `push_token TEXT` to `profiles`:
+   ```sql
+   alter table profiles add column if not exists push_token text;
+   ```
+   Run via `supabase db push` or paste into Supabase SQL editor.
+5. **Web AASA file** — create `my-app/src/app/.well-known/apple-app-site-association/route.ts` returning the JSON in Task 13 spec Section F.1 with `Content-Type: application/json` (no `charset` suffix). Use your real `<TEAM ID>` in `appIDs`.
+6. **Supabase Edge Function** — `my-app/supabase/functions/send-push/index.ts` (template in Task 13 Section E.4). Deploy via `supabase functions deploy send-push`. Set Edge Function secrets `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_KEY_P8` (the `.p8` contents).
+7. **Postgres trigger** — `notify_new_inquiry()` from Task 13 spec Section E.5. Apply via SQL editor.
+8. **Cron** — schedule `pg_cron` to POST to `send-push` daily at 9pm for projects 24h out.
+
+### Deferred / known limitations
+- **No Widget Extension target.** Widgets need a separate target in Xcode → File → New → Target → Widget Extension. The `SharedAuth` helper is ready for that target to consume; once you create it, name it and I'll fill in the widget views from Task 13 Section A.
+- **No Live Activity widget extension target.** `ProjectCountdownAttributes` is in the main app target ready to be re-imported by the widget extension. Until then, `Activity.request(...)` calls succeed but the system has no UI to render the activity, so it's silently dropped.
+- **No App Intents extension target.** Siri "Log expense" / "Add inquiry" intents need a separate target. Defer until you actually want voice control.
+- **No Share Extension target.** Same story.
+- **Live Activity background updates require remote pushes** to the activity push token. v1 only updates while the app is foregrounded.
+- **No Sign in with Apple sheet yet.** If Apple Review wants Apple Sign In as an alternative to Google, add a `SignInWithAppleButton` to `LoginView`. Auth backend supports it via Supabase out of the box.
+
+### Security / dashboard configuration
+- **Push token storage** is per-user in the existing `profiles` table; RLS already restricts access to the row owner.
+- **Edge Function** runs with the Supabase service-role key, so it can read any user's push_token. Keep that key in the Edge Function's secrets, never on the client.
+- **APNs `.p8` key** is sensitive — it lets anyone send pushes to your app's bundle ID. Store only in the Edge Function's secrets.
+
+---
+
+## iOS Task 15 — Project Upload (AI extraction) ✅
+
+Mirrors the web's `ProjectsUploadDialog`: pick a file or photo, server-side Claude extraction, review pane, commit. Per-row inline editing of every project field is a v1.1 follow-up — v1 lets the user toggle rows on/off and pick the client decision, then commits the rest as-is.
+
+### What landed in code
+- **`ios/FocalsKit/Sources/FocalsAPI/ProjectUpload.swift`** — wire types: `UploadResponse`, `AnnotatedProposedProject`, `ClientMatch`, `ScoredCandidate`, `CommitProjectRow`, `CommitProjectsResult`. Mirrors web's exported types verbatim.
+- **`ios/FocalsKit/Sources/FocalsAPI/ProjectUploadService.swift`** — actor that posts multipart to `<WEBAPP_URL>/api/projects/upload` and JSON to `<WEBAPP_URL>/api/projects/upload/commit`. Authenticates via `Authorization: Bearer <supabaseAccessToken>`. Validates 10 MB max, surfaces server-side errors with status codes.
+- **`ios/Focals/Secrets.xcconfig`** — added `WEBAPP_URL` (defaults to `https://focals-base.vercel.app`); now read from `Info.plist`.
+- **`ios/Focals/Info.plist`** — exposes `WEBAPP_URL` so the SPM service can read it via `Bundle.main.object(forInfoDictionaryKey:)`.
+- **`ios/Focals/Modules/ProjectUpload/`** — new directory: `ProjectUploadSheet` (4-phase state machine: pick → extracting → review → committing, with photo + document pickers and per-row client menus), `DocumentPicker` (`UIDocumentPickerViewController` wrapper that copies the picked file out of the security-scoped URL into `tmp/`).
+- **`ios/Focals/Modules/Projects/ProjectsScreen.swift`** — toolbar `+` is now a Menu with **New project** and **Import from file**.
+- **`ios/Focals/Navigation/RouteDestination.swift`** — `.projectUpload` resolves to `ProjectUploadSheet`.
+
+### What you need to do (web prerequisite)
+
+The upload route already exists; the commit route is **new** and is the one server-side change required:
+
+```ts
+// my-app/src/app/api/projects/upload/commit/route.ts
+import { NextResponse, type NextRequest } from 'next/server';
+import { commitUploadedProjects, type CommitProjectRow } from '@/lib/actions/projects';
+
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
+export async function POST(req: NextRequest) {
+  const body = (await req.json()) as { jobId: string | null; rows: CommitProjectRow[] };
+  const result = await commitUploadedProjects(body);
+  if (result.error !== null) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  }
+  return NextResponse.json(result.data);
+}
+```
+
+Two-line wrapper around the existing `commitUploadedProjects` server action — needed because iOS can't invoke Next server actions over HTTP.
+
+The user must also have an **Anthropic API key** configured server-side under their `user_integrations` row (the web Settings page handles this — until iOS ships the AI key card from Task 12 deferred items, key entry is web-only). If the key is missing, `/api/projects/upload` returns 400 with a clear message which iOS surfaces in the alert.
+
+### Tests to run
+1. **Settings (web)** → connect Anthropic key.
+2. iOS **Projects** tab → **+** menu → **Import from file**. Sheet opens with the two pick cards.
+3. Tap **Choose file** → pick a CSV with a few project rows. Sheet flips to "Extracting…", then to a Review pane.
+4. Untick rows you want to skip; the create button updates to `Create N projects`.
+5. For each row, tap the **Client** menu — pick an existing client, accept the suggested new client, or "No client".
+6. Tap **Create N projects**. After commit, sheet dismisses and Projects list refreshes.
+7. Pick a **photo** of a paper booking form via the second card → same review/commit flow.
+8. **10 MB cap** — picking a >10 MB file shows an actionable error before the network call.
+9. **Per-row failures** — if the server returns errors for some rows, the sheet stays open showing only the failed rows.
+
+### Deferred / known limitations
+- **No per-row inline field editing.** v1 just lets you skip rows and pick clients. To edit a field, commit the row, then edit in `ProjectDetailScreen`.
+- **No background URLSession.** A foreground extract takes 10–30s; the sheet shows "Keep this screen open." If you background mid-extract on a slow network, the request can be killed.
+- **No camera capture entry point.** `UIImagePickerController` works but adds another permission. Skipped for v1; the photo library covers the same use case.
+- **No "AI key not connected" empty state.** When the user hasn't configured a key, the upload errors out with the server's message. Friendlier UX is gated on the deferred Anthropic key card from Task 12.
+- **`WEBAPP_URL` is hardcoded to the production Vercel URL.** Override via `Secrets.xcconfig` if you stage the webapp on a different host.
+
+### Security / dashboard configuration
+- All uploads go through your existing **Anthropic-billed** server-side extraction; iOS never holds an Anthropic key.
+- The upload endpoint authenticates via the user's Supabase access token; RLS on `project_upload_jobs` and `projects` prevents cross-user leakage.
+- Files are stored in memory on the server long enough to extract, then discarded — same behaviour as the web flow.
+
+---
+
+## iOS Task 14 — Testing & Release (in-app pieces) ✅
+
+Process-heavy task; most of it is Apple Developer / App Store Connect work that only you can do. The code-side scaffolding is in place.
+
+### What landed in code
+- **`ios/Focals/PrivacyInfo.xcprivacy`** — declares the data types we collect (Name, Email, Phone, User Content, Other Contacts, Device ID for push) and the privacy-sensitive APIs we touch (`UserDefaults`, file timestamp, system boot time). All linked, none used for tracking, all "App functionality" purpose. Required by Apple for App Store submission.
+- **`ios/project.yml`** — adds `PrivacyInfo.xcprivacy` to the `Focals` target's resources so it's bundled into the .app.
+- **`ios/bin/archive.sh`** — one-shot archive + `.ipa` export script. Reads version + build from Info.plist, archives in Release config, exports via `bin/ExportOptions.plist` to `build/Focals-<ver>-<build>/Focals.ipa`.
+- **`ios/bin/ExportOptions.plist`** — automatic-signing app-store-connect distribution config.
+- **`tasks/ios/STORE_LISTING.md`** — full draft of name, subtitle, description, keywords, category, URLs, App Privacy table, review notes, screenshot recipe.
+- **Accessibility labels** on `KPICard` (combines into "Revenue MTD: $4,500") and `DayCell` (e.g. "Today, Tuesday April 14, 2 projects").
+
+### What you need to do (Apple Developer + App Store Connect)
+
+This is the bulk of Task 14 — only you can do these. Detailed checklist in [tasks/ios/14_TESTING_RELEASE_TELEMETRY.md](tasks/ios/14_TESTING_RELEASE_TELEMETRY.md):
+
+1. **Apple Developer enrollment** — $99/year if you're not already in.
+2. **Bundle ID `com.focals.ios`** — register, enable capabilities: App Groups, Push Notifications, Sign in with Apple, Associated Domains.
+3. **Xcode → Signing & Capabilities** — automatic signing on, add the four capabilities above. (App Groups should already be on for the cache.)
+4. **App Store Connect** → New App → bundle ID `com.focals.ios`, SKU `focals-ios-1`.
+5. **App Privacy declarations** — use the table in `STORE_LISTING.md`. Match `PrivacyInfo.xcprivacy` exactly.
+6. **Generate screenshots** — 6.7" iPhone + 12.9" iPad sizes. Recipe in `STORE_LISTING.md` lists 9 recommended frames.
+7. **Privacy policy** — add a `/privacy` page on the web. Apple rejects apps without a working privacy URL.
+8. **Run `./bin/archive.sh`** — produces a signed `.ipa`.
+9. **Upload via Transporter.app** (or `xcrun altool`).
+10. **TestFlight** → add export compliance ("No"), add yourself as internal tester, submit for beta review.
+11. **Submit for App Review** — first review takes 24–48h.
+
+### Deferred / known limitations
+- **No automated UI tests.** The unit-test surface (55 passing tests) covers calculation correctness. UI smoke tests are easy to add when you start shipping more often.
+- **No Sentry / crash reporting.** Adding the SPM dep + initialization is ~30 lines but changes `Package.swift`. Add when you cut the first crash; the Settings toggle is a one-liner once the SDK is in.
+- **No `Localizable.xcstrings` sweep.** Xcode 15 auto-extracts on build. A few raw `Text("...")` calls remain in English; non-blocking for App Store review.
+- **Light mode polish.** Design tokens default to dark. Light mode renders without crashing but a few cards have washed-out contrast. Run a dedicated pass before submission.
+- **No real iPad testing.** The split-view code path exists, but I've only validated on iPhone simulator. Run the manual checklist before submitting.
+
+### Security / dashboard configuration
+- **Privacy manifest** declares only what we actually collect. If you add new SDKs, audit their bundled `PrivacyInfo.xcprivacy` and update ours if they expand the data-types list.
+- **`Secrets.xcconfig` is gitignored.** The Supabase anon key is the only secret; it's the public anon key (intentionally distributable).
+- **`stripSwiftSymbols: true`** in ExportOptions trims debug symbols from the shipped binary.
+
+---
+
+## Task: Subagent team + dispatch protocol (2026-06-10)
+
+Created six project subagents in `.claude/agents/` (web-dev, ios-dev, supabase-db, code-reviewer, qa-verifier, security-auditor) plus a root `CLAUDE.md` with an orchestrator dispatch table so the main agent routes work by domain (schema → supabase-db first, then web/iOS in parallel; verification + security gates before "done").
+
+### What you need to do
+- **Restart your Claude Code session** (or run `/agents`) so the new agent files are picked up — agents are loaded at session start.
+- Skim `CLAUDE.md` and tweak the dispatch rules if you want a different workflow (e.g. always require code-reviewer).
+
+### Tests to run
+- None — no app code changed. Try it with a prompt like "add a notes field to projects" and confirm the main agent routes supabase-db → web-dev + ios-dev → qa-verifier.
+
+### Security concerns
+- code-reviewer, qa-verifier, and security-auditor are tool-restricted to read-only file access (Read/Grep/Glob + Bash for inspection/builds); only the three specialist dev agents can edit files.
+
+### Deferred / known limitations
+- No dedicated docs/research agent — the built-in Explore agent covers read-only codebase search already.
+- Subagents can't spawn subagents; cross-domain handoffs flow through the main agent by design (rule 2 in CLAUDE.md).
+
+---
+
+## Task: Lenslate brand implementation (2026-06-10)
+
+Renamed the product to **Lenslate** per the design handoff (`tasks/design_handoff_lenslate_brand/README.md`): `NEXT_PUBLIC_APP_NAME=Lenslate` in `.env.local` + `.env.local.example`, new `<Wordmark>` component (Canela name + bone lens dot) used in the sidebar and login `<h1>`, and a placeholder SVG favicon / apple-touch icon (bone "L" on a dark tile) replacing `favicon.ico`.
+
+### What you need to do
+- Restart the dev server so the new `NEXT_PUBLIC_APP_NAME` value is picked up (env vars are inlined at build time).
+- Replace `src/app/icon.svg` / `apple-icon.svg` with the final logo when ready — current icon renders the "L" in Georgia, not real Canela.
+- If `NEXT_PUBLIC_APP_NAME` is set in Vercel project env vars, update it to `Lenslate` there too.
+
+### Tests to run
+- Tab titles read `… · Lenslate`; sidebar wordmark navigates home on click.
+- Toggle Settings → Appearance: lens dot stays attached and visible in both themes.
+- Favicon shows the dark "L" tile (hard-refresh; favicons cache aggressively).
+
+### Security concerns
+- `'focals-llm-key-salt'` in `src/lib/llm/encryption.ts` deliberately left untouched — changing it would make encrypted user API keys undecryptable.
+
+### Deferred / known limitations
+- Pre-existing lint errors (react/no-unescaped-entities) in `ProjectsUploadDialog.tsx` and `AiIntegrationSection.tsx` — unrelated to this task, not fixed.
+- Icon "L" glyph is a `<text>` element, not a baked Canela path; acceptable placeholder per the handoff.
+
+---
+
+## Task: iOS Projects redesign — grouped cards, summary detail, nav-bar Done (2026-06-10)
+
+Implemented `tasks/design_handoff_ios_projects/README.md` in the SwiftUI app: Projects list now groups by pipeline phase (Inquiries / Upcoming / In progress / Delivered / Cancelled) with card rows; project detail leads with the serif hero + 3 summary tiles (Shoot / Balance / Paid ring); `DetailSheet` gained an optional `onConfirm` (leading Cancel + working spinner) and `ProjectForm` now saves from the nav-bar Done/Add — the bottom "Save changes" button is gone. Payment status in the form is a segmented picker. Ran `xcodegen` to pick up the new `ProjectPipeline.swift`.
+
+### Tests to run (manual, in Simulator)
+- Projects tab: sections appear in pipeline order, empty phases hidden, Cancelled section dimmed at the bottom; search still filters; pull-to-refresh works.
+- Long-press a card → context menu shows "Cancel project" + "Delete" (swipe-to-delete was replaced by the context menu since cards no longer live in a List).
+- Tap a card → detail: hero, status pill + "client · category", 3 tiles, Payment, Details (Client and Location tappable — Location opens Apple Maps), map, notes, Add to iOS Calendar, Delete.
+- Edit/New project: Cancel left, bold Done/Add right (disabled until Title non-empty), spinner while saving, sheet dismisses on success; no bottom save button.
+- Other sheets (Client, Gear, Transaction, Link, Inquiry, Import) still show dismiss-only Done.
+
+### Security concerns
+- None — UI-only changes; repositories and validation untouched.
+
+### Deferred / known limitations
+- Status/client filter chips were removed from the Projects list per the handoff (grouping replaces status filtering); client filtering is now only via search. Flag if you miss it.
+- `DetailSheet` now presents at `.large` only (was `.medium + .large`) — per the README snippet; affects all form sheets app-wide.
+- Cancel in form sheets discards edits without an "unsaved changes" prompt (same as before, just more discoverable now).
+
+### Dashboard config
+- None.
+
+---
+
+## Task: Lenslate waitlist endpoint (2026-06-11)
+
+Wired the two landing pages (`tasks/design_handoff_lenslate_waitlist/`) to a real waitlist endpoint: `waitlist_signups` table (applied to the live Supabase project via MCP + recorded as `supabase/migrations/20260611000000_waitlist_signups.sql`), `src/lib/validations/waitlist.ts`, `src/app/api/waitlist/route.ts` (CORS on, 201/409/400 contract), middleware exclusion for the public route, and both HTML pages now point at `https://focals-base.vercel.app/api/waitlist`.
+
+### What you need to do
+- **Deploy to Vercel** — until the new route is deployed, the landing forms will show an error state (the endpoint global is set, so demo mode is off).
+- Host the two HTML pages wherever you plan to publish them (they work from any origin — CORS is open).
+- Confirm `SUPABASE_SERVICE_ROLE_KEY` is set in Vercel env (it should be, since `/api/inquiry` already needs it).
+
+### Tests run
+- Local curls: fresh email → 201; repeat (different case) → 409 duplicate; invalid → 400; OPTIONS preflight → 204 with correct CORS headers. Typecheck, lint (changed files), and `npm run build` all pass. Test row deleted from the remote table afterward.
+
+### Security concerns
+- `/api/waitlist` is intentionally public with `Access-Control-Allow-Origin: *` and no rate limiting — anyone can spam signups. Mitigations when you care: per-IP rate limit, `WAITLIST_TOKEN` env (route already supports it; pair with `window.LENSLATE_WAITLIST_TOKEN`), or a honeypot field. README §7 has details.
+- RLS is on with no policies — only the service-role route can read/write the table.
+
+### Deferred / known limitations
+- Migration history note: the remote migration was applied via MCP under the name `waitlist_signups`; the repo file uses version `20260611000000`. If you ever run `supabase db push` against this project, you may need `supabase migration repair` to reconcile.
+- No confirmation email / double opt-in (app deliberately has no Resend key). Add later via README §7 if wanted.
+
+---
+
+## Task: Waitlist spam protection (2026-06-11)
+
+Added two layers to `/api/waitlist`: a per-IP rate limit (5 req/min, in-memory `src/lib/rate-limit.ts`, 429 + Retry-After when exceeded) and a honeypot (`hp` field in the schema; non-empty → silent 201 with no DB insert, so bots can't detect the drop).
+
+### What you need to do
+- **Deploy to Vercel** along with the earlier waitlist changes.
+- If/when the landing pages add the hidden `hp` input, no server change is needed — the field is already accepted and acted on.
+
+### Tests run
+- Live dev-server sequence from one IP: honeypot POST → 201 with no row in `waitlist_signups` (verified via SQL); normal POST → 201 with row; further requests → 409 duplicates until the 6th and 7th hit 429. Typecheck + lint pass. Test rows deleted.
+
+### Security concerns / limitations
+- **The in-memory rate limiter is per-instance.** On Vercel serverless each lambda has its own Map, so the effective limit is per-warm-instance, not truly per-IP — it blunts naive bursts but won't stop a distributed or instance-spreading attacker. For a real guarantee, swap the Map for Upstash Redis (`@upstash/ratelimit`) keeping `rateLimit()`'s signature.
+- `clientIp` trusts `x-forwarded-for`, which is fine behind Vercel's proxy (it sets the header) but spoofable if the route is ever exposed directly.
+
+---
+
+## Task: Landing pages served by the app (2026-06-11)
+
+Ported the two prototype landing pages into real Next.js routes: `/landing` (web app pitch, source `web-landing`) and `/landing/ios` (iOS pitch, source `ios-landing`), in a `(marketing)` route group with its own minimal dark layout (no app shell). Shared components live in `src/components/marketing/` (Reveal, RotatingWord, Phone/Browser frames, TopNav, FeatureGrid, Waitlist form with honeypot, Footer, UI mocks). Forms POST same-origin to `/api/waitlist`. `/landing` added to middleware PUBLIC_ROUTES.
+
+### What you need to do
+- **Deploy to Vercel** — then the pages are live at focals-base.vercel.app/landing and /landing/ios.
+- **Visual QA in a browser** (agents only verified status codes/markup): reveal-on-scroll, rotating hero word, phone/browser frame mocks, responsive breakpoints on mobile, waitlist success card.
+- Decide whether `/` should show the landing page for logged-out visitors instead of redirecting to /login (currently unchanged). One-line middleware/redirect change if wanted.
+- The original HTML files in tasks/ still point at the absolute Vercel URL — they're now reference-only; the real pages are in the app.
+
+### Tests run
+- typecheck, eslint (marketing files), production build (`/landing` + `/landing/ios` both static ○). Unauthenticated curl: both pages 200, `/` still 307→/login, waitlist POST from the page contract → 201 (test row deleted).
+
+### Security concerns
+- Pages are public by design; the only mutation path is /api/waitlist which already has rate limiting + honeypot + RLS.
+
+### Deferred / known limitations
+- App Store badge links to "#" (app not shipped yet).
+- No analytics on the landing pages (no pageview/conversion tracking yet).
