@@ -129,8 +129,25 @@
   background: var(--color-accent);
 }
 
-/* Stacking on narrow screens (≤1024px) lives in
-   src/app/(marketing)/landing-responsive.css with the other breakpoints. */
+/* ── Unpinned mobile stack (<1024px) ─────────────────────────────
+   Below 1024px the component drops the pin entirely (see
+   Scrollytelling.tsx) and renders these flowing sections instead —
+   everything static and fully visible, device under its copy. */
+.scrolly-flow {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.scrolly-flow-chapter {
+  margin-bottom: 64px;
+}
+.scrolly-flow-chapter:last-child {
+  margin-bottom: 0;
+}
+.scrolly-flow-device {
+  margin: 24px auto 0;
+  max-width: 100%;
+}
 
 /* Respect reduced-motion: kill the swap transitions (content still toggles). */
 @media (prefers-reduced-motion: reduce) {

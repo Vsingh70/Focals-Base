@@ -106,6 +106,14 @@ export function HowItWorksIos() {
 
 export function HowItWorksWeb() {
   return (
-    <Scrollytelling side="left" deviceWidth="min(54vw, 660px)" chapters={WEB_CHAPTERS} />
+    <Scrollytelling
+      side="left"
+      deviceWidth="min(54vw, 660px)"
+      // The browser mock is short/landscape, so it can stay wide in the
+      // mobile stack and remain legible (the 260px phone cap is too small
+      // for a 920px-design dashboard).
+      mobileDeviceWidth="min(88vw, 460px)"
+      chapters={WEB_CHAPTERS}
+    />
   );
 }

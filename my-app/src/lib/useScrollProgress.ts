@@ -12,12 +12,16 @@
  */
 import { useEffect, useState, type RefObject } from 'react';
 
-export function useScrollProgress(ref: RefObject<HTMLElement | null>): number {
+export function useScrollProgress(
+  ref: RefObject<HTMLElement | null>,
+  /** Pass false to detach the listeners entirely (e.g. unpinned mobile layout). */
+  enabled = true
+): number {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !enabled) return;
 
     let ticking = false;
     const measure = () => {
@@ -46,7 +50,9 @@ export function useScrollProgress(ref: RefObject<HTMLElement | null>): number {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, [ref]);
+    // `enabled` in the deps also re-captures the track element when the
+    // pinned layout remounts after a breakpoint change.
+  }, [ref, enabled]);
 
   return progress;
 }

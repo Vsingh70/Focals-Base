@@ -21,39 +21,11 @@
    ============================================================= */
 
 /* ── Tablet / small laptop ─────────────────────────────────── */
-@media (max-width: 1024px) {
-  /* The scrollytelling stacks (copy above device). The pinned
-     sticky mechanic is untouched — only the inner row collapses.
-     Widen the pinned device to min(88vw, 460px) so the scaled
-     mock stays legible (it was using the narrow desktop column
-     width); ScaledCanvas inside scales the mock to fit, and the
-     phone (maxWidth = designWidth) simply centers. */
-  .scrolly-inner {
-    flex-direction: column !important;
-    gap: 32px;
-    text-align: center;
-  }
-
-  .scrolly-copy {
-    max-width: 560px;
-    margin: 0 auto;
-  }
-
-  .scrolly-points li {
-    text-align: left;
-  }
-
-  .scrolly-device {
-    width: min(88vw, 460px) !important;
-    max-width: 88vw !important;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .scrolly-dots {
-    display: none;
-  }
-}
+/* Below 1024px the scrollytelling drops the pin entirely and renders
+   a flowing stack (Scrollytelling.tsx + .scrolly-flow-* in
+   scrollytelling.css) — the old rules that re-flowed the PINNED stage
+   here are gone on purpose: a stacked portrait phone + copy is taller
+   than 100svh, so the pinned stage clipped text and felt scroll-stuck. */
 
 /* ── Mobile-ish ────────────────────────────────────────────── */
 @media (max-width: 860px) {
