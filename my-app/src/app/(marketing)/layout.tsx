@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import './marketing.css';
 import '@/components/marketing/scrollytelling.css';
+import './landing-responsive.css'; // breakpoints — must come after the two above
 
 /**
  * Marketing chrome — deliberately minimal. The landing pages render no

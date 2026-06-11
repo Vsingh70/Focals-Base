@@ -129,23 +129,8 @@
   background: var(--color-accent);
 }
 
-/* Stack on narrow screens. The pinned effect still works; copy sits above device. */
-@media (max-width: 1024px) {
-  .scrolly-inner {
-    flex-direction: column !important;
-    gap: 32px;
-    text-align: center;
-  }
-  .scrolly-copy {
-    max-width: 560px;
-  }
-  .scrolly-points li {
-    text-align: left;
-  }
-  .scrolly-dots {
-    display: none;
-  }
-}
+/* Stacking on narrow screens (≤1024px) lives in
+   src/app/(marketing)/landing-responsive.css with the other breakpoints. */
 
 /* Respect reduced-motion: kill the swap transitions (content still toggles). */
 @media (prefers-reduced-motion: reduce) {

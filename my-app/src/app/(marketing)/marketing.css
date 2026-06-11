@@ -145,34 +145,5 @@
 
 /* ── Scrollytelling lives in components/marketing/scrollytelling.css ── */
 
-/* ── Responsive (ported from the prototype) ─────────────────────── */
-@media (max-width: 860px) {
-  .lp-navlinks {
-    display: none !important;
-  }
-
-  .lp-fgrid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-
-  .lp-footgrid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 28px !important;
-  }
-
-  .lp-hero-cta {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  .lp-feat-head {
-    grid-template-columns: 1fr !important;
-  }
-
-}
-
-@media (max-width: 560px) {
-  .lp-fgrid {
-    grid-template-columns: 1fr !important;
-  }
-}
+/* ── Responsive rules live in landing-responsive.css (imported after
+      this file by the (marketing) layout) — keep breakpoints there. ── */

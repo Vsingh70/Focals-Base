@@ -99,6 +99,8 @@ function Shell({ active, title, children }: { active: string; title: string; chi
                 background: LT.bg2,
                 fontSize: 11.5,
                 color: LT.text3,
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               Search…
@@ -115,6 +117,7 @@ function Shell({ active, title, children }: { active: string; title: string; chi
                 fontSize: 11.5,
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               + New

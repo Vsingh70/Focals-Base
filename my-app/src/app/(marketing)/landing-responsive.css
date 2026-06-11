@@ -1,0 +1,107 @@
+/* =============================================================
+   landing-responsive.css — ALL breakpoint rules for the landing
+   pages (/landing, /landing/ios), in one place.
+
+   Ported from tasks/design_handoff_lenslate_responsive_mockups,
+   with the bundle's lp-scrolly-* selectors adapted to our
+   scrolly-* markup (Scrollytelling.tsx). Imported by the
+   (marketing) layout AFTER marketing.css + scrollytelling.css —
+   the responsive blocks that used to live in those files moved
+   here so each rule exists exactly once.
+
+   PRINCIPLE: the page shell is fluid (max-width container +
+   clamp() type). The only things that needed explicit handling
+   are (a) the app MOCKUPS — solved structurally by <ScaledCanvas>,
+   not media queries — and (b) a few multi-column layouts that
+   must collapse, below.
+
+   !important is required where a rule overrides an inline style
+   set by a component (nav links, hero padding, CTA row, grids,
+   scrolly flex direction / device width).
+   ============================================================= */
+
+/* ── Tablet / small laptop ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* The scrollytelling stacks (copy above device). The pinned
+     sticky mechanic is untouched — only the inner row collapses.
+     Widen the pinned device to min(88vw, 460px) so the scaled
+     mock stays legible (it was using the narrow desktop column
+     width); ScaledCanvas inside scales the mock to fit, and the
+     phone (maxWidth = designWidth) simply centers. */
+  .scrolly-inner {
+    flex-direction: column !important;
+    gap: 32px;
+    text-align: center;
+  }
+
+  .scrolly-copy {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .scrolly-points li {
+    text-align: left;
+  }
+
+  .scrolly-device {
+    width: min(88vw, 460px) !important;
+    max-width: 88vw !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .scrolly-dots {
+    display: none;
+  }
+}
+
+/* ── Mobile-ish ────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .lp-navlinks {
+    display: none !important; /* hide secondary nav */
+  }
+
+  .lp-fgrid {
+    grid-template-columns: 1fr 1fr !important; /* feature grid 3→2 */
+  }
+
+  .lp-footgrid {
+    grid-template-columns: 1fr 1fr !important; /* footer 4→2 */
+    gap: 28px !important;
+  }
+
+  .lp-hero-cta {
+    flex-direction: column !important; /* stack CTAs */
+    align-items: stretch !important;
+  }
+
+  .lp-feat-head {
+    grid-template-columns: 1fr !important; /* section title + lead stack */
+  }
+}
+
+/* ── Phone ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .lp-section {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .lp-hero {
+    padding-top: 116px !important; /* tighter top padding under fixed nav */
+  }
+
+  .lp-fgrid {
+    grid-template-columns: 1fr !important; /* feature grid → single column */
+  }
+
+  .lp-trust {
+    gap: 16px 22px !important; /* logo/trust strip wraps tighter */
+  }
+}
+
+/* NOTE: there is intentionally NO media query resizing the phone/browser
+   mockups. <ScaledCanvas> makes them width:100% (capped) and scales the fixed
+   design down — so they shrink gracefully and can never cause horizontal
+   overflow. Resizing them by hand with breakpoints is what caused the original
+   cramping; don't reintroduce it. */

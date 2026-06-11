@@ -1,0 +1,45 @@
+/* landing-responsive.css — reference breakpoints for the Lenslate landing
+   pages. Class names match the markup; adapt to your component styling.
+
+   PRINCIPLE: the page shell is fluid (max-width container + clamp() type).
+   The only things that needed explicit handling are (a) the app MOCKUPS —
+   solved structurally by <ScaledCanvas>, not media queries — and (b) a few
+   multi-column layouts that must collapse, below. */
+
+/* Centered content column used by every section. */
+.lp-section { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Tablet / small laptop ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* The scrollytelling stacks (copy above device). See scrollytelling guide.
+     Make the pinned device WIDER when stacked so the mock stays legible —
+     this overrides the inline width the component set for desktop. */
+  .lp-scrolly-inner { flex-direction: column !important; gap: 32px; text-align: center; }
+  .lp-scrolly-copy { max-width: 560px; margin: 0 auto; }
+  .lp-scrolly-device { justify-content: center; }
+  .lp-scrolly-device > div:first-child { width: min(88vw, 460px) !important; max-width: 88vw !important; }
+  .lp-scrolly-dots { display: none; }
+}
+
+/* ── Mobile-ish ────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .lp-navlinks { display: none; }            /* hamburger or hide secondary nav */
+  .lp-fgrid { grid-template-columns: 1fr 1fr; }      /* feature grid 3→2 */
+  .lp-footgrid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .lp-hero-cta { flex-direction: column; align-items: stretch; } /* stack CTAs */
+  .lp-feat-head { grid-template-columns: 1fr; }      /* section title + lead stack */
+}
+
+/* ── Phone ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .lp-section { padding-left: 18px; padding-right: 18px; }
+  .lp-hero { padding-top: 116px; }            /* tighter top padding under fixed nav */
+  .lp-fgrid { grid-template-columns: 1fr; }   /* feature grid → single column */
+  .lp-trust { gap: 16px 22px; }               /* logo/trust strip wraps tighter */
+}
+
+/* NOTE: there is intentionally NO media query resizing the phone/browser
+   mockups. <ScaledCanvas> makes them width:100% (capped) and scales the fixed
+   design down — so they shrink gracefully and can never cause horizontal
+   overflow. Resizing them by hand with breakpoints is what caused the original
+   cramping; don't reintroduce it. */

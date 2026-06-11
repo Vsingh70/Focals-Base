@@ -8,7 +8,7 @@ import { RotatingWord } from '@/components/marketing/RotatingWord';
 import { HowItWorksWeb } from '@/components/marketing/HowItWorks';
 import { TopNav } from '@/components/marketing/TopNav';
 import { Waitlist } from '@/components/marketing/Waitlist';
-import { BrowserFrame } from '@/components/marketing/frames';
+import { BrowserFrame } from '@/components/marketing/DeviceFrames';
 import { WebDashboard } from '@/components/marketing/mocks-web';
 import { AppStoreBadge, Btn, Eyebrow, Lead, SectionTitle } from '@/components/marketing/primitives';
 import { LT } from '@/components/marketing/tokens';
@@ -21,7 +21,10 @@ export const metadata: Metadata = {
 
 function Hero() {
   return (
-    <header style={{ position: 'relative', paddingTop: 138, paddingBottom: 60, overflow: 'hidden' }}>
+    <header
+      className="lp-hero"
+      style={{ position: 'relative', paddingTop: 138, paddingBottom: 60, overflow: 'hidden' }}
+    >
       <div
         style={{
           position: 'absolute',
@@ -119,8 +122,8 @@ function Hero() {
             Free 14-day trial · No card required · Works in any modern browser
           </div>
         </Reveal>
-        <Reveal delay={160} y={40} style={{ marginTop: 60, width: '100%', maxWidth: 1000 }}>
-          <BrowserFrame height={580}>
+        <Reveal delay={160} y={40} style={{ marginTop: 60, width: '100%', maxWidth: 1060 }}>
+          <BrowserFrame designWidth={920} designHeight={440} maxWidth={1060}>
             <WebDashboard />
           </BrowserFrame>
         </Reveal>
@@ -228,6 +231,7 @@ export default function WebLandingPage() {
       <div className="lp-section" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <Reveal>
           <div
+            className="lp-trust"
             style={{
               display: 'flex',
               alignItems: 'center',

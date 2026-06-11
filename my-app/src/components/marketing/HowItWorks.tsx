@@ -6,7 +6,7 @@
  * which can't cross the server→client boundary from the page files.
  */
 import { Scrollytelling, type ScrollyChapter } from './Scrollytelling';
-import { BrowserFrame, PhoneFrame } from './frames';
+import { BrowserFrame, PhoneFrame } from './DeviceFrames';
 import { MockDetail, MockFinances, MockProjects } from './mocks-phone';
 import { WebClients, WebDashboard, WebFinances } from './mocks-web';
 
@@ -20,7 +20,7 @@ const IOS_CHAPTERS: ScrollyChapter[] = [
       'Search and filter by phase in a tap',
     ],
     render: () => (
-      <PhoneFrame width={300} glow={false}>
+      <PhoneFrame designWidth={300} glow={false}>
         <MockProjects />
       </PhoneFrame>
     ),
@@ -34,7 +34,7 @@ const IOS_CHAPTERS: ScrollyChapter[] = [
       'Payment, details, location, and notes below',
     ],
     render: () => (
-      <PhoneFrame width={300} glow={false}>
+      <PhoneFrame designWidth={300} glow={false}>
         <MockDetail />
       </PhoneFrame>
     ),
@@ -48,7 +48,7 @@ const IOS_CHAPTERS: ScrollyChapter[] = [
       'Outstanding invoices you can chase in one tap',
     ],
     render: () => (
-      <PhoneFrame width={300} glow={false}>
+      <PhoneFrame designWidth={300} glow={false}>
         <MockFinances />
       </PhoneFrame>
     ),
@@ -65,7 +65,7 @@ const WEB_CHAPTERS: ScrollyChapter[] = [
       'Status, shoot date, and balance in every row',
     ],
     render: () => (
-      <BrowserFrame height={400} glow={false} url="app.lenslate.com/projects">
+      <BrowserFrame designWidth={920} designHeight={440} glow={false} url="app.lenslate.com/projects">
         <WebDashboard />
       </BrowserFrame>
     ),
@@ -79,7 +79,7 @@ const WEB_CHAPTERS: ScrollyChapter[] = [
       'Find any client in a keystroke',
     ],
     render: () => (
-      <BrowserFrame height={400} glow={false} url="app.lenslate.com/clients">
+      <BrowserFrame designWidth={920} designHeight={440} glow={false} url="app.lenslate.com/clients">
         <WebClients />
       </BrowserFrame>
     ),
@@ -93,7 +93,7 @@ const WEB_CHAPTERS: ScrollyChapter[] = [
       'Chase outstanding invoices in a click',
     ],
     render: () => (
-      <BrowserFrame height={400} glow={false} url="app.lenslate.com/finances">
+      <BrowserFrame designWidth={920} designHeight={440} glow={false} url="app.lenslate.com/finances">
         <WebFinances />
       </BrowserFrame>
     ),
@@ -106,6 +106,6 @@ export function HowItWorksIos() {
 
 export function HowItWorksWeb() {
   return (
-    <Scrollytelling side="left" deviceWidth="min(46vw, 500px)" chapters={WEB_CHAPTERS} />
+    <Scrollytelling side="left" deviceWidth="min(54vw, 660px)" chapters={WEB_CHAPTERS} />
   );
 }

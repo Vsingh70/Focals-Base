@@ -8,7 +8,7 @@ import { RotatingWord } from '@/components/marketing/RotatingWord';
 import { HowItWorksIos } from '@/components/marketing/HowItWorks';
 import { TopNav } from '@/components/marketing/TopNav';
 import { Waitlist } from '@/components/marketing/Waitlist';
-import { PhoneFrame } from '@/components/marketing/frames';
+import { PhoneFrame } from '@/components/marketing/DeviceFrames';
 import { MockProjects } from '@/components/marketing/mocks-phone';
 import { AppStoreBadge, Btn, Eyebrow, Lead, SectionTitle } from '@/components/marketing/primitives';
 import { LT } from '@/components/marketing/tokens';
@@ -21,7 +21,10 @@ export const metadata: Metadata = {
 
 function Hero() {
   return (
-    <header style={{ position: 'relative', paddingTop: 150, paddingBottom: 40, overflow: 'hidden' }}>
+    <header
+      className="lp-hero"
+      style={{ position: 'relative', paddingTop: 150, paddingBottom: 40, overflow: 'hidden' }}
+    >
       <div
         style={{
           position: 'absolute',
@@ -114,8 +117,8 @@ function Hero() {
           </div>
         </Reveal>
         {/* hero phone */}
-        <Reveal delay={160} y={40} style={{ marginTop: 64 }}>
-          <PhoneFrame width={356}>
+        <Reveal delay={160} y={40} style={{ marginTop: 64, width: '100%', maxWidth: 356 }}>
+          <PhoneFrame designWidth={356}>
             <MockProjects />
           </PhoneFrame>
         </Reveal>
@@ -221,6 +224,7 @@ export default function IosLandingPage() {
       <div className="lp-section" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <Reveal>
           <div
+            className="lp-trust"
             style={{
               display: 'flex',
               alignItems: 'center',
