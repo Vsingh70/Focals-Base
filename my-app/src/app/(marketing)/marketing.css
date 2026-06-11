@@ -29,7 +29,9 @@
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  overflow-x: hidden;
+  /* `clip` (not `hidden`): hidden turns .lp-root into a scroll container,
+     which silently kills position: sticky for the scrollytelling device. */
+  overflow-x: clip;
 }
 
 .lp-root ::selection {
