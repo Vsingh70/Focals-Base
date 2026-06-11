@@ -28,6 +28,17 @@ public final class CachedProject {
     /// delta cursor for the next refresh.
     public var lastSyncedAt: Date
 
+    // MARK: - Geocode cache (Task 09)
+    //
+    // CLGeocoder is rate-limited and the project detail screen renders a map
+    // snapshot on every appearance. Cache the resolved coordinate so we hit
+    // the geocoder at most once per location string per project. `geocodedLocation`
+    // is the normalized location string the cached lat/lng was computed from
+    // — when the user edits `location`, we drop the cached coordinate.
+    public var geocodedLat: Double?
+    public var geocodedLng: Double?
+    public var geocodedLocation: String?
+
     public init(from model: Project) {
         self.serverId = model.id
         self.userId = model.userId
@@ -47,6 +58,8 @@ public final class CachedProject {
     }
 
     /// In-place update of an existing cached row from a fresh server copy.
+    /// Preserves the geocode cache when the location string is unchanged so
+    /// every refresh doesn't force a CLGeocoder round-trip.
     public func applyServer(_ model: Project) {
         self.userId = model.userId
         self.title = model.title
@@ -54,6 +67,11 @@ public final class CachedProject {
         self.category = model.category
         self.status = model.status?.rawValue
         self.shootDate = model.shootDate
+        if self.location != model.location {
+            self.geocodedLat = nil
+            self.geocodedLng = nil
+            self.geocodedLocation = nil
+        }
         self.location = model.location
         self.packagePrice = model.packagePrice
         self.amountPaid = model.amountPaid
@@ -62,6 +80,13 @@ public final class CachedProject {
         self.createdAt = model.createdAt
         self.updatedAt = model.updatedAt
         self.lastSyncedAt = .now
+    }
+
+    /// Save resolved coordinates so subsequent renders skip the geocoder.
+    public func storeGeocode(lat: Double, lng: Double, for location: String) {
+        self.geocodedLat = lat
+        self.geocodedLng = lng
+        self.geocodedLocation = location
     }
 
     public func toModel() -> Project {

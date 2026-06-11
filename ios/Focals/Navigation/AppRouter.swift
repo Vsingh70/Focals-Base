@@ -89,6 +89,11 @@ public final class AppRouter {
         case .helpArticle:
             morePath.append(route)
             detailPath.append(route)
+
+        case .financesPnL:
+            // Finances lives in the More tab, so its sub-routes do too.
+            morePath.append(route)
+            detailPath.append(route)
         }
     }
 
@@ -129,9 +134,16 @@ public enum PrimaryTab: Hashable, Sendable {
 public enum SheetRoute: Identifiable, Hashable, Sendable {
     /// Calendar slot taps prefill `presetShootDate`.
     case createProject(presetShootDate: Date? = nil)
+    case editProject(Project)
     case createClient(prefilled: Client? = nil)
+    case editClient(Client)
     case createInquiry
     case createFinance(preselectedType: FinanceType? = nil)
+    case editFinance(Finance)
+    case createGear
+    case editGear(Gear)
+    case createLink
+    case editLink(FocalsModels.Link)
     /// File-import flow (Task 15).
     case projectUpload
 
@@ -139,12 +151,26 @@ public enum SheetRoute: Identifiable, Hashable, Sendable {
         switch self {
         case .createProject(let d):
             return "createProject:\(d?.timeIntervalSince1970.description ?? "nil")"
+        case .editProject(let p):
+            return "editProject:\(p.id.uuidString)"
         case .createClient(let c):
             return "createClient:\(c?.id.uuidString ?? "nil")"
+        case .editClient(let c):
+            return "editClient:\(c.id.uuidString)"
         case .createInquiry:
             return "createInquiry"
         case .createFinance(let t):
             return "createFinance:\(t?.rawValue ?? "nil")"
+        case .editFinance(let f):
+            return "editFinance:\(f.id.uuidString)"
+        case .createGear:
+            return "createGear"
+        case .editGear(let g):
+            return "editGear:\(g.id.uuidString)"
+        case .createLink:
+            return "createLink"
+        case .editLink(let l):
+            return "editLink:\(l.id.uuidString)"
         case .projectUpload:
             return "projectUpload"
         }

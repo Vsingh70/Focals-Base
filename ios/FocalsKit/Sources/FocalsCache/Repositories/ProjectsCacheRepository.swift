@@ -23,6 +23,11 @@ public struct ProjectsCacheRepository: CacheRepository {
             try upsert(serverProject, in: context)
         }
         try context.save()
+        // Re-mirror everything we just pulled so the iOS Calendar reflects
+        // server-side changes (e.g. status flip from a contract signing).
+        for serverProject in page.items {
+            await ProjectMutationObserverRegistry.shared.projectDidUpsert(serverProject)
+        }
     }
 
     public func create(_ payload: Project, in context: ModelContext) async throws -> Project {
@@ -30,6 +35,7 @@ public struct ProjectsCacheRepository: CacheRepository {
         let saved = try await ProjectsRepository.shared.create(payload)
         try upsert(saved, in: context)
         try context.save()
+        await ProjectMutationObserverRegistry.shared.projectDidUpsert(saved)
         return saved
     }
 
@@ -38,6 +44,7 @@ public struct ProjectsCacheRepository: CacheRepository {
         let saved = try await ProjectsRepository.shared.update(payload)
         try upsert(saved, in: context)
         try context.save()
+        await ProjectMutationObserverRegistry.shared.projectDidUpsert(saved)
         return saved
     }
 
@@ -46,6 +53,7 @@ public struct ProjectsCacheRepository: CacheRepository {
         try await ProjectsRepository.shared.delete(id: id)
         try removeFromCache(id: id, in: context)
         try context.save()
+        await ProjectMutationObserverRegistry.shared.projectDidDelete(id: id)
     }
 
     private func upsert(_ project: Project, in context: ModelContext) throws {

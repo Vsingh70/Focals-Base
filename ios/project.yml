@@ -30,6 +30,7 @@ targets:
       - path: Focals/Resources/Assets.xcassets
       - path: Focals/Resources/Fonts
         buildPhase: resources
+      - path: Focals/PrivacyInfo.xcprivacy
     dependencies:
       - package: FocalsKit
         product: FocalsDesign
@@ -50,15 +51,24 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_VERSION: "5.9"
-        CODE_SIGN_IDENTITY: ""
-        CODE_SIGNING_REQUIRED: "NO"
-        CODE_SIGNING_ALLOWED: "NO"
+        DEVELOPMENT_TEAM: "7564Z57784"
+        CODE_SIGN_STYLE: Automatic
       configs:
         Debug:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
           OTHER_SWIFT_FLAGS: "-DDEBUG"
+          # Simulator builds don't need real signing; keep it off so anyone
+          # can `xcodebuild -destination 'platform=iOS Simulator,...'` without
+          # a paid developer account.
+          CODE_SIGN_IDENTITY: ""
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGNING_ALLOWED: "NO"
         Release:
           SWIFT_COMPILATION_MODE: wholemodule
+          # Automatic signing picks the right cert (Apple Development for
+          # device debug, Apple Distribution for app-store-connect export).
+          CODE_SIGNING_REQUIRED: "YES"
+          CODE_SIGNING_ALLOWED: "YES"
     configFiles:
       Debug: Focals/Secrets.xcconfig
       Release: Focals/Secrets.xcconfig
@@ -77,6 +87,8 @@ targets:
       - target: Focals
       - package: FocalsKit
         product: FocalsModels
+      - package: FocalsKit
+        product: FocalsAPI
     settings:
       base:
         SWIFT_VERSION: "5.9"

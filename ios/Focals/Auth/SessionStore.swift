@@ -37,12 +37,14 @@ public final class SessionStore {
         do {
             let session = try await FocalsClient.shared.supabase.auth.session
             self.user = session.user
+            SharedAuth.setCurrentUserId(session.user.id)
             self.profile = try? await ProfileRepository.shared.getCurrent()
         } catch {
             // No session yet — user is signed out. Don't surface this as
             // an error; the LoginView will render.
             self.user = nil
             self.profile = nil
+            SharedAuth.setCurrentUserId(nil)
         }
     }
 
@@ -54,17 +56,27 @@ public final class SessionStore {
                 switch event {
                 case .signedIn, .tokenRefreshed, .userUpdated:
                     self.user = session?.user
+                    SharedAuth.setCurrentUserId(session?.user.id)
                     self.profile = try? await ProfileRepository.shared.getCurrent()
                 case .signedOut:
                     // Capture the previous user's id before nulling — the
                     // SwiftData store on disk is keyed by user id, and the
                     // event itself doesn't carry the old session.
                     let previousUserId = self.user?.id
+                    // Clear the push token before we lose the session; once
+                    // signOut completes the access token is gone and the
+                    // PATCH would 401.
+                    if let previousUserId {
+                        await PushManager.shared.clearToken(for: previousUserId)
+                    }
+                    await ProjectCountdownActivityManager.shared.endAll()
+                    SharedAuth.setCurrentUserId(nil)
                     self.user = nil
                     self.profile = nil
                     await self.wipeLocalData(userId: previousUserId)
                 default:
                     self.user = session?.user
+                    SharedAuth.setCurrentUserId(session?.user.id)
                 }
             }
         }

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import FocalsAPI
+import FocalsModels
 
 /// Contract every per-table cache repo conforms to.
 ///
@@ -56,4 +57,23 @@ public enum CacheConnectivityRegistry {
 
 private final class AlwaysOnline: CacheConnectivity {
     var isOffline: Bool { false }
+}
+
+/// Hook called after a project is created/updated/deleted. The app-target
+/// implementation forwards to `EventKitMirror` (Task 08); FocalsCache stays
+/// headless and depends only on this protocol.
+@MainActor
+public protocol ProjectMutationObserver: AnyObject {
+    func projectDidUpsert(_ project: Project) async
+    func projectDidDelete(id: UUID) async
+}
+
+@MainActor
+public enum ProjectMutationObserverRegistry {
+    public static var shared: ProjectMutationObserver = NoOpObserver()
+}
+
+private final class NoOpObserver: ProjectMutationObserver {
+    func projectDidUpsert(_ project: Project) async {}
+    func projectDidDelete(id: UUID) async {}
 }

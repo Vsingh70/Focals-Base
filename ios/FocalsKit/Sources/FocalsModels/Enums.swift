@@ -8,6 +8,15 @@ public enum ProjectStatus: String, Codable, CaseIterable, Sendable {
     case delivered
     case completed
     case cancelled
+
+    /// Human-readable label for UI. Always render this, never the rawValue —
+    /// "in_progress" leaks the snake_case Postgres convention to users.
+    public var displayName: String {
+        rawValue
+            .split(separator: "_")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .joined(separator: " ")
+    }
 }
 
 public enum PaymentStatus: String, Codable, CaseIterable, Sendable {
@@ -22,6 +31,11 @@ public enum InquiryStatus: String, Codable, CaseIterable, Sendable {
     case replied
     case converted
     case archived
+
+    /// Title-cased label for UI. Matches the web inbox's filter labels exactly.
+    public var displayName: String {
+        rawValue.prefix(1).uppercased() + rawValue.dropFirst()
+    }
 }
 
 public enum ContractStatus: String, Codable, CaseIterable, Sendable {

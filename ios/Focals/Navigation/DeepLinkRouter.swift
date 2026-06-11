@@ -31,7 +31,47 @@ public final class DeepLinkRouter {
             return
         }
         pendingURL = url
-        resolve(url)
+        if let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" {
+            resolveUniversalLink(url)
+        } else {
+            resolve(url)
+        }
+    }
+
+    /// Universal Links: `https://focals-base.vercel.app/inquiry/<id>`,
+    /// `/project/<id>`, `/contract/<id>`, `/upload`, etc. Mapped to the same
+    /// destinations as the custom-scheme variants. Path-first routing so we
+    /// match whatever the web's URL structure is.
+    private func resolveUniversalLink(_ url: URL) {
+        let parts = url.path.split(separator: "/").map(String.init)
+        guard let head = parts.first?.lowercased() else { return }
+        let trailing = parts.count > 1 ? parts[1] : nil
+        let uuid = trailing.flatMap(UUID.init(uuidString:))
+
+        switch head {
+        case "inquiry", "inbox":
+            if let uuid { AppRouter.shared.navigate(to: .inquiryDetail(uuid)) }
+            else if head == "inbox" { AppRouter.shared.navigate(to: .inbox) }
+        case "project", "projects":
+            if let uuid { AppRouter.shared.navigate(to: .projectDetail(uuid)) }
+            else { AppRouter.shared.navigate(to: .projects) }
+        case "client", "clients":
+            if let uuid { AppRouter.shared.navigate(to: .clientDetail(uuid)) }
+            else { AppRouter.shared.navigate(to: .clients) }
+        case "contract", "contracts":
+            if let uuid { AppRouter.shared.navigate(to: .contractDetail(uuid)) }
+            else { AppRouter.shared.navigate(to: .contracts) }
+        case "upload":
+            AppRouter.shared.presentedSheet = .projectUpload
+        case "help":
+            if let slug = trailing, !slug.isEmpty {
+                AppRouter.shared.navigate(to: .helpArticle(slug: slug))
+            } else {
+                AppRouter.shared.navigate(to: .help)
+            }
+        default:
+            break
+        }
     }
 
     func resolve(_ url: URL) {

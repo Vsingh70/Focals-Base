@@ -5,11 +5,12 @@ import FocalsAPI
 
 /// Google Sign In via `ASWebAuthenticationSession` + Supabase's PKCE flow.
 ///
-/// We deliberately don't pull in the GoogleSignIn SPM dependency — supabase-swift
-/// can already mint a Google OAuth URL via `getOAuthSignInURL(provider: .google)`,
-/// and `ASWebAuthenticationSession` handles the in-app browser hand-off. That
-/// avoids ~30MB of transitive deps for a feature that's already free on the
-/// Supabase side.
+/// Use the SDK's high-level `signInWithOAuth(provider:redirectTo:launchURL:)`
+/// rather than `getOAuthSignInURL` + manual exchange — the high-level method
+/// is what generates the `code_verifier` and stashes it in the SDK's auth
+/// storage. Calling `getOAuthSignInURL` directly skips the verifier creation,
+/// so the subsequent `/auth/v1/token?grant_type=pkce` POST has no verifier
+/// to send and the server rejects it with `validation_failed`.
 @MainActor
 final class GoogleSignIn: NSObject, ASWebAuthenticationPresentationContextProviding {
     static let shared = GoogleSignIn()
@@ -28,18 +29,43 @@ final class GoogleSignIn: NSObject, ASWebAuthenticationPresentationContextProvid
     }
 
     func signIn() async throws {
-        let url = try FocalsClient.shared.supabase.auth.getOAuthSignInURL(
-            provider: .google,
-            redirectTo: Self.redirectURL
-        )
+        #if DEBUG
+        print("[GoogleSignIn] === starting signInWithOAuth (PKCE) ===")
+        #endif
+        do {
+            try await FocalsClient.shared.supabase.auth.signInWithOAuth(
+                provider: .google,
+                redirectTo: Self.redirectURL,
+                launchFlow: { @MainActor [weak self] url in
+                    #if DEBUG
+                    print("[GoogleSignIn] launchFlow handed url: \(url.absoluteString.prefix(160))…")
+                    #endif
+                    guard let self else { throw GoogleSignInError.noCallbackURL }
+                    return try await self.openOAuthURL(url)
+                }
+            )
+            #if DEBUG
+            print("[GoogleSignIn] signInWithOAuth completed successfully")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[GoogleSignIn] signInWithOAuth threw: \(error)")
+            #endif
+            throw error
+        }
+    }
 
-        let callbackURL: URL = try await withCheckedThrowingContinuation { cont in
+    private func openOAuthURL(_ url: URL) async throws -> URL {
+        try await withCheckedThrowingContinuation { cont in
             let session = ASWebAuthenticationSession(
                 url: url,
                 callbackURLScheme: Self.callbackScheme
-            ) { url, error in
-                if let url {
-                    cont.resume(returning: url)
+            ) { callbackURL, error in
+                if let callbackURL {
+                    #if DEBUG
+                    print("[GoogleSignIn] callback URL: \(callbackURL.absoluteString)")
+                    #endif
+                    cont.resume(returning: callbackURL)
                 } else if let error {
                     cont.resume(throwing: error)
                 } else {
@@ -52,10 +78,6 @@ final class GoogleSignIn: NSObject, ASWebAuthenticationPresentationContextProvid
             session.prefersEphemeralWebBrowserSession = false
             session.start()
         }
-
-        // Hand the callback URL to supabase-swift; it'll exchange the code
-        // for a session and persist it to Keychain on its own.
-        try await FocalsClient.shared.supabase.auth.session(from: callbackURL)
     }
 }
 

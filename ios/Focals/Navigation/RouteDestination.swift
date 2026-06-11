@@ -32,6 +32,7 @@ func routeDestination(_ route: Route) -> some View {
     case .contractTemplates:       ContractTemplatesScreen()
     case .helpArticle(let slug):   HelpArticleScreen(slug: slug)
     case .inquiryDetail(let id):   InquiryDetailScreen(id: id)
+    case .financesPnL:             PnLScreen()
     }
 }
 
@@ -42,54 +43,39 @@ func sheetDestination(_ sheet: SheetRoute) -> some View {
     // the same chrome (drag indicator, medium/large detents, Done button).
     switch sheet {
     case .createProject(let presetShootDate):
-        DetailSheet(title: "New project") {
-            EmptyState(
-                symbol: "folder.badge.plus",
-                title: "New project",
-                description: presetShootDate
-                    .map { "Coming in Task 09. Prefilled date: \($0.formatted(date: .abbreviated, time: .shortened))" }
-                    ?? "Coming in Task 09."
-            )
-        }
+        ProjectForm(mode: .create(presetShootDate: presetShootDate))
+
+    case .editProject(let project):
+        ProjectForm(mode: .edit(project))
 
     case .createClient(let prefilled):
-        DetailSheet(title: "New client") {
-            EmptyState(
-                symbol: "person.badge.plus",
-                title: "New client",
-                description: prefilled
-                    .map { "Coming in Task 09. Prefilled: \($0.fullName)" }
-                    ?? "Coming in Task 09."
-            )
-        }
+        ClientForm(mode: .create(prefilled: prefilled))
+
+    case .editClient(let client):
+        ClientForm(mode: .edit(client))
 
     case .createInquiry:
-        DetailSheet(title: "New inquiry") {
-            EmptyState(
-                symbol: "envelope.badge",
-                title: "New inquiry",
-                description: "Coming in Task 07."
-            )
-        }
+        CreateInquirySheet()
 
     case .createFinance(let preselectedType):
-        DetailSheet(title: "New entry") {
-            EmptyState(
-                symbol: "dollarsign.circle",
-                title: "New finance entry",
-                description: preselectedType
-                    .map { "Coming in Task 10. Type: \($0.rawValue)" }
-                    ?? "Coming in Task 10."
-            )
-        }
+        TransactionForm(mode: .create(defaultType: preselectedType ?? .expense))
+
+    case .editFinance(let tx):
+        TransactionForm(mode: .edit(tx))
+
+    case .createGear:
+        GearForm(mode: .create)
+
+    case .editGear(let gear):
+        GearForm(mode: .edit(gear))
+
+    case .createLink:
+        LinkForm(mode: .create)
+
+    case .editLink(let link):
+        LinkForm(mode: .edit(link))
 
     case .projectUpload:
-        DetailSheet(title: "Import projects") {
-            EmptyState(
-                symbol: "square.and.arrow.down",
-                title: "Import from file",
-                description: "Coming in Task 15."
-            )
-        }
+        ProjectUploadSheet()
     }
 }

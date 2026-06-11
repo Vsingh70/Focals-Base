@@ -13,6 +13,32 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
     public let createdAt: Date
     public let updatedAt: Date
 
+    public init(
+        id: UUID,
+        fullName: String?,
+        email: String?,
+        avatarUrl: String?,
+        businessName: String?,
+        website: String?,
+        instagramHandle: String?,
+        calendarToken: String,
+        tutorialProgress: TutorialProgress,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.fullName = fullName
+        self.email = email
+        self.avatarUrl = avatarUrl
+        self.businessName = businessName
+        self.website = website
+        self.instagramHandle = instagramHandle
+        self.calendarToken = calendarToken
+        self.tutorialProgress = tutorialProgress
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case fullName = "full_name"

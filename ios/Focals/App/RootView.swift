@@ -31,6 +31,11 @@ struct RootView: View {
         .onOpenURL { url in
             DeepLinkRouter.shared.handle(url)
         }
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+            if let url = activity.webpageURL {
+                DeepLinkRouter.shared.handle(url)
+            }
+        }
     }
 
     /// Best-effort container build. If the SwiftData file is corrupt
@@ -76,6 +81,11 @@ private struct LoggedInRoot: View {
     @Environment(\.modelContext) private var modelContext
     @State private var router = AppRouter.shared
 
+    /// Drives the next-project Live Activity countdown while the app is
+    /// foregrounded. Ticks once a minute. Background updates require a
+    /// remote push to the activity push token; deferred to v1.1.
+    @State private var liveActivityTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+
     var body: some View {
         Group {
             if hSize == .regular {
@@ -89,10 +99,25 @@ private struct LoggedInRoot: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                Task { await refreshAllCaches(in: modelContext) }
+                Task {
+                    await refreshAllCaches(in: modelContext)
+                    await refreshLiveActivity(in: modelContext)
+                }
             }
         }
+        .onReceive(liveActivityTimer) { _ in
+            Task { await ProjectCountdownActivityManager.shared.tick() }
+        }
+        .task {
+            await refreshLiveActivity(in: modelContext)
+        }
     }
+}
+
+@MainActor
+private func refreshLiveActivity(in context: ModelContext) async {
+    let projects = (try? ProjectsCacheRepository.shared.cached(in: context)) ?? []
+    await ProjectCountdownActivityManager.shared.refresh(projects: projects)
 }
 
 /// Kicks off a refresh on every cache repo in parallel with a per-repo

@@ -31,4 +31,7 @@ public enum Route: Hashable, Sendable {
     case contractTemplates
     case helpArticle(slug: String)
     case inquiryDetail(UUID)
+
+    // MARK: Module sub-routes
+    case financesPnL
 }
