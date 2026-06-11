@@ -143,21 +143,7 @@
   white-space: nowrap;
 }
 
-/* ── Scrollytelling ─────────────────────────────────────────────── */
-.lp-scrolly-inline {
-  display: none;
-}
-
-@media (min-width: 861px) {
-  .lp-scrolly-chapter {
-    opacity: 0.35;
-    transition: opacity 0.35s ease;
-  }
-
-  .lp-scrolly-chapter.is-active {
-    opacity: 1;
-  }
-}
+/* ── Scrollytelling lives in components/marketing/scrollytelling.css ── */
 
 /* ── Responsive (ported from the prototype) ─────────────────────── */
 @media (max-width: 860px) {
@@ -183,24 +169,6 @@
     grid-template-columns: 1fr !important;
   }
 
-  .lp-scrolly {
-    grid-template-columns: 1fr !important;
-  }
-
-  .lp-scrolly-device {
-    display: none !important;
-  }
-
-  .lp-scrolly-inline {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
-  }
-
-  .lp-scrolly-chapter {
-    min-height: 0 !important;
-    padding: 36px 0 !important;
-  }
 }
 
 @media (max-width: 560px) {

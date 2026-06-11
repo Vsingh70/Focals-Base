@@ -5,11 +5,11 @@ import { FeatureGrid } from '@/components/marketing/FeatureGrid';
 import { Footer } from '@/components/marketing/Footer';
 import { Reveal } from '@/components/marketing/Reveal';
 import { RotatingWord } from '@/components/marketing/RotatingWord';
-import { Scrolly, type ScrollyChapter } from '@/components/marketing/Scrolly';
+import { HowItWorksIos } from '@/components/marketing/HowItWorks';
 import { TopNav } from '@/components/marketing/TopNav';
 import { Waitlist } from '@/components/marketing/Waitlist';
 import { PhoneFrame } from '@/components/marketing/frames';
-import { MockDetail, MockFinances, MockProjects } from '@/components/marketing/mocks-phone';
+import { MockProjects } from '@/components/marketing/mocks-phone';
 import { AppStoreBadge, Btn, Eyebrow, Lead, SectionTitle } from '@/components/marketing/primitives';
 import { LT } from '@/components/marketing/tokens';
 
@@ -18,29 +18,6 @@ export const metadata: Metadata = {
   description:
     'Projects, clients, contracts, and payments — every shoot in one calm, fast home. Now in your pocket.',
 };
-
-const SCROLLY: ScrollyChapter[] = [
-  {
-    eyebrow: 'Projects',
-    title: 'Your pipeline, grouped.',
-    body: 'Every shoot lands in a status pipeline — Inquiries, Upcoming, In progress, Delivered. No more scrolling one endless list to find what needs you today.',
-    points: ['Cards show client, balance, and shoot date at a glance', 'Search and filter by phase in a tap'],
-  },
-  {
-    eyebrow: 'A project, in full',
-    title: 'Open one. See everything.',
-    body: 'Tap a project and the whole story is right there — a summary of the shoot, the balance owed, and how much is paid, before a single scroll.',
-    points: ['Shoot · Balance · Paid, surfaced up top', 'Payment, details, location, and notes below'],
-  },
-  {
-    eyebrow: 'Finances',
-    title: 'Know your numbers.',
-    body: 'Revenue, outstanding balances, and every transaction — tracked as you book and deliver. The spreadsheet retires for good.',
-    points: ['Month-over-month revenue at a glance', 'Outstanding invoices you can chase in one tap'],
-  },
-];
-
-const SCROLLY_SCREENS = [<MockProjects key="p" />, <MockDetail key="d" />, <MockFinances key="f" />];
 
 function Hero() {
   return (
@@ -271,16 +248,7 @@ export default function IosLandingPage() {
       </div>
 
       <div id="how" style={{ scrollMarginTop: 80 }} />
-      <Scrolly
-        chapters={SCROLLY}
-        deviceWidth="300px"
-        stickyTop="12vh"
-        devices={SCROLLY.map((c, i) => (
-          <PhoneFrame key={c.title} width={300} glow={false}>
-            {SCROLLY_SCREENS[i]}
-          </PhoneFrame>
-        ))}
-      />
+      <HowItWorksIos />
 
       {/* feature grid */}
       <section id="features" className="lp-section" style={{ paddingTop: 60, paddingBottom: 40 }}>

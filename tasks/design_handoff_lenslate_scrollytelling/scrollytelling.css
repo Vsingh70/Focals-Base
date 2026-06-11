@@ -1,0 +1,143 @@
+/* scrollytelling.css — cosmetic + responsive styles for <Scrollytelling>.
+   The layout-critical sticky/track/overlay rules are inline in the component,
+   so even if this file fails to load the mechanic still works. Import it once
+   (e.g. in the component file or a global stylesheet).
+
+   Tokens assume the Lenslate dark palette; swap for your CSS variables. */
+
+.scrolly-inner {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 5vw, 80px);
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* COPY column. position:relative + min-height so the absolute chapters have a box. */
+.scrolly-copy {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 420px;
+  position: relative;
+  min-height: 240px;
+}
+
+.scrolly-chapter {
+  /* position/inset come from the component (first = relative, rest = absolute) */
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .45s ease, transform .45s ease;
+  pointer-events: none;
+}
+.scrolly-chapter.is-active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.scrolly-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e8e0d0;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.scrolly-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(27px, 3.2vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: #f0f0f0;
+  margin: 0 0 14px;
+  text-wrap: balance;
+}
+.scrolly-body {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #888;
+  margin: 0;
+  text-wrap: pretty;
+}
+.scrolly-points {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.scrolly-points li {
+  position: relative;
+  padding-left: 26px;
+  font-size: 15px;
+  color: #f0f0f0;
+}
+.scrolly-points li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #e8e0d0;
+  font-weight: 700;
+}
+
+/* DEVICE column. The screens are overlaid by the component. */
+.scrolly-device {
+  flex: 0 0 auto;
+  position: relative;
+}
+.scrolly-screen {
+  opacity: 0;
+  transform: scale(.97);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.scrolly-screen.is-active {
+  opacity: 1;
+  transform: none;
+}
+
+/* progress dots */
+.scrolly-dots {
+  position: absolute;
+  right: max(20px, calc(50vw - 540px));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.scrolly-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #2a2a2a;
+  transition: all .4s ease;
+}
+.scrolly-dots span.is-active {
+  height: 22px;
+  background: #e8e0d0;
+}
+
+/* Stack on narrow screens. The pinned effect still works; copy sits above device. */
+@media (max-width: 1024px) {
+  .scrolly-inner {
+    flex-direction: column !important;
+    gap: 32px;
+    text-align: center;
+  }
+  .scrolly-copy { max-width: 560px; }
+  .scrolly-points li { text-align: left; }
+  .scrolly-dots { display: none; }
+}
+
+/* Respect reduced-motion: kill the swap transitions (content still toggles). */
+@media (prefers-reduced-motion: reduce) {
+  .scrolly-chapter,
+  .scrolly-screen { transition: none; }
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scrollytelling — minimal working reference</title>
+<style>
+  /* ============================================================
+     SCROLLYTELLING — self-contained, dependency-free reference.
+     Open it, scroll, and watch ONE pinned stage swap between three
+     "screens" as you scroll. Diff your implementation against this.
+     The whole mechanism is ~40 lines of JS at the bottom.
+     ============================================================ */
+  :root{
+    --bg:#0a0a0a; --bg2:#111; --bg3:#1a1a1a; --border:#222; --border2:#2a2a2a;
+    --text:#f0f0f0; --text2:#888; --text3:#555; --accent:#e8e0d0;
+    --ui:-apple-system,"Inter",system-ui,sans-serif;
+    --serif:"Newsreader","New York",Georgia,serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ui);}
+
+  /* Intro/outro just give you room to scroll into and out of the effect. */
+  .pad{min-height:70vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;}
+  .pad h1{font-family:var(--serif);font-weight:500;font-size:clamp(32px,6vw,64px);letter-spacing:-.02em;max-width:760px;line-height:1.05;}
+  .pad p{color:var(--text2);font-size:18px;max-width:520px;}
+
+  /* ── THE FOUR NON-NEGOTIABLES ────────────────────────────────
+     1. TRACK: tall, position:relative. Its height = how long the
+        effect lasts. N chapters → ~ N * 90–100vh.                */
+  .track{position:relative;}
+
+  /*  2. STAGE: sticky, exactly 100vh. It "pins" while the tall
+        track scrolls past underneath it.                          */
+  .stage{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden;}
+  .stage-inner{max-width:1100px;margin:0 auto;padding:0 24px;width:100%;
+    display:flex;align-items:center;gap:clamp(28px,5vw,80px);}
+
+  /*  3. LAYERS: every chapter is OVERLAID in the same box (absolute),
+        so hidden ones take NO vertical space. Only opacity changes.
+        If you forget this, chapters stack into a column — the exact
+        bug you're seeing.                                          */
+  .copy{flex:1 1 0;min-width:0;max-width:420px;position:relative;min-height:240px;}
+  .chapter{position:absolute;inset:0;opacity:0;transform:translateY(16px);
+    transition:opacity .45s ease, transform .45s ease;pointer-events:none;}
+  .chapter.is-active{opacity:1;transform:none;pointer-events:auto;}
+  .chapter .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent);
+    font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;}
+  .chapter h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.2vw,38px);
+    line-height:1.1;letter-spacing:-.02em;margin:0 0 14px;}
+  .chapter p{color:var(--text2);font-size:17px;line-height:1.6;margin:0;}
+
+  .device-wrap{flex:0 0 auto;position:relative;width:300px;max-width:80vw;}
+  .screen{position:absolute;inset:0;opacity:0;transform:scale(.97);
+    transition:opacity .5s ease, transform .5s ease;}
+  .screen.is-active{opacity:1;transform:none;}
+  .screen:first-child{position:relative;} /* first one defines the box height */
+
+  /* a fake phone so the demo reads like the real thing */
+  .phone{border-radius:42px;background:#000;padding:10px;
+    box-shadow:0 1px 0 1px #1d1d1d,0 40px 80px -20px rgba(0,0,0,.8);}
+  .phone-screen{border-radius:33px;overflow:hidden;background:var(--bg);height:540px;}
+  .ps-head{padding:22px 18px 8px;font-size:24px;font-weight:700;letter-spacing:-.02em;}
+  .card{margin:8px 14px;padding:13px;border:.5px solid var(--border);border-radius:13px;background:var(--bg2);}
+  .card .t{font-size:14px;font-weight:600;}
+  .card .s{font-size:12px;color:var(--text2);margin-top:3px;}
+  .bar{height:5px;border-radius:99px;background:var(--bg3);margin-top:10px;overflow:hidden;}
+  .bar > i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+  .stat{margin:8px 14px;padding:14px;border:.5px solid var(--border);border-radius:13px;background:var(--bg2);}
+  .stat .l{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);}
+  .stat .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:5px;}
+
+  /* progress dots — pure feedback, not required for the mechanic */
+  .dots{position:absolute;right:max(20px,calc(50vw - 540px));top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:8px;}
+  .dots span{width:5px;height:5px;border-radius:99px;background:var(--border2);transition:all .4s ease;}
+  .dots span.is-active{height:22px;background:var(--accent);}
+
+  /*  4. NOTHING in the ancestor chain may set overflow:hidden/auto/scroll
+        (this includes overflow-x:hidden on a NON-root wrapper). That
+        silently disables position:sticky. The root <html>/<body> are
+        special-cased by browsers, so overflow-x:hidden on body is OK,
+        but a .container{overflow-x:hidden} around the track is NOT.   */
+
+  @media (max-width:1024px){
+    .stage-inner{flex-direction:column;gap:32px;text-align:center;}
+    .dots{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="pad">
+  <div>
+    <h1>Scroll down ↓</h1>
+    <p>One stage stays pinned while three screens swap. That's the whole trick.</p>
+  </div>
+</div>
+
+<!-- TRACK (tall). data-chapters drives the height + dot count in JS. -->
+<div class="track" id="track">
+  <!-- STAGE (sticky, 100vh) -->
+  <div class="stage">
+    <div class="stage-inner">
+
+      <!-- COPY column: overlaid chapters -->
+      <div class="copy" id="copy">
+        <div class="chapter">
+          <div class="eyebrow">● Projects</div>
+          <h2>Your pipeline, grouped.</h2>
+          <p>Every shoot in one status pipeline — inquiries, upcoming, in progress, delivered.</p>
+        </div>
+        <div class="chapter">
+          <div class="eyebrow">● A project, in full</div>
+          <h2>Open one. See everything.</h2>
+          <p>Shoot date, balance, and how much is paid — surfaced before a single scroll.</p>
+        </div>
+        <div class="chapter">
+          <div class="eyebrow">● Finances</div>
+          <h2>Know your numbers.</h2>
+          <p>Revenue, outstanding balances, and every transaction — tracked as you book and deliver.</p>
+        </div>
+      </div>
+
+      <!-- DEVICE column: overlaid screens -->
+      <div class="device-wrap" id="device">
+        <div class="screen">
+          <div class="phone"><div class="phone-screen">
+            <div class="ps-head">Projects</div>
+            <div class="card"><div class="t">Amara &amp; Theo</div><div class="s">Booked · Jun 21</div><div class="bar"><i style="width:31%"></i></div></div>
+            <div class="card"><div class="t">Maison — SS26</div><div class="s">Editing · Jun 5</div><div class="bar"><i style="width:50%"></i></div></div>
+            <div class="card"><div class="t">Nordic Goods</div><div class="s">In Progress · Jun 2</div><div class="bar"><i style="width:100%"></i></div></div>
+          </div></div>
+        </div>
+        <div class="screen">
+          <div class="phone"><div class="phone-screen">
+            <div class="ps-head">Amara &amp; Theo</div>
+            <div class="stat"><div class="l">Balance</div><div class="v" style="color:#e8a020">$3,300</div></div>
+            <div class="stat"><div class="l">Paid</div><div class="v">31%</div><div class="bar"><i style="width:31%"></i></div></div>
+            <div class="card"><div class="t">Shoot date</div><div class="s">Sat, Jun 21 · 1:00 PM</div></div>
+          </div></div>
+        </div>
+        <div class="screen">
+          <div class="phone"><div class="phone-screen">
+            <div class="ps-head">Finances</div>
+            <div class="stat"><div class="l">Revenue · June</div><div class="v">$14,280</div></div>
+            <div class="stat"><div class="l">Outstanding</div><div class="v" style="color:#e8a020">$5,250</div></div>
+          </div></div>
+        </div>
+      </div>
+
+    </div>
+    <!-- progress dots -->
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<div class="pad">
+  <div>
+    <h1>That's it.</h1>
+    <p>Scroll back up — it runs in reverse too, driven entirely by scroll position.</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   THE MECHANIC — framework-agnostic, ~40 lines.
+
+   progress(track) → a 0..1 number for how far the track has
+   scrolled through the viewport. Multiply by N and floor() to
+   get the active chapter index. Toggle .is-active. Done.
+   ============================================================ */
+(function () {
+  var track  = document.getElementById('track');
+  var copy   = document.getElementById('copy');
+  var device = document.getElementById('device');
+  var dotsEl = document.getElementById('dots');
+
+  var chapters = copy.querySelectorAll('.chapter');
+  var screens  = device.querySelectorAll('.screen');
+  var N = chapters.length;
+
+  // Track height = N * 90vh of scroll distance. Taller = slower swaps.
+  track.style.height = (N * 90) + 'vh';
+
+  // Build progress dots to match N.
+  for (var i = 0; i < N; i++) dotsEl.appendChild(document.createElement('span'));
+  var dots = dotsEl.querySelectorAll('span');
+
+  // How far (0..1) the track has travelled through the viewport.
+  function progress() {
+    var r  = track.getBoundingClientRect();
+    var vh = window.innerHeight;
+    // total scroll distance available = trackHeight - one viewport
+    var total = r.height - vh;
+    // distance already scrolled = how far the track top is above the viewport top
+    var passed = -r.top;
+    return Math.max(0, Math.min(1, passed / total));
+  }
+
+  var current = -1;
+  function update() {
+    var p = progress();
+    // map 0..1 → 0..N-1
+    var active = Math.max(0, Math.min(N - 1, Math.floor(p * N)));
+    if (active === current) return;     // only touch the DOM when it changes
+    current = active;
+    for (var i = 0; i < N; i++) {
+      chapters[i].classList.toggle('is-active', i === active);
+      screens[i].classList.toggle('is-active', i === active);
+      dots[i].classList.toggle('is-active', i === active);
+    }
+  }
+
+  // rAF-throttled scroll listener (passive = no scroll jank).
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { update(); ticking = false; });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update(); // set the initial state
+})();
+</script>
+</body>
+</html>

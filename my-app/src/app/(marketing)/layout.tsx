@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import './marketing.css';
+import '@/components/marketing/scrollytelling.css';
 
 /**
  * Marketing chrome — deliberately minimal. The landing pages render no

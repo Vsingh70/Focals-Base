@@ -5,11 +5,11 @@ import { FeatureGrid } from '@/components/marketing/FeatureGrid';
 import { Footer } from '@/components/marketing/Footer';
 import { Reveal } from '@/components/marketing/Reveal';
 import { RotatingWord } from '@/components/marketing/RotatingWord';
-import { Scrolly, type ScrollyChapter } from '@/components/marketing/Scrolly';
+import { HowItWorksWeb } from '@/components/marketing/HowItWorks';
 import { TopNav } from '@/components/marketing/TopNav';
 import { Waitlist } from '@/components/marketing/Waitlist';
 import { BrowserFrame } from '@/components/marketing/frames';
-import { WebClients, WebDashboard, WebFinances } from '@/components/marketing/mocks-web';
+import { WebDashboard } from '@/components/marketing/mocks-web';
 import { AppStoreBadge, Btn, Eyebrow, Lead, SectionTitle } from '@/components/marketing/primitives';
 import { LT } from '@/components/marketing/tokens';
 
@@ -18,32 +18,6 @@ export const metadata: Metadata = {
   description:
     'The full Lenslate workspace — projects, clients, contracts, and finances — open in a tab. For photographers, videographers, and media teams.',
 };
-
-const SCROLLY: (ScrollyChapter & { url: string })[] = [
-  {
-    eyebrow: 'Projects',
-    title: 'The whole pipeline, on one canvas.',
-    body: 'A desk-sized view of every shoot — sortable, searchable, grouped by status. See what’s booked, in progress, and delivered without tapping through screens.',
-    points: ['Sort and scan dozens of projects at once', 'Status, shoot date, and balance in every row'],
-    url: 'app.lenslate.com/projects',
-  },
-  {
-    eyebrow: 'Clients',
-    title: 'Every client, every history.',
-    body: 'Lifetime value, project count, and last shoot at a glance. The relationships that built your studio, finally organized.',
-    points: ['One profile links every shoot, invoice, and contract', 'Find any client in a keystroke'],
-    url: 'app.lenslate.com/clients',
-  },
-  {
-    eyebrow: 'Finances',
-    title: 'The numbers, in full view.',
-    body: 'Revenue, outstanding balances, and what’s booked ahead — charted and current. Export-ready when your accountant asks.',
-    points: ['Month-over-month revenue and forecasting', 'Chase outstanding invoices in a click'],
-    url: 'app.lenslate.com/finances',
-  },
-];
-
-const SCROLLY_SCREENS = [<WebDashboard key="p" />, <WebClients key="c" />, <WebFinances key="f" />];
 
 function Hero() {
   return (
@@ -281,17 +255,7 @@ export default function WebLandingPage() {
       </div>
 
       <div id="how" style={{ scrollMarginTop: 80 }} />
-      <Scrolly
-        chapters={SCROLLY}
-        side="left"
-        deviceWidth="min(46vw, 500px)"
-        stickyTop="22vh"
-        devices={SCROLLY.map((c, i) => (
-          <BrowserFrame key={c.url} height={400} glow={false} url={c.url}>
-            {SCROLLY_SCREENS[i]}
-          </BrowserFrame>
-        ))}
-      />
+      <HowItWorksWeb />
 
       <section id="features" className="lp-section" style={{ paddingTop: 60, paddingBottom: 40 }}>
         <Reveal>
